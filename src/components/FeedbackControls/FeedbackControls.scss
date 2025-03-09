@@ -1,0 +1,30 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.stylist-feedback-controls {
+  @include flex-center;
+  
+  &__button {
+    @include flex-center;
+    width: 32px;
+    height: 32px;
+    border-radius: $border-radius-round;
+    background-color: transparent;
+    color: $text-secondary;
+    border: 1px solid $border-color;
+    margin: 0 $spacing-xs;
+    transition: all $transition-normal ease;
+    
+    &:hover {
+      background-color: $surface-color;
+      border-color: $text-primary;
+      color: $text-primary;
+    }
+    
+    &--active {
+      background-color: rgba($primary-color, 0.1);
+      color: $primary-color;
+      border-color: $primary-color;
+    }
+  }
+}

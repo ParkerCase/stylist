@@ -1,0 +1,90 @@
+// Variables for styling the widget
+
+// Brand colors
+$primary-color: var(--stylist-primary-color, #4361ee);
+$primary-color-light: var(--stylist-primary-color-light, #6c8aee);
+$primary-color-dark: var(--stylist-primary-color-dark, #3a56d4);
+
+$secondary-color: var(--stylist-secondary-color, #e63946);
+$secondary-color-light: var(--stylist-secondary-color-light, #f77986);
+$secondary-color-dark: var(--stylist-secondary-color-dark, #d32638);
+
+// Neutral colors
+$background-color: var(--stylist-background-color, #ffffff);
+$surface-color: var(--stylist-surface-color, #f9f9fb);
+$border-color: var(--stylist-border-color, #e5e7eb);
+
+// Text colors
+$text-primary: var(--stylist-text-primary, #1f2937);
+$text-secondary: var(--stylist-text-secondary, #6b7280);
+$text-tertiary: var(--stylist-text-tertiary, #9ca3af);
+$text-inverse: var(--stylist-text-inverse, #ffffff);
+
+// Feedback colors
+$success-color: var(--stylist-success-color, #10b981);
+$warning-color: var(--stylist-warning-color, #f59e0b);
+$error-color: var(--stylist-error-color, #ef4444);
+$info-color: var(--stylist-info-color, #3b82f6);
+
+// Spacing
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-xxl: 48px;
+
+// Fonts
+$font-family: var(--stylist-font-family, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
+$font-size-xs: 12px;
+$font-size-sm: 14px;
+$font-size-md: 16px;
+$font-size-lg: 18px;
+$font-size-xl: 20px;
+$font-size-xxl: 24px;
+
+// Font weights
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 600;
+
+// Border radius
+$border-radius-sm: 4px;
+$border-radius-md: 8px;
+$border-radius-lg: 12px;
+$border-radius-xl: 16px;
+$border-radius-round: 999px;
+
+// Shadows
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+// Animation duration
+$transition-fast: 150ms;
+$transition-normal: 250ms;
+$transition-slow: 350ms;
+
+// Z-index levels
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+
+// Widget dimensions
+$widget-width: 360px;
+$widget-height: 600px;
+$widget-min-width: 300px;
+$widget-max-width: 400px;
+$widget-min-height: 400px;
+$widget-max-height: 700px;
+
+// Header height
+$header-height: 60px;
+
+// Input height
+$input-height: 64px;

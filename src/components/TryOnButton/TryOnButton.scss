@@ -1,0 +1,47 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.stylist-try-on-button {
+  @include flex-center;
+  padding: $spacing-xs $spacing-sm;
+  background-color: $primary-color;
+  color: $text-inverse;
+  border-radius: $border-radius-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  transition: all $transition-normal ease;
+  
+  &:hover {
+    background-color: darken($primary-color, 5%);
+  }
+  
+  &__icon {
+    margin-right: $spacing-xs;
+    display: flex;
+  }
+  
+  &__text {
+    @include text-truncate;
+  }
+  
+  &--small {
+    padding: $spacing-xs;
+    font-size: $font-size-xs;
+    
+    .stylist-try-on-button__text {
+      display: none;
+      
+      @include responsive('md') {
+        display: inline;
+      }
+    }
+    
+    .stylist-try-on-button__icon {
+      margin-right: 0;
+      
+      @include responsive('md') {
+        margin-right: $spacing-xs;
+      }
+    }
+  }
+}

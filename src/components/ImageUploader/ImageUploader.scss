@@ -1,0 +1,128 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.stylist-image-uploader {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: $spacing-md;
+  
+  &__header {
+    margin-bottom: $spacing-md;
+    text-align: center;
+  }
+  
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
+    margin-bottom: $spacing-xs;
+  }
+  
+  &__description {
+    font-size: $font-size-md;
+    color: $text-secondary;
+  }
+  
+  &__dropzone {
+    @include flex-center;
+    flex-direction: column;
+    flex: 1;
+    border: 2px dashed $border-color;
+    border-radius: $border-radius-md;
+    padding: $spacing-xl;
+    margin-bottom: $spacing-md;
+    background-color: $surface-color;
+    transition: all $transition-normal ease;
+    cursor: pointer;
+    min-height: 300px;
+    
+    &--active {
+      border-color: $primary-color;
+      background-color: rgba($primary-color, 0.05);
+    }
+    
+    &--has-preview {
+      padding: $spacing-sm;
+    }
+  }
+  
+  &__placeholder {
+    @include flex-center;
+    flex-direction: column;
+    text-align: center;
+    max-width: 320px;
+  }
+  
+  &__icon {
+    margin-bottom: $spacing-md;
+    color: $text-tertiary;
+  }
+  
+  &__message {
+    font-size: $font-size-md;
+    color: $text-secondary;
+    margin-bottom: $spacing-sm;
+  }
+  
+  &__browse {
+    color: $primary-color;
+    font-weight: $font-weight-bold;
+    cursor: pointer;
+  }
+  
+  &__info {
+    font-size: $font-size-sm;
+    color: $text-tertiary;
+    text-align: center;
+  }
+  
+  &__input {
+    display: none;
+  }
+  
+  &__preview {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+  }
+  
+  &__error {
+    color: $error-color;
+    font-size: $font-size-sm;
+    margin-bottom: $spacing-md;
+    text-align: center;
+  }
+  
+  &__actions {
+    @include flex-center;
+    gap: $spacing-md;
+  }
+  
+  &__upload-btn {
+    @include button-primary;
+    padding: $spacing-sm $spacing-lg;
+    font-size: $font-size-md;
+    min-width: 160px;
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+  
+  &__change-btn {
+    @include button-secondary;
+    padding: $spacing-sm $spacing-lg;
+    font-size: $font-size-md;
+  }
+}

@@ -1,0 +1,233 @@
+// src/components/UserPreferences/UserPreferences.scss
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.stylist-user-preferences {
+  @include card;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  background-color: $background-color;
+  display: flex;
+  flex-direction: column;
+  
+  &__header {
+    @include flex-between;
+    padding: $spacing-md;
+    border-bottom: 1px solid $border-color;
+  }
+  
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    margin: 0;
+  }
+  
+  &__close-btn {
+    font-size: $font-size-xl;
+    color: $text-secondary;
+    background: none;
+    border: none;
+    cursor: pointer;
+    
+    &:hover {
+      color: $text-primary;
+    }
+  }
+  
+  &__form {
+    overflow-y: auto;
+    padding: $spacing-md;
+    @include scrollbar-custom;
+  }
+  
+  &__section {
+    margin-bottom: $spacing-lg;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  &__section-title {
+    font-size: $font-size-md;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
+    margin: 0 0 $spacing-sm;
+  }
+  
+  &__section-desc {
+    font-size: $font-size-sm;
+    color: $text-secondary;
+    margin: 0 0 $spacing-sm;
+  }
+  
+  &__styles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: $spacing-md;
+  }
+  
+  &__style-item {
+    margin-bottom: $spacing-sm;
+  }
+  
+  &__style-label {
+    @include flex-between;
+    font-size: $font-size-sm;
+    color: $text-primary;
+    margin-bottom: $spacing-xs;
+  }
+  
+  &__style-value {
+    font-size: $font-size-xs;
+    color: $text-tertiary;
+  }
+  
+  &__style-slider {
+    width: 100%;
+    appearance: none;
+    height: 4px;
+    background-color: $border-color;
+    border-radius: 2px;
+    outline: none;
+    
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background-color: $primary-color;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    
+    &::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background-color: $primary-color;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+    }
+  }
+  
+  &__colors {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: $spacing-md;
+  }
+  
+  &__color-item {
+    @include flex-center;
+    flex-direction: column;
+    margin-bottom: $spacing-sm;
+  }
+  
+  &__color-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin-bottom: $spacing-xs;
+    border: 1px solid $border-color;
+  }
+  
+  &__color-label {
+    font-size: $font-size-sm;
+    color: $text-primary;
+    margin-bottom: $spacing-xs;
+  }
+  
+  &__color-slider {
+    width: 100%;
+    appearance: none;
+    height: 4px;
+    background-color: $border-color;
+    border-radius: 2px;
+    outline: none;
+    
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background-color: $primary-color;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    
+    &::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background-color: $primary-color;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+    }
+  }
+  
+  &__sizes {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: $spacing-md;
+  }
+  
+  &__size-category {
+    margin-bottom: $spacing-sm;
+  }
+  
+  &__size-label {
+    display: block;
+    font-size: $font-size-sm;
+    color: $text-primary;
+    margin-bottom: $spacing-xs;
+  }
+  
+  &__size-select {
+    width: 100%;
+    padding: $spacing-sm;
+    border: 1px solid $border-color;
+    border-radius: $border-radius-sm;
+    font-size: $font-size-sm;
+    background-color: $background-color;
+    color: $text-primary;
+    
+    &:focus {
+      border-color: $primary-color;
+      outline: none;
+    }
+  }
+  
+  &__categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: $spacing-sm;
+  }
+  
+  &__category-item {
+    @include flex-start;
+    font-size: $font-size-sm;
+    color: $text-primary;
+    margin-bottom: $spacing-xs;
+    cursor: pointer;
+  }
+  
+  &__category-checkbox {
+    margin-right: $spacing-xs;
+  }
+  
+  &__actions {
+    @include flex-between;
+    margin-top: $spacing-lg;
+    padding-top: $spacing-md;
+    border-top: 1px solid $border-color;
+  }
+  
+  &__cancel-btn {
+    @include button-secondary;
+    padding: $spacing-sm $spacing-lg;
+  }
+  
+  &__save-btn {
+    @include button-primary;
+    padding: $spacing-sm $spacing-lg;
+  }
+}

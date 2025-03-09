@@ -1,0 +1,118 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.stylist-message-bubble {
+  display: flex;
+  margin-bottom: $spacing-md;
+  position: relative;
+  max-width: 85%;
+  
+  &--assistant {
+    align-self: flex-start;
+  }
+  
+  &--user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+  }
+  
+  &--system {
+    align-self: center;
+    max-width: 95%;
+  }
+  
+  &__avatar {
+    @include flex-center;
+    width: 32px;
+    height: 32px;
+    border-radius: $border-radius-round;
+    margin: 0 $spacing-sm;
+    flex-shrink: 0;
+    align-self: flex-start;
+    
+    &-icon {
+      @include flex-center;
+      width: 100%;
+      height: 100%;
+      border-radius: $border-radius-round;
+      background-color: $primary-color;
+      color: $text-inverse;
+    }
+    
+    &-info {
+      @include flex-center;
+      width: 100%;
+      height: 100%;
+      border-radius: $border-radius-round;
+      background-color: $info-color;
+      color: $text-inverse;
+      font-weight: $font-weight-bold;
+      font-style: italic;
+    }
+  }
+  
+  &__content {
+    padding: $spacing-sm $spacing-md;
+    border-radius: $border-radius-md;
+    font-size: $font-size-md;
+    position: relative;
+    word-break: break-word;
+    
+    // Default styling for assistant messages
+    .stylist-message-bubble--assistant & {
+      background-color: $background-color;
+      color: $text-primary;
+      border-top-left-radius: 4px;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        left: -8px;
+        top: 0;
+        border-top: 8px solid $background-color;
+        border-left: 8px solid transparent;
+      }
+    }
+    
+    // User message styling
+    .stylist-message-bubble--user & {
+      background-color: $primary-color;
+      color: $text-inverse;
+      border-top-right-radius: 4px;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        right: -8px;
+        top: 0;
+        border-top: 8px solid $primary-color;
+        border-right: 8px solid transparent;
+      }
+    }
+    
+    // System message styling
+    .stylist-message-bubble--system & {
+      background-color: $surface-color;
+      border: 1px solid $border-color;
+      color: $text-secondary;
+      text-align: center;
+      font-size: $font-size-sm;
+    }
+  }
+  
+  &__time {
+    font-size: $font-size-xs;
+    color: $text-tertiary;
+    margin-top: 4px;
+    align-self: flex-end;
+    margin: 4px $spacing-sm 0;
+    
+    .stylist-message-bubble--user & {
+      text-align: right;
+    }
+    
+    .stylist-message-bubble--system & {
+      display: none;
+    }
+  }
+}

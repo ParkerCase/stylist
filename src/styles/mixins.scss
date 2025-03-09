@@ -1,0 +1,227 @@
+// SCSS mixins for the widget
+
+@import './variables.scss';
+
+// Flexbox mixins
+@mixin flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-start {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+@mixin flex-end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+// Text truncate with ellipsis
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Multi-line ellipsis
+@mixin text-truncate-multiline($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Hide scrollbar but allow scrolling
+@mixin scrollbar-hidden {
+  -ms-overflow-style: none; // IE and Edge
+  scrollbar-width: none; // Firefox
+  
+  &::-webkit-scrollbar {
+    display: none; // Chrome, Safari and Opera
+  }
+}
+
+// Custom scrollbar
+@mixin scrollbar-custom {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: $border-radius-round;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+}
+
+// Box shadow with color variable
+@mixin box-shadow($color: rgba(0, 0, 0, 0.1), $y: 4px) {
+  box-shadow: 0 $y 8px 0 $color;
+}
+
+// Responsive styles
+@mixin responsive($breakpoint) {
+  @if $breakpoint == "xs" {
+    @media (max-width: 576px) { @content; }
+  }
+  @else if $breakpoint == "sm" {
+    @media (min-width: 576px) { @content; }
+  }
+  @else if $breakpoint == "md" {
+    @media (min-width: 768px) { @content; }
+  }
+  @else if $breakpoint == "lg" {
+    @media (min-width: 992px) { @content; }
+  }
+  @else if $breakpoint == "xl" {
+    @media (min-width: 1200px) { @content; }
+  }
+}
+
+// Button styles
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: $border-radius-md;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: all $transition-normal ease;
+  text-align: center;
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+@mixin button-primary {
+  @include button-base;
+  background-color: $primary-color;
+  color: $text-inverse;
+  
+  &:hover {
+    background-color: $primary-color-dark;
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba($primary-color, 0.3);
+  }
+}
+
+@mixin button-secondary {
+  @include button-base;
+  background-color: $surface-color;
+  color: $text-primary;
+  border: 1px solid $border-color;
+  
+  &:hover {
+    background-color: darken($surface-color, 5%);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba($primary-color, 0.2);
+  }
+}
+
+// Input styles
+@mixin input-base {
+  display: block;
+  width: 100%;
+  padding: $spacing-sm $spacing-md;
+  background-color: $background-color;
+  border: 1px solid $border-color;
+  border-radius: $border-radius-md;
+  font-family: $font-family;
+  font-size: $font-size-md;
+  color: $text-primary;
+  transition: border-color $transition-normal ease;
+  
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 3px rgba($primary-color, 0.2);
+  }
+  
+  &::placeholder {
+    color: $text-tertiary;
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Card styles
+@mixin card {
+  background-color: $background-color;
+  border-radius: $border-radius-md;
+  box-shadow: $shadow-md;
+  overflow: hidden;
+}
+
+// Avatar styles
+@mixin avatar($size: 40px) {
+  width: $size;
+  height: $size;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: $surface-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// Badge styles
+@mixin badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  background-color: $primary-color;
+  color: $text-inverse;
+  border-radius: $border-radius-round;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}

@@ -1,0 +1,34 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.stylist-wishlist-button {
+  @include flex-center;
+  padding: $spacing-xs $spacing-sm;
+  background-color: $primary-color;
+  color: $text-inverse;
+  border-radius: $border-radius-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  transition: all $transition-normal ease;
+  
+  &:hover {
+    background-color: $primary-color-dark;
+  }
+  
+  &--saved {
+    background-color: $success-color;
+    
+    &:hover {
+      background-color: darken($success-color, 5%);
+    }
+  }
+  
+  &__icon {
+    margin-right: $spacing-xs;
+    display: flex;
+  }
+  
+  &__label {
+    @include text-truncate;
+  }
+}

@@ -1,0 +1,50 @@
+// src/components/common/ErrorMessage.scss
+
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.stylist-error-message {
+  display: flex;
+  align-items: flex-start;
+  padding: $spacing-md;
+  margin: $spacing-md 0;
+  background-color: rgba($error-color, 0.1);
+  border-radius: $border-radius-md;
+  border-left: 4px solid $error-color;
+  
+  &__icon {
+    color: $error-color;
+    margin-right: $spacing-sm;
+    flex-shrink: 0;
+  }
+  
+  &__content {
+    flex: 1;
+  }
+  
+  &__text {
+    color: $text-primary;
+    font-size: $font-size-sm;
+    margin-bottom: $spacing-xs;
+  }
+  
+  &__code {
+    color: $text-tertiary;
+    font-size: $font-size-xs;
+    font-family: monospace;
+  }
+  
+  &__retry-btn {
+    @include button-secondary;
+    margin-left: $spacing-sm;
+    padding: $spacing-xs $spacing-sm;
+    font-size: $font-size-xs;
+    white-space: nowrap;
+    
+    &:hover {
+      background-color: rgba($error-color, 0.1);
+      border-color: $error-color;
+      color: $error-color;
+    }
+  }
+}

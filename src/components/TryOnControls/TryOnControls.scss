@@ -1,0 +1,235 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.stylist-try-on-controls {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  background-color: $surface-color;
+  border-left: 1px solid $border-color;
+  overflow-y: auto;
+  @include scrollbar-custom;
+  
+  @include responsive('xs') {
+    width: 100%;
+    height: 300px;
+    border-left: none;
+    border-top: 1px solid $border-color;
+  }
+  
+  &__section {
+    border-bottom: 1px solid $border-color;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+  
+  &__section-header {
+    @include flex-between;
+    padding: $spacing-md;
+    cursor: pointer;
+    transition: background-color $transition-normal ease;
+    
+    &:hover {
+      background-color: rgba($primary-color, 0.05);
+    }
+  }
+  
+  &__section-title {
+    font-size: $font-size-md;
+    font-weight: $font-weight-bold;
+    color: $text-primary;
+    margin: 0;
+  }
+  
+  &__section-toggle {
+    font-size: $font-size-lg;
+    color: $text-secondary;
+    font-weight: $font-weight-bold;
+  }
+  
+  &__section-content {
+    padding: $spacing-md;
+    padding-top: 0;
+  }
+  
+  &__empty {
+    font-size: $font-size-sm;
+    color: $text-tertiary;
+    text-align: center;
+    padding: $spacing-md 0;
+  }
+  
+  &__garment-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $spacing-sm;
+    margin-bottom: $spacing-md;
+  }
+  
+  &__garment-thumbnail {
+    position: relative;
+    border: 2px solid $border-color;
+    border-radius: $border-radius-sm;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all $transition-normal ease;
+    
+    &:hover {
+      border-color: $text-secondary;
+    }
+    
+    &--active {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
+    }
+  }
+  
+  &__garment-image {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $background-color;
+    
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+  }
+  
+  &__garment-type {
+    padding: $spacing-xs;
+    font-size: $font-size-xs;
+    color: $text-secondary;
+    text-align: center;
+    text-transform: capitalize;
+    background-color: $surface-color;
+    border-top: 1px solid $border-color;
+  }
+  
+  &__garment-remove {
+    position: absolute;
+    top: $spacing-xs;
+    right: $spacing-xs;
+    width: 22px;
+    height: 22px;
+    border-radius: $border-radius-round;
+    background-color: rgba($error-color, 0.8);
+    color: $text-inverse;
+    @include flex-center;
+    opacity: 0;
+    transition: opacity $transition-normal ease;
+    
+    &:hover {
+      background-color: $error-color;
+    }
+    
+    .stylist-try-on-controls__garment-thumbnail:hover & {
+      opacity: 1;
+    }
+  }
+  
+  &__add-garment {
+    margin-top: $spacing-md;
+  }
+  
+  &__label {
+    display: block;
+    font-size: $font-size-sm;
+    color: $text-secondary;
+    margin-bottom: $spacing-xs;
+  }
+  
+  &__button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-xs;
+  }
+  
+  &__button {
+    padding: $spacing-xs $spacing-sm;
+    background-color: $background-color;
+    border: 1px solid $border-color;
+    border-radius: $border-radius-sm;
+    font-size: $font-size-sm;
+    color: $text-primary;
+    cursor: pointer;
+    transition: all $transition-normal ease;
+    
+    &:hover {
+      background-color: $surface-color;
+      border-color: $text-secondary;
+    }
+    
+    &--active {
+      background-color: rgba($primary-color, 0.1);
+      border-color: $primary-color;
+      color: $primary-color;
+    }
+    
+    &--full-width {
+      width: 100%;
+      padding: $spacing-sm;
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+  
+  &__garment-controls {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+  
+  &__control-group {
+    margin-bottom: $spacing-sm;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  &__slider {
+    width: 100%;
+    appearance: none;
+    height: 4px;
+    background-color: $border-color;
+    border-radius: 2px;
+    outline: none;
+    margin: $spacing-xs 0;
+    
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background-color: $primary-color;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    
+    &::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background-color: $primary-color;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+    }
+  }
+  
+  &__value {
+    font-size: $font-size-xs;
+    color: $text-tertiary;
+    text-align: right;
+  }
+}

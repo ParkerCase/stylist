@@ -1,0 +1,157 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.stylist-item-card {
+  @include card;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform $transition-normal ease, box-shadow $transition-normal ease;
+  border: 1px solid $border-color;
+  height: 100%;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+  }
+  
+  &__image-container {
+    position: relative;
+    aspect-ratio: 3/4;
+    background-color: $surface-color;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform $transition-normal ease;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+  
+  &__image-placeholder {
+    @include flex-center;
+    width: 100%;
+    height: 100%;
+    background-color: $surface-color;
+    color: $text-tertiary;
+    font-size: $font-size-sm;
+  }
+  
+  &__discount {
+    position: absolute;
+    top: $spacing-sm;
+    right: $spacing-sm;
+    background-color: $secondary-color;
+    color: $text-inverse;
+    padding: 4px 8px;
+    border-radius: $border-radius-sm;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+  }
+  
+  &__try-on-overlay {
+    position: absolute;
+    bottom: $spacing-sm;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity $transition-normal ease;
+    pointer-events: none;
+    
+    .stylist-item-card:hover & {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+  
+  &__content {
+    padding: $spacing-sm;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  &__brand {
+    font-size: $font-size-xs;
+    color: $text-secondary;
+    margin-bottom: 2px;
+    @include text-truncate;
+  }
+  
+  &__name {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $text-primary;
+    margin-bottom: $spacing-xs;
+    @include text-truncate-multiline(2);
+  }
+  
+  &__price {
+    font-size: $font-size-sm;
+    color: $text-primary;
+    margin-bottom: $spacing-xs;
+    
+    &--sale {
+      font-weight: $font-weight-bold;
+      color: $secondary-color;
+      margin-right: $spacing-xs;
+    }
+    
+    &--original {
+      text-decoration: line-through;
+      color: $text-tertiary;
+      font-size: $font-size-xs;
+    }
+  }
+  
+  &__match-reasons {
+    padding: 0 $spacing-sm $spacing-sm;
+    border-top: 1px solid $border-color;
+  }
+  
+  &__match-score {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
+    color: $primary-color;
+    margin: $spacing-xs 0;
+  }
+  
+  &__reason-list {
+    margin: 0;
+    padding-left: $spacing-md;
+    font-size: $font-size-xs;
+  }
+  
+  &__reason-item {
+    margin-bottom: 2px;
+    color: $text-secondary;
+  }
+  
+  &__actions {
+    padding: $spacing-sm;
+    border-top: 1px solid $border-color;
+    @include flex-between;
+  }
+  
+  &__wishlist-btn,
+  &__cart-btn {
+    @include flex-center;
+    width: 32px;
+    height: 32px;
+    border-radius: $border-radius-round;
+    background-color: $surface-color;
+    color: $text-secondary;
+    transition: all $transition-normal ease;
+    
+    &:hover {
+      background-color: $primary-color;
+      color: $text-inverse;
+    }
+  }
+}

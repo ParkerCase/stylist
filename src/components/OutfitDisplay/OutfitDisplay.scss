@@ -1,0 +1,111 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.stylist-outfit-display {
+  @include card;
+  margin: $spacing-lg 0;
+  overflow: hidden;
+  border: 1px solid $border-color;
+  
+  &__header {
+    @include flex-between;
+    padding: $spacing-md;
+    border-bottom: 1px solid $border-color;
+  }
+  
+  &__title {
+    font-weight: $font-weight-medium;
+    font-size: $font-size-md;
+    color: $text-primary;
+  }
+  
+  &__score {
+    font-weight: $font-weight-bold;
+    font-size: $font-size-sm;
+    color: $primary-color;
+  }
+  
+  &__items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: $spacing-sm;
+    padding: $spacing-md;
+  }
+  
+  &__item {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid $border-color;
+    border-radius: $border-radius-sm;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform $transition-normal ease, box-shadow $transition-normal ease;
+    
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: $shadow-md;
+    }
+  }
+  
+  &__item-image {
+    width: 100%;
+    aspect-ratio: 3/4;
+    object-fit: cover;
+  }
+  
+  &__item-placeholder {
+    @include flex-center;
+    width: 100%;
+    aspect-ratio: 3/4;
+    background-color: $surface-color;
+    color: $text-tertiary;
+    font-size: $font-size-sm;
+  }
+  
+  &__item-info {
+    padding: $spacing-sm;
+  }
+  
+  &__item-brand {
+    font-size: $font-size-xs;
+    color: $text-secondary;
+    @include text-truncate;
+  }
+  
+  &__item-name {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $text-primary;
+    @include text-truncate;
+  }
+  
+  &__reasons {
+    padding: $spacing-md;
+    border-top: 1px solid $border-color;
+    background-color: $surface-color;
+  }
+  
+  &__reasons-title {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $text-primary;
+    margin-bottom: $spacing-xs;
+  }
+  
+  &__reasons-list {
+    padding-left: $spacing-md;
+    margin: 0;
+  }
+  
+  &__reason-item {
+    font-size: $font-size-sm;
+    color: $text-secondary;
+    margin-bottom: 2px;
+  }
+  
+  &__actions {
+    @include flex-between;
+    padding: $spacing-md;
+    border-top: 1px solid $border-color;
+  }
+}

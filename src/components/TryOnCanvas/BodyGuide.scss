@@ -1,0 +1,90 @@
+// src/components/TryOnCanvas/BodyGuide.scss
+
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.stylist-body-guide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  
+  &__region {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed rgba($text-tertiary, 0.3);
+    background-color: rgba($text-tertiary, 0.1);
+    color: $text-tertiary;
+    font-size: $font-size-sm;
+    transition: all $transition-normal ease;
+    
+    &--active {
+      border-color: rgba($primary-color, 0.5);
+      background-color: rgba($primary-color, 0.1);
+      color: $primary-color;
+    }
+    
+    &--head {
+      top: 0;
+      left: 25%;
+      width: 50%;
+      height: 20%;
+      border-radius: 50% 50% 0 0;
+    }
+    
+    &--neck {
+      top: 20%;
+      left: 40%;
+      width: 20%;
+      height: 5%;
+    }
+    
+    &--upper-body {
+      top: 25%;
+      left: 20%;
+      width: 60%;
+      height: 25%;
+    }
+    
+    &--waist {
+      top: 50%;
+      left: 30%;
+      width: 40%;
+      height: 5%;
+    }
+    
+    &--lower-body {
+      top: 55%;
+      left: 25%;
+      width: 50%;
+      height: 30%;
+    }
+    
+    &--feet {
+      top: 85%;
+      left: 25%;
+      width: 50%;
+      height: 15%;
+    }
+    
+    &--full-body {
+      top: 5%;
+      left: 10%;
+      width: 80%;
+      height: 90%;
+      border-style: dotted;
+      z-index: -1;
+    }
+  }
+  
+  &__label {
+    text-transform: uppercase;
+    font-weight: $font-weight-bold;
+    font-size: $font-size-xs;
+    text-shadow: 0 0 4px rgba($background-color, 0.8);
+  }
+}

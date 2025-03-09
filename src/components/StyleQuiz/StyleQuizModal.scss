@@ -1,0 +1,61 @@
+// src/components/StyleQuiz/StyleQuizModal.scss
+
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.stylist-style-quiz-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: $z-index-modal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    animation: fadeIn $transition-normal ease forwards;
+  }
+  
+  &__container {
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    background-color: $background-color;
+    border-radius: $border-radius-lg;
+    box-shadow: $shadow-xl;
+    overflow: hidden;
+    animation: scaleIn $transition-normal ease forwards;
+    
+    @include responsive('xs') {
+      width: 95%;
+      height: 95%;
+      max-width: none;
+      max-height: none;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
