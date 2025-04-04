@@ -11,7 +11,7 @@ import {
   CompleteOutfitRequest,
   Outfit,
   RecommendationItem
-} from '@types/index';
+} from '../types/index';
 
 export class RecommendationApi {
   private client: ApiClient;

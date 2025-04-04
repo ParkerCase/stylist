@@ -1,0 +1,29 @@
+# The Stylist - Backend Requirements
+
+# Core
+fastapi==0.95.1
+uvicorn==0.22.0
+pydantic==1.10.7
+python-dotenv==1.0.0
+python-multipart==0.0.6
+requests==2.29.0
+aiohttp==3.8.4
+asyncio==3.4.3
+jsonschema==4.17.3
+
+# API and Services
+anthropic==0.2.10  # For Claude integration
+httpx==0.24.0
+websockets==11.0.2
+
+# Database
+redis==4.5.4  # For cache
+
+# Image processing
+Pillow==9.5.0
+tensorflow-cpu==2.12.0  # For background removal
+
+# Utilities
+tqdm==4.65.0
+python-dateutil==2.8.2
+loguru==0.7.0

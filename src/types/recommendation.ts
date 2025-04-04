@@ -90,3 +90,27 @@ export interface RecommendationRequest {
     limit?: number;
   }
   
+  export interface WishlistItem {
+    itemId: string;
+    retailerId: string;
+    addedAt: Date;
+    notes?: string;
+    imageUrl?: string;
+    name?: string;
+    brand?: string;
+    price?: number;
+  }
+  
+  export interface CartItem {
+    itemId: string;
+    retailerId: string;
+    quantity: number;
+    size?: string;
+    color?: string;
+    addedAt: Date;
+    price?: number;
+    name?: string;
+    brand?: string;
+    imageUrl?: string;
+  }
+  

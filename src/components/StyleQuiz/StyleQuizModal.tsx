@@ -3,9 +3,10 @@
 import React from 'react';
 import './StyleQuizModal.scss';
 import StyleQuiz from './StyleQuiz';
+import { StyleQuizAnswer } from '@/types/index';
 
 interface StyleQuizModalProps {
-  onSubmit: (answers: any) => void;
+  onSubmit: (answers: StyleQuizAnswer[]) => void;
   onClose: () => void;
   primaryColor?: string;
 }

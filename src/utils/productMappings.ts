@@ -1,5 +1,5 @@
 // src/utils/productMappings.ts
-import { GarmentType } from '@/types/tryOn';
+import { GarmentType } from '../types/tryOn';
 
 /**
  * Maps product type from various systems to internal GarmentType

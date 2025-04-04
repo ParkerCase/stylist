@@ -3,8 +3,8 @@
 import React from 'react';
 import classNames from 'classnames';
 import './MessageBubble.scss';
-import { TextMessage, MessageSender } from '@types/index';
-import { formatDate } from '@utils/formatters';
+import { TextMessage, MessageSender } from '../../types/index';
+import { formatDate } from '../../utils/formatters';
 
 interface MessageBubbleProps {
   message: TextMessage;

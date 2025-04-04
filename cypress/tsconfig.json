@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["es5", "dom", "es6"],
+    "types": ["cypress", "node", "cypress-file-upload", "jquery", "mocha"],
+    "allowJs": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "esModuleInterop": true
+  },
+  "include": ["**/*.ts"]
+}

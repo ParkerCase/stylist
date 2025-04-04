@@ -2,29 +2,33 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import ItemCard from '../ItemCard';
-import { RecommendationItem } from '@/types/index';
+import { Recommendation } from '../../../types/index';
 
 // Mock utility functions
-jest.mock('@utils/formatters', () => ({
-  formatPrice: jest.fn((price) => `$${price.toFixed(2)`),
+jest.mock('../../../utils/formatters', () => ({
+  formatPrice: jest.fn((price) => `$${price.toFixed(2)}`),
 }));
 
-jest.mock('@utils/productMappings', () => ({
+jest.mock('../../../utils/productMappings', () => ({
   mapProductTypeToGarmentType: jest.fn(() => 'top'),
 }));
 
 describe('ItemCard Component', () => {
-  const mockItem: RecommendationItem = {
+  const mockItem: Recommendation.RecommendationItem = {
     id: 'test-item-1',
     name: 'Test Item',
     brand: 'Test Brand',
     price: 29.99,
-    salePrice: null,
-    imageUrl: 'test-image.jpg',
+    salePrice: undefined,
     url: 'https://example.com/product',
     matchScore: 0.85,
     matchReasons: ['Matches your style preference'],
-    productType: 'top',
+    category: 'top',
+    retailerId: 'test',
+    inStock: true,
+    colors: [],
+    sizes: [],
+    imageUrls: ['test-image.jpg'],
   };
 
   test('renders item information correctly', () => {

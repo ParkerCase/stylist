@@ -6,13 +6,12 @@ import {
   OutfitTryOn,
   GarmentInfo,
   UserImageInfo,
-  ProcessingStatus,
   BackgroundRemovalMethod,
   TryOnSettings,
   GarmentType,
-  Point,
   SavedTryOnResult
-} from '@/types/tryOn';
+} from '../types/tryOn';
+import { getDefaultBodyPosition } from '../services/image-processing/imagePositioning';
 
 interface TryOnState {
   // Current try-on state
@@ -55,6 +54,10 @@ interface TryOnState {
   openUploadModal: () => void;
   closeUploadModal: () => void;
   reset: () => void;
+  
+  // Integration methods
+  startNewTryOn: (productImage: string | File, productType: GarmentType) => void;
+  tryOnOutfit: (outfit: OutfitTryOn) => void;
 }
 
 // Default settings
@@ -124,7 +127,7 @@ export const useTryOnStore = create<TryOnState>()(
           } else {
             // Remove any existing garment of the same type if it has the same body position
             const filteredGarments = currentOutfit.garments.filter(
-              (g) => !(g.type === garment.type && g.bodyPosition === garment.bodyPosition)
+              (g: GarmentInfo) => !(g.type === garment.type && g.bodyPosition === garment.bodyPosition)
             );
             
             // Add the new garment
@@ -142,7 +145,7 @@ export const useTryOnStore = create<TryOnState>()(
           
           if (currentOutfit) {
             const updatedGarments = currentOutfit.garments.filter(
-              (g) => g.id !== garmentId
+              (g: GarmentInfo) => g.id !== garmentId
             );
             
             set({
@@ -158,7 +161,7 @@ export const useTryOnStore = create<TryOnState>()(
           const { currentOutfit } = get();
           
           if (currentOutfit) {
-            const updatedGarments = currentOutfit.garments.map((g) =>
+            const updatedGarments = currentOutfit.garments.map((g: GarmentInfo) =>
               g.id === garmentId ? { ...g, ...updates } : g
             );
             
@@ -177,10 +180,12 @@ export const useTryOnStore = create<TryOnState>()(
           // Also update the current outfit if it exists
           const { currentOutfit } = get();
           if (currentOutfit) {
+            // Cast image to UserImageInfo | undefined to match the expected type
+            const userImageForOutfit = image as UserImageInfo | undefined;
             set({
               currentOutfit: {
                 ...currentOutfit,
-                userImage: image
+                userImage: userImageForOutfit
               }
             });
           }
@@ -216,12 +221,12 @@ export const useTryOnStore = create<TryOnState>()(
           // Also update the current outfit if it exists
           const { currentOutfit } = get();
           if (currentOutfit) {
-            set({
-              currentOutfit: {
-                ...currentOutfit,
-                userImage: undefined
-              }
-            });
+            // Set to undefined to match expected type
+            const updatedOutfit = {
+              ...currentOutfit,
+              userImage: undefined
+            };
+            set({ currentOutfit: updatedOutfit });
           }
         },
         
@@ -307,6 +312,47 @@ export const useTryOnStore = create<TryOnState>()(
             isLoading: false,
             error: null
           });
+        },
+        
+        // Integration methods
+        startNewTryOn: (productImage, productType) => {
+          const { settings } = get();
+          const state = get();
+          
+          // Create a new outfit if none exists
+          const outfit: OutfitTryOn = state.currentOutfit || {
+            id: crypto.randomUUID(),
+            garments: [],
+            createdAt: new Date()
+          };
+          
+          // Create a garment info object
+          const newGarment: GarmentInfo = {
+            id: crypto.randomUUID(),
+            type: productType,
+            url: typeof productImage === 'string' ? productImage : URL.createObjectURL(productImage),
+            bodyPosition: getDefaultBodyPosition(productType),
+            zIndex: outfit.garments.length + 1,
+            layerIndex: outfit.garments.length,
+            scale: settings.defaultGarmentScale[productType] || 1,
+            offset: settings.defaultGarmentOffset[productType] || { x: 0, y: 0 },
+            rotation: 0,
+            withoutBackground: true
+          };
+          
+          // Add the garment to the outfit
+          const updatedGarments = [...(outfit.garments || []), newGarment];
+          
+          set({
+            currentOutfit: {
+              ...outfit,
+              garments: updatedGarments
+            }
+          });
+        },
+        
+        tryOnOutfit: (outfit) => {
+          set({ currentOutfit: outfit });
         }
       }),
       {

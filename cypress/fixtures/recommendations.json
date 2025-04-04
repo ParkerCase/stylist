@@ -1,0 +1,63 @@
+{
+  "userId": "test-user-123",
+  "timestamp": "2023-09-15T12:00:00Z",
+  "items": [
+    {
+      "id": "item123",
+      "name": "Classic Oxford Shirt",
+      "brand": "StyleBrand",
+      "category": "shirts",
+      "price": 59.99,
+      "imageUrl": "https://example.com/shirt1.jpg",
+      "url": "https://example.com/products/shirt1",
+      "matchScore": 0.92,
+      "matchReasons": ["Based on your style preferences", "Popular in your size"]
+    },
+    {
+      "id": "item124",
+      "name": "Slim Fit Denim Shirt",
+      "brand": "FashionCo",
+      "category": "shirts",
+      "price": 49.99,
+      "salePrice": 39.99,
+      "imageUrl": "https://example.com/shirt2.jpg",
+      "url": "https://example.com/products/shirt2",
+      "matchScore": 0.88,
+      "matchReasons": ["Matches your casual style", "Popular this season"]
+    }
+  ],
+  "outfits": [
+    {
+      "id": "outfit123",
+      "name": "Casual Friday Look",
+      "items": [
+        {
+          "id": "item123",
+          "name": "Classic Oxford Shirt",
+          "brand": "StyleBrand",
+          "category": "shirts",
+          "price": 59.99,
+          "imageUrl": "https://example.com/shirt1.jpg",
+          "url": "https://example.com/products/shirt1",
+          "matchScore": 0.92,
+          "matchReasons": ["Based on your style preferences"]
+        },
+        {
+          "id": "item125",
+          "name": "Slim Fit Chinos",
+          "brand": "FashionCo",
+          "category": "pants",
+          "price": 69.99,
+          "imageUrl": "https://example.com/pants1.jpg",
+          "url": "https://example.com/products/pants1",
+          "matchScore": 0.85,
+          "matchReasons": ["Complements your shirt selection"]
+        }
+      ],
+      "occasion": "casual",
+      "matchScore": 0.9,
+      "matchReasons": ["Perfect for casual office days", "Based on your style profile"]
+    }
+  ],
+  "context": "shirt recommendations"
+}

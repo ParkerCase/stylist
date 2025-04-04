@@ -1,5 +1,5 @@
 // Enhanced API client with better error handling and retry logic
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError, AxiosRequestHeaders } from 'axios';
 
 interface ApiClientConfig {
   baseURL: string;
@@ -14,24 +14,33 @@ export class ApiClient {
   private maxRetries: number;
 
   constructor(config: ApiClientConfig) {
-    const defaultHeaders: Record<string, string> = {
+    this.maxRetries = config.maxRetries || 3;
+    
+    // Create basic axios config
+    const axiosConfig: AxiosRequestConfig = {
+      baseURL: config.baseURL,
+      timeout: config.timeout || 15000,
+    };
+    
+    // Add headers safely
+    const headersConfig: Record<string, string> = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
     
     if (config.apiKey) {
-      defaultHeaders['X-API-Key'] = config.apiKey;
+      headersConfig['X-API-Key'] = config.apiKey;
     }
     
-    this.maxRetries = config.maxRetries || 3;
+    // Add custom headers
+    if (config.headers) {
+      Object.assign(headersConfig, config.headers);
+    }
     
+    // Create instance with proper types
     this.client = axios.create({
-      baseURL: config.baseURL,
-      timeout: config.timeout || 15000,
-      headers: {
-        ...defaultHeaders,
-        ...config.headers,
-      },
+      ...axiosConfig,
+      headers: headersConfig
     });
 
     // Add request interceptor for logging
@@ -40,13 +49,20 @@ export class ApiClient {
         // Remove API key from logs for security
         const logConfig = { ...config };
         if (logConfig.headers && 'X-API-Key' in logConfig.headers) {
-          logConfig.headers = { ...logConfig.headers, 'X-API-Key': '[REDACTED]' };
+          // First cast to unknown, then to AxiosRequestHeaders to ensure type safety
+          logConfig.headers = { ...logConfig.headers, 'X-API-Key': '[REDACTED]' } as unknown as AxiosRequestHeaders;
         }
-        console.debug('API Request:', logConfig);
+        // Only log in non-production environments
+        if (process.env.NODE_ENV !== 'production') {
+          console.debug('API Request:', logConfig);
+        }
         return config;
       },
       (error) => {
-        console.error('API Request Error:', error);
+        // Only log in non-production environments
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('API Request Error:', error);
+        }
         return Promise.reject(error);
       }
     );
@@ -54,22 +70,28 @@ export class ApiClient {
     // Add response interceptor for logging
     this.client.interceptors.response.use(
       (response) => {
-        console.debug('API Response:', {
-          status: response.status,
-          statusText: response.statusText,
-          data: response.data,
-        });
+        // Only log in non-production environments
+        if (process.env.NODE_ENV !== 'production') {
+          console.debug('API Response:', {
+            status: response.status,
+            statusText: response.statusText,
+            data: response.data,
+          });
+        }
         return response;
       },
       (error) => {
-        console.error('API Response Error:', {
+        // Only log in non-production environments
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('API Response Error:', {
           message: error.message,
           response: error.response ? {
             status: error.response.status,
             statusText: error.response.statusText,
             data: error.response.data,
           } : null,
-        });
+          });
+        }
         return Promise.reject(error);
       }
     );
@@ -79,11 +101,11 @@ export class ApiClient {
     return this.requestWithRetry<T>('get', url, undefined, config);
   }
 
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     return this.requestWithRetry<T>('post', url, data, config);
   }
 
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+  async put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
     return this.requestWithRetry<T>('put', url, data, config);
   }
 
@@ -94,7 +116,7 @@ export class ApiClient {
   private async requestWithRetry<T>(
     method: 'get' | 'post' | 'put' | 'delete', 
     url: string, 
-    data?: any, 
+    data?: unknown, 
     config?: AxiosRequestConfig
   ): Promise<T> {
     let retries = 0;
@@ -118,14 +140,17 @@ export class ApiClient {
             break;
         }
         return response.data;
-      } catch (error) {
-        lastError = error as Error;
+      } catch (err) {
+        lastError = err as Error;
         // Check if error is retryable
-        if (this.isRetryableError(error as AxiosError) && retries < this.maxRetries) {
+        if (this.isRetryableError(err as AxiosError) && retries < this.maxRetries) {
           retries++;
           // Wait with exponential backoff
           const delay = Math.pow(2, retries) * 1000;
-          console.log(`Retrying request (${retries}/${this.maxRetries}) after ${delay}ms`);
+          // Only log in non-production environments
+          if (process.env.NODE_ENV !== 'production') {
+            console.log(`Retrying request (${retries}/${this.maxRetries}) after ${delay}ms`);
+          }
           await new Promise(resolve => setTimeout(resolve, delay));
         } else {
           break;
@@ -159,7 +184,8 @@ export class ApiClient {
       } else if (status >= 500) {
         throw new Error('Server error, please try again later');
       } else {
-        throw new Error(`API Error: ${error.response.data?.message || error.message}`);
+        const responseData = error.response.data as Record<string, string> || {};
+        throw new Error(`API Error: ${responseData.message || error.message}`);
       }
     } else if (error.request) {
       // The request was made but no response was received

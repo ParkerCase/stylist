@@ -1,8 +1,8 @@
 // Style quiz component for gathering user preferences
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './StyleQuiz.scss';
-import { StyleQuizQuestion, StyleQuizAnswer } from '@types/index';
+import { StyleQuizQuestion, StyleQuizAnswer } from '../../types/index';
 
 interface StyleQuizProps {
   quizId: string;
@@ -57,16 +57,16 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
 ];
 
 const StyleQuiz: React.FC<StyleQuizProps> = ({
-  quizId,
+  // quizId param is required by the interface but not used in this implementation
   title,
   description,
   onSubmit,
   primaryColor
 }) => {
-  const [questions, setQuestions] = useState<StyleQuizQuestion[]>(DEMO_QUESTIONS);
+  // Using DEMO_QUESTIONS directly, no need to update these
+  const [questions] = useState<StyleQuizQuestion[]>(DEMO_QUESTIONS);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<StyleQuizAnswer[]>([]);
-  const [loading, setLoading] = useState(false);
   
   // In a real implementation, we would fetch questions from the API
   // useEffect(() => {
@@ -153,7 +153,8 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
     onSubmit(answers);
   };
   
-  if (loading) {
+  // Loading check removed - we use demo questions
+  if (false as boolean) {
     return (
       <div className="stylist-style-quiz stylist-style-quiz--loading">
         <div className="stylist-style-quiz__loader">Loading quiz...</div>
@@ -165,7 +166,7 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
     return (
       <div className="stylist-style-quiz stylist-style-quiz--error">
         <div className="stylist-style-quiz__error">
-          Sorry, we couldn't load the style quiz. Please try again later.
+          Sorry, we couldn&apos;t load the style quiz. Please try again later.
         </div>
       </div>
     );

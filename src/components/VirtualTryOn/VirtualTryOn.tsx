@@ -1,6 +1,6 @@
 // Main virtual try-on component
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import './VirtualTryOn.scss';
 import TryOnCanvas from '@/components/TryOnCanvas';
 import TryOnControls from '@/components/TryOnControls';
@@ -25,7 +25,7 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave }) => {
     addGarment,
     removeGarment,
     updateGarmentProperties,
-    clearUserImage,
+    /* clearUserImage, */
     saveTryOnResult,
     closeTryOnModal
   } = useTryOn();

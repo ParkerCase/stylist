@@ -10,11 +10,11 @@ from datetime import datetime
 import jsonschema
 from jsonschema import validate, ValidationError
 
-from stylist.models.user import UserProfile, StyleQuizResults, UserClosetItem
-from stylist.models.clothing import ClothingItem
-from stylist.models.recommendation import RecommendationResponse
-from stylist.services.recommendation_service import RecommendationService
-from stylist.utils.recommendation_utils import (
+from models.user import UserProfile, StyleQuizResults, UserClosetItem
+from models.clothing import ClothingItem
+from models.recommendation import RecommendationResponse
+from services.recommendation_service import RecommendationService
+from utils.recommendation_utils import (
     parse_style_quiz_answers,
     format_recommendation_response,
 )

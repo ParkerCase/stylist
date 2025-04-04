@@ -19,7 +19,7 @@
     background-color: $success-color;
     
     &:hover {
-      background-color: darken($success-color, 5%);
+      opacity: 0.9; /* Use opacity instead of darken for CSS variables */
     }
   }
   

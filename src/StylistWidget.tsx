@@ -1,8 +1,8 @@
 // The Stylist Widget main component
 
 import React, { useEffect } from 'react';
-import ChatWidget from '@components/ChatWidget';
-import { useChatStore } from '@store/index';
+import ChatWidget from '@/components/ChatWidget';
+import { useChatStore } from '@/store/index';
 import './styles/global.scss';
 
 interface StylistWidgetProps {
@@ -53,7 +53,7 @@ const StylistWidget: React.FC<StylistWidgetProps> = (props) => {
       
       // Convert back to hex
       return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
-    } catch (error) {
+    } catch {
       return color;
     }
   };
@@ -76,7 +76,7 @@ const StylistWidget: React.FC<StylistWidgetProps> = (props) => {
       
       // Convert back to hex
       return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
-    } catch (error) {
+    } catch {
       return color;
     }
   };

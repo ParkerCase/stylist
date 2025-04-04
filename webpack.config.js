@@ -43,6 +43,7 @@ module.exports = (env, argv) => {
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
       alias: {
+        '@': path.resolve(__dirname, 'src'),
         '@components': path.resolve(__dirname, 'src/components'),
         '@store': path.resolve(__dirname, 'src/store'),
         '@api': path.resolve(__dirname, 'src/api'),
@@ -78,7 +79,7 @@ module.exports = (env, argv) => {
       static: {
         directory: path.join(__dirname, 'public'),
       },
-      port: 3000,
+      port: 3001,
       hot: true,
       open: true
     }

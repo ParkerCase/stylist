@@ -12,7 +12,7 @@
   transition: all $transition-normal ease;
   
   &:hover {
-    background-color: darken($primary-color, 5%);
+    background-color: $primary-color-dark; /* Use predefined dark variant */
   }
   
   &__icon {

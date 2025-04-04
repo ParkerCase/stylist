@@ -9,6 +9,8 @@
   color: $text-inverse;
   border-top-left-radius: $border-radius-md;
   border-top-right-radius: $border-radius-md;
+  position: relative;
+  z-index: 2;
   
   &__logo {
     @include flex-center;
@@ -17,6 +19,11 @@
     border-radius: $border-radius-round;
     overflow: hidden;
     margin-right: $spacing-sm;
+    transition: transform $transition-normal ease;
+    
+    &:hover {
+      transform: scale(1.1);
+    }
     
     &-img {
       width: 100%;
@@ -38,6 +45,7 @@
     font-weight: $font-weight-medium;
     font-size: $font-size-md;
     @include text-truncate;
+    animation: fadeIn $transition-normal ease;
   }
   
   &__controls {
@@ -52,14 +60,51 @@
     border-radius: $border-radius-round;
     background-color: rgba(255, 255, 255, 0.2);
     color: white;
-    transition: background-color $transition-normal ease;
+    transition: all $transition-normal ease;
     
     &:hover {
       background-color: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
     }
     
     &:active {
       background-color: rgba(255, 255, 255, 0.4);
+      transform: scale(0.95);
     }
+    
+    // Special styling for the view switch button
+    &--switch {
+      position: relative;
+      overflow: visible;
+      
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: -4px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background-color: white;
+        opacity: 0;
+        transition: opacity $transition-normal ease;
+      }
+      
+      &:hover::after {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

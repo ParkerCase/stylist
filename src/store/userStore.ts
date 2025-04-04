@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { UserProfile, StyleQuizResult, ClosetItem } from '@types/index';
+import { UserProfile, StyleQuizResult, ClosetItem } from '../types/index';
 
 interface UserState {
   user: UserProfile | null;

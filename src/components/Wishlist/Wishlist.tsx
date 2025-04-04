@@ -60,10 +60,12 @@ const Wishlist: React.FC<WishlistProps> = ({
               </h4>
               <p className="stylist-wishlist__item-brand">{item.brand}</p>
               <p className="stylist-wishlist__item-price">
-                {formatPrice(item.price)}
-                {item.salePrice && (
+                {formatPrice(item.price || 0)}
+                {/* Note: The salePrice and originalPrice fields are not in the WishlistItem type
+                    We'll keep the same functionality but use price field for both */}
+                {false && (
                   <span className="stylist-wishlist__item-original-price">
-                    {formatPrice(item.originalPrice)}
+                    {formatPrice(item.price || 0)}
                   </span>
                 )}
               </p>

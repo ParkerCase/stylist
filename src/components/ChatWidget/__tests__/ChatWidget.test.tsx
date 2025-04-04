@@ -1,7 +1,8 @@
 // src/components/ChatWidget/__tests__/ChatWidget.test.tsx
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+// Import is defined but not used in current tests
+// import userEvent from '@testing-library/user-event';
 import ChatWidget from '../ChatWidget';
 
 // Mock the stores

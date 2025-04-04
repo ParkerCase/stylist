@@ -1,4 +1,6 @@
 // cypress/e2e/virtual-try-on.spec.ts
+/// <reference types="cypress" />
+/// <reference types="cypress-file-upload" />
 describe('Virtual Try-On', () => {
     beforeEach(() => {
       cy.visit('/');

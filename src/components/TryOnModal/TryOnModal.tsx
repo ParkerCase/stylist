@@ -13,14 +13,14 @@ const TryOnModal: React.FC<TryOnModalProps> = ({ onClose, onSave }) => {
   const isTryOnModalOpen = useTryOnStore((state) => state.isTryOnModalOpen);
   const closeTryOnModal = useTryOnStore((state) => state.closeTryOnModal);
   
-  // Handle closing
-  const handleClose = () => {
+  // Handle closing - using useCallback to avoid dependency issues
+  const handleClose = React.useCallback(() => {
     if (onClose) {
       onClose();
     } else {
       closeTryOnModal();
     }
-  };
+  }, [onClose, closeTryOnModal]);
   
   // Handle escape key
   useEffect(() => {

@@ -18,6 +18,10 @@ export enum AnalyticsEventType {
     STYLE_QUIZ_START = 'style_quiz_start',
     STYLE_QUIZ_COMPLETE = 'style_quiz_complete',
     STYLE_QUIZ_ABANDON = 'style_quiz_abandon',
+    TRY_ON_START = 'try_on_start',
+    TRY_ON_COMPLETE = 'try_on_complete',
+    TRY_ON_SAVED = 'try_on_saved',
+    VIEW_LOOKBOOK = 'view_lookbook',
     ERROR = 'error'
   }
   
@@ -27,7 +31,7 @@ export enum AnalyticsEventType {
     timestamp: Date;
     userId: string;
     sessionId: string;
-    data?: Record<string, any>;
+    data?: Record<string, unknown>;
   }
   
   // Generate a unique session ID
@@ -51,7 +55,7 @@ export enum AnalyticsEventType {
   export const trackEvent = (
     type: AnalyticsEventType,
     userId: string,
-    data?: Record<string, any>
+    data?: Record<string, unknown>
   ): void => {
     const event: AnalyticsEvent = {
       type,
@@ -62,7 +66,8 @@ export enum AnalyticsEventType {
     };
     
     // Log event to console in development
-    if (process.env.NODE_ENV === 'development') {
+    // Only log in development 
+    if (process.env.NODE_ENV !== 'production') {
       console.log('Analytics Event:', event);
     }
     
@@ -115,8 +120,11 @@ export enum AnalyticsEventType {
         // Wait before retrying on error
         await new Promise(resolve => setTimeout(resolve, 5000));
       }
-    } catch (error) {
-      console.error('Failed to send analytics events:', error);
+    } catch (err) {
+      // Only log in non-production environments
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('Failed to send analytics events:', err);
+      }
       // Wait before retrying on error
       await new Promise(resolve => setTimeout(resolve, 5000));
     }

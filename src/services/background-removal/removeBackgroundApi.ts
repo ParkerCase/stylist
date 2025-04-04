@@ -35,10 +35,11 @@ export const removeBackgroundApi = async (
       throw new Error('API key is required for Remove.bg API');
     }
     
-    // Combine default options with provided options
+    // Combine default options with provided options and ensure apiKey is present
     const apiOptions: RemoveBgApiOptions = {
       ...DEFAULT_OPTIONS,
-      ...options
+      ...options,
+      apiKey: options.apiKey as string // We've already checked for apiKey existence above
     };
     
     // Create form data

@@ -62,7 +62,7 @@ export const useImageProcessing = (options?: UseImageProcessingOptions) => {
         const dimensions = await getImageDimensions(dataUrl);
         
         // Resize if needed
-        let processedUrl = dataUrl;
+        const processedUrl = dataUrl;
         let processedDimensions = dimensions;
         
         const maxWidth = options?.maxWidth || 1200;

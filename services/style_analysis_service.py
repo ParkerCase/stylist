@@ -6,14 +6,14 @@ import re
 from typing import Dict, List, Set, Tuple
 import logging
 
-from stylist.models.user import (
+from models.user import (
     UserProfile,
     StyleQuizResults,
     UserFeedback,
     UserClosetItem,
 )
-from stylist.models.clothing import ClothingItem
-from stylist.config import (
+from models.clothing import ClothingItem
+from config import (
     StyleCategory,
     ColorPalette,
     FitPreference,

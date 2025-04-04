@@ -2,13 +2,12 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import './TryOnCanvas.scss';
-import { OutfitTryOn, UserImageInfo, GarmentInfo, GarmentType, BodyPosition } from '@/types/tryOn';
+import { OutfitTryOn, UserImageInfo, GarmentType } from '@/types/tryOn';
 import { useTryOnStore } from '@/store/tryOnStore';
 import { loadImage } from '@/services/image-processing/fileUtils';
 import { 
   compositeImages, 
-  drawGuidelines, 
-  drawBodyGuidelines
+  drawGuidelines
 } from '@/services/image-processing/canvasUtils';
 import { getDefaultBodyPosition } from '@/services/image-processing/imagePositioning';
 import BodyGuide from './BodyGuide';
@@ -59,11 +58,8 @@ const TryOnCanvas: React.FC<TryOnCanvasProps> = ({
       
       // Draw guidelines if enabled and no user image
       if (showGuidelines && !userImage) {
-        if (showBodyGuide) {
-          drawBodyGuidelines(canvas);
-        } else {
-          drawGuidelines(canvas);
-        }
+        // Draw regular guidelines - body guide is shown as a separate component
+        drawGuidelines(canvas);
         return;
       }
       
@@ -85,8 +81,7 @@ const TryOnCanvas: React.FC<TryOnCanvasProps> = ({
             canvas,
             userImg,
             outfit.garments,
-            loadImage,
-            activeGarmentId
+            loadImage
           );
         }
       } catch (error) {

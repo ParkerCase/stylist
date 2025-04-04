@@ -2,8 +2,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import './ChatInput.scss';
-import { MessageSender, MessageType } from '@types/index';
-import { useChatStore } from '@store/index';
+// No need to import unused types
+import { useChatStore } from '@/store/index';
 
 interface ChatInputProps {
   onSendMessage: (text: string) => void;

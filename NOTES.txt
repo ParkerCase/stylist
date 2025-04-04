@@ -1,0 +1,12 @@
+# NOTES.txt – Dev Notes for Claude
+
+Please ensure:
+
+1. No placeholders are used. If data or API access is missing, log it clearly in stillremaining.txt.
+2. All required environment variables must be listed in stillremaining.txt with the format:
+   VAR_NAME= # file path, required by: [file.js or main.py]
+3. All 3rd party dependencies must be installed or noted with exact install command.
+4. At the end, ensure project can be tested with:
+   - Frontend (localhost:3000)
+   - Backend (localhost:8000 or via API endpoint)
+5. Print clear output in terminal confirming "PROJECT IS READY FOR TESTING" when all modules load without error.

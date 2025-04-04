@@ -8,9 +8,9 @@ from typing import Dict, List, Any, Optional, Tuple
 import jsonschema
 from jsonschema import validate, ValidationError
 
-from stylist.integrations.retailer_api import RetailerAPIError
-from stylist.models.clothing import ClothingItem
-from stylist.api.retailer_routes import retailer_clients
+from integrations.retailer_api import RetailerAPIError
+from models.clothing import ClothingItem
+from api.retailer_routes import retailer_clients
 
 logger = logging.getLogger(__name__)
 

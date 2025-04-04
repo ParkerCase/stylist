@@ -2,19 +2,22 @@
 
 import React, { useRef, useEffect } from 'react';
 import './ChatBody.scss';
-import MessageBubble from '@components/MessageBubble';
-import ItemCard from '@components/ItemCard';
-import OutfitDisplay from '@components/OutfitDisplay';
-import StyleQuiz from '@components/StyleQuiz';
-import { ChatMessage, MessageType } from '@types/index';
+import MessageBubble from '@/components/MessageBubble';
+import ItemCard from '@/components/ItemCard';
+import OutfitDisplay from '@/components/OutfitDisplay';
+import StyleQuiz from '@/components/StyleQuiz';
+import { ChatMessage, StyleQuizAnswer, Recommendation } from '@/types/index';
 
 interface ChatBodyProps {
   messages: ChatMessage[];
   onItemFeedback?: (itemId: string, liked: boolean) => void;
   onOutfitFeedback?: (outfitId: string, liked: boolean) => void;
-  onQuizSubmit?: (answers: any) => void;
+  onQuizSubmit?: (answers: StyleQuizAnswer[]) => void;
   isLoading?: boolean;
   primaryColor?: string;
+  // Additional props passed from ChatWidget
+  onAddToWishlist?: (item: Recommendation.RecommendationItem) => void;
+  onAddToCart?: (item: Recommendation.RecommendationItem, quantity?: number, size?: string, color?: string) => void;
 }
 
 const ChatBody: React.FC<ChatBodyProps> = ({
@@ -42,7 +45,7 @@ const ChatBody: React.FC<ChatBodyProps> = ({
   // Render a message based on its type
   const renderMessage = (message: ChatMessage) => {
     switch (message.type) {
-      case MessageType.TEXT:
+      case 'text':
         return (
           <MessageBubble
             key={message.id}
@@ -51,26 +54,46 @@ const ChatBody: React.FC<ChatBodyProps> = ({
           />
         );
         
-      case MessageType.RECOMMENDATION:
+      case 'recommendation':
         return (
           <div key={message.id} className="stylist-chat-body__recommendation">
             <div className="stylist-chat-body__recommendation-title">
               Here are some recommendations for you:
             </div>
             <div className="stylist-chat-body__recommendation-items">
-              {message.items.map((item) => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  onFeedback={onItemFeedback}
-                  primaryColor={primaryColor}
-                />
-              ))}
+              {message.items.map((item) => {
+                // Convert Chat.RecommendationItem to Recommendation.RecommendationItem
+                const recommendationItem = {
+                  id: item.id,
+                  retailerId: 'default',
+                  name: item.name,
+                  brand: item.brand,
+                  category: item.category,
+                  price: item.price,
+                  salePrice: item.salePrice,
+                  colors: [],
+                  sizes: [],
+                  imageUrls: [item.imageUrl],
+                  url: item.url,
+                  matchScore: item.matchScore,
+                  matchReasons: item.matchReasons,
+                  inStock: true
+                };
+                
+                return (
+                  <ItemCard
+                    key={item.id}
+                    item={recommendationItem}
+                    onFeedback={onItemFeedback}
+                    primaryColor={primaryColor}
+                  />
+                );
+              })}
             </div>
           </div>
         );
         
-      case MessageType.OUTFIT:
+      case 'outfit':
         return (
           <OutfitDisplay
             key={message.id}
@@ -80,19 +103,19 @@ const ChatBody: React.FC<ChatBodyProps> = ({
           />
         );
         
-      case MessageType.QUIZ:
+      case 'quiz':
         return (
           <StyleQuiz
             key={message.id}
             quizId={message.quizId}
             title={message.title}
             description={message.description}
-            onSubmit={onQuizSubmit}
+            onSubmit={onQuizSubmit || (() => {})}
             primaryColor={primaryColor}
           />
         );
         
-      case MessageType.LOADING:
+      case 'loading':
         return (
           <div key={message.id} className="stylist-chat-body__loading">
             <div className="stylist-chat-body__loading-dots">
@@ -103,7 +126,7 @@ const ChatBody: React.FC<ChatBodyProps> = ({
           </div>
         );
         
-      case MessageType.ERROR:
+      case 'error':
         return (
           <div key={message.id} className="stylist-chat-body__error">
             <div className="stylist-chat-body__error-icon">

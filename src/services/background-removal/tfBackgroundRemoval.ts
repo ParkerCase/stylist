@@ -1,21 +1,19 @@
-// TensorFlow.js-based background removal
+// TensorFlow.js-based background removal using Body-Pix model
 
-import { BackgroundRemovalMethod, BackgroundRemovalResult, Dimensions } from '@/types/tryOn';
+import { BackgroundRemovalMethod, BackgroundRemovalResult } from '@/types/tryOn';
 import * as tf from '@tensorflow/tfjs';
 import '@tensorflow/tfjs-backend-webgl';
-
-// Model paths
-const MODEL_URL = '/models/segmentation-model/model.json';
+import * as bodyPix from '@tensorflow-models/body-pix';
 
 // Cache the loaded model
-let segmentationModel: tf.GraphModel | null = null;
+let bodyPixModel: bodyPix.BodyPix | null = null;
 
 /**
- * Load the segmentation model
+ * Load the BodyPix model
  */
-export const loadSegmentationModel = async (): Promise<tf.GraphModel> => {
-  if (segmentationModel) {
-    return segmentationModel;
+export const loadBodyPixModel = async (): Promise<bodyPix.BodyPix> => {
+  if (bodyPixModel) {
+    return bodyPixModel;
   }
   
   try {
@@ -26,110 +24,101 @@ export const loadSegmentationModel = async (): Promise<tf.GraphModel> => {
       throw new Error('WebGL is not available. TensorFlow.js background removal requires WebGL support.');
     }
     
-    // Load the model
-    segmentationModel = await tf.loadGraphModel(MODEL_URL);
-    return segmentationModel;
+    // Load the BodyPix model
+    bodyPixModel = await bodyPix.load({
+      architecture: 'MobileNetV1',
+      outputStride: 16,
+      multiplier: 0.75,
+      quantBytes: 2
+    });
+    
+    return bodyPixModel;
   } catch (error) {
-    console.error('Failed to load segmentation model:', error);
+    console.error('Failed to load BodyPix model:', error);
     throw error;
   }
 };
 
 /**
- * Perform segmentation on an image
+ * Perform segmentation on an image using BodyPix
  */
 export const segmentImage = async (
-  imageData: HTMLImageElement | HTMLCanvasElement | ImageData | string
+  imageInput: HTMLImageElement | HTMLCanvasElement | ImageData | string
 ): Promise<ImageData> => {
   try {
     // Load the model if not already loaded
-    const model = await loadSegmentationModel();
+    const model = await loadBodyPixModel();
     
-    // Convert input to tensor
-    let imageTensor: tf.Tensor3D;
+    // Get image as HTMLImageElement or HTMLCanvasElement
+    let imgElement: HTMLImageElement | HTMLCanvasElement;
     
-    if (typeof imageData === 'string') {
+    if (typeof imageInput === 'string') {
       // It's a URL or data URL, load the image first
-      const img = await loadImageFromUrl(imageData);
-      imageTensor = tf.browser.fromPixels(img);
+      imgElement = await loadImageFromUrl(imageInput);
+    } else if (imageInput instanceof HTMLImageElement || 
+               imageInput instanceof HTMLCanvasElement) {
+      // It's an HTML element
+      imgElement = imageInput;
     } else {
-      imageTensor = tf.browser.fromPixels(imageData);
+      // For ImageData, we need to convert it to a canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = imageInput.width;
+      canvas.height = imageInput.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        throw new Error('Could not get canvas context');
+      }
+      ctx.putImageData(imageInput as ImageData, 0, 0);
+      imgElement = canvas;
     }
     
-    // Resize if needed (model might expect specific input dimensions)
-    const targetHeight = 480;  // Example size, adjust based on your model
-    const targetWidth = 640;   // Example size, adjust based on your model
+    // Get original dimensions
+    const width = imgElement.width;
+    const height = imgElement.height;
     
-    // Save original dimensions for later
-    const originalHeight = imageTensor.shape[0];
-    const originalWidth = imageTensor.shape[1];
-    
-    // Resize to target dimensions
-    const resizedTensor = tf.image.resizeBilinear(
-      imageTensor,
-      [targetHeight, targetWidth]
-    );
-    
-    // Normalize pixel values to [0, 1]
-    const normalizedTensor = resizedTensor.div(255.0);
-    
-    // Add batch dimension
-    const batchedTensor = normalizedTensor.expandDims(0);
-    
-    // Run inference
-    const segmentationTensor = model.predict(batchedTensor) as tf.Tensor;
-    
-    // Process the output (depends on model architecture)
-    // Assuming the output is a segmentation mask
-    const maskTensor = segmentationTensor.squeeze();
-    
-    // Threshold the mask
-    const thresholdedMask = maskTensor.greater(0.5);
-    
-    // Resize mask back to original dimensions
-    const originalSizeMask = tf.image.resizeBilinear(
-      thresholdedMask.expandDims(2),
-      [originalHeight, originalWidth]
-    ).squeeze();
-    
-    // Apply mask to original image
-    const maskedImage = tf.tidy(() => {
-      // Convert mask to 3 channels with values 0 or 1
-      const rgbMask = originalSizeMask.expandDims(2).tile([1, 1, 3]);
-      
-      // Apply mask to original image
-      return imageTensor.mul(rgbMask);
+    // Perform person segmentation
+    const segmentation = await model.segmentPerson(imgElement, {
+      flipHorizontal: false,
+      internalResolution: 'medium',
+      segmentationThreshold: 0.7
     });
     
-    // Create alpha channel (1 for foreground, 0 for background)
-    const alphaMask = originalSizeMask.expandDims(2);
+    // Create a transparent background mask
+    const foregroundColor = {r: 0, g: 0, b: 0, a: 0};
+    const backgroundColor = {r: 0, g: 0, b: 0, a: 0};
+    const backgroundDarkeningMask = await bodyPix.toMask(
+      segmentation,
+      foregroundColor,
+      backgroundColor
+    );
     
-    // Concatenate RGB with alpha
-    const rgbaImage = tf.concat([maskedImage, alphaMask.mul(255)], 2);
-    
-    // Convert to canvas
+    // Draw the mask on a canvas
     const canvas = document.createElement('canvas');
-    canvas.width = originalWidth;
-    canvas.height = originalHeight;
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Could not get canvas context');
+    }
     
-    // Get image data
-    const imageData = await tf.browser.toPixels(rgbaImage as tf.Tensor3D);
+    // Draw the original image
+    ctx.drawImage(imgElement, 0, 0);
     
-    // Clean up tensors
-    imageTensor.dispose();
-    resizedTensor.dispose();
-    normalizedTensor.dispose();
-    batchedTensor.dispose();
-    segmentationTensor.dispose();
-    maskTensor.dispose();
-    thresholdedMask.dispose();
-    originalSizeMask.dispose();
-    maskedImage.dispose();
-    alphaMask.dispose();
-    rgbaImage.dispose();
+    // Apply the segmentation mask
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const maskData = backgroundDarkeningMask.data;
+    const pixelData = imageData.data;
     
-    // Create and return ImageData
-    return new ImageData(imageData, originalWidth, originalHeight);
+    // Add transparency based on the mask
+    for (let i = 0; i < maskData.length; i += 4) {
+      // If pixel is background (mask value = 0)
+      if (maskData[i] === 0 && maskData[i+1] === 0 && maskData[i+2] === 0) {
+        // Make pixel fully transparent
+        pixelData[i+3] = 0;
+      }
+    }
+    
+    return imageData;
   } catch (error) {
     console.error('Segmentation error:', error);
     throw error;
@@ -137,7 +126,7 @@ export const segmentImage = async (
 };
 
 /**
- * Remove background using TensorFlow.js
+ * Remove background using TensorFlow.js BodyPix
  */
 export const removeBackgroundTensorflow = async (
   imageData: string | HTMLImageElement
@@ -151,7 +140,7 @@ export const removeBackgroundTensorflow = async (
       ? await loadImageFromUrl(imageData)
       : imageData;
     
-    // Perform segmentation
+    // Perform segmentation using BodyPix
     const segmentedImageData = await segmentImage(img);
     
     // Convert to base64
@@ -175,7 +164,7 @@ export const removeBackgroundTensorflow = async (
       method: BackgroundRemovalMethod.TENSORFLOW
     };
   } catch (error) {
-    console.error('TensorFlow background removal error:', error);
+    console.error('TensorFlow BodyPix background removal error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : String(error),

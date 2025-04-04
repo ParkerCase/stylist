@@ -5,9 +5,7 @@ import {
   GarmentInfo,
   OutfitTryOn,
   SavedTryOnResult,
-  UserImageInfo,
-  GarmentType,
-  ProcessingStatus
+  GarmentType
 } from '@/types/tryOn';
 import { useTryOnStore } from '@/store/tryOnStore';
 import { useImageProcessing } from './useImageProcessing';
@@ -28,8 +26,7 @@ export const useTryOn = () => {
     addGarmentToOutfit,
     removeGarmentFromOutfit,
     updateGarment,
-    setUserImage,
-    updateUserImage,
+    /* setUserImage and updateUserImage are defined but not used directly */
     clearUserImage,
     setLoading,
     setError,

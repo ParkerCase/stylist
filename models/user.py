@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set
 from datetime import datetime
 
-from stylist.config import StyleCategory, ColorPalette, FitPreference, OccasionType
+from config import StyleCategory, ColorPalette, FitPreference, OccasionType
 
 @dataclass
 class UserClosetItem:

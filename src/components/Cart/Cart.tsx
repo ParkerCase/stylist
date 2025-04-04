@@ -24,7 +24,7 @@ const Cart: React.FC<CartProps> = ({
   // Calculate total price when items change
   useEffect(() => {
     const calculatedTotal = items.reduce((sum, item) => {
-      return sum + (item.price * item.quantity);
+      return sum + ((item.price || 0) * item.quantity);
     }, 0);
     
     setTotal(calculatedTotal);
@@ -69,7 +69,7 @@ const Cart: React.FC<CartProps> = ({
               {item.color && (
                 <p className="stylist-cart__item-color">Color: {item.color}</p>
               )}
-              <p className="stylist-cart__item-price">{formatPrice(item.price)}</p>
+              <p className="stylist-cart__item-price">{formatPrice(item.price || 0)}</p>
             </div>
             <div className="stylist-cart__item-actions">
               <div className="stylist-cart__quantity">

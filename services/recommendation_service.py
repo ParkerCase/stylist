@@ -8,15 +8,15 @@ from typing import Dict, List, Set, Tuple, Optional
 from datetime import datetime
 import logging
 
-from stylist.models.user import UserProfile
-from stylist.models.clothing import ClothingItem, RetailerInventory
-from stylist.models.recommendation import (
+from models.user import UserProfile
+from models.clothing import ClothingItem, RetailerInventory
+from models.recommendation import (
     ItemRecommendation,
     OutfitRecommendation,
     RecommendationResponse,
 )
-from stylist.services.style_analysis_service import StyleAnalysisService
-from stylist.config import WEIGHTS, MAX_RECOMMENDATIONS
+from services.style_analysis_service import StyleAnalysisService
+from config import WEIGHTS, MAX_RECOMMENDATIONS
 
 logger = logging.getLogger(__name__)
 

@@ -7,7 +7,7 @@ import {
   SavedOutfit,
   WishlistItem,
   CartItem
-} from '@types/index';
+} from '../types/index';
 
 interface RecommendationState {
   recommendedItems: RecommendationItem[];
@@ -38,7 +38,7 @@ interface RecommendationState {
   setError: (error: string | null) => void;
 }
 
-export const useRecommendationStore = create<RecommendationState>((set, get) => ({
+const useRecommendationStore = create<RecommendationState>((set, get) => ({
   recommendedItems: [],
   recommendedOutfits: [],
   savedOutfits: [],
@@ -166,3 +166,5 @@ export const useRecommendationStore = create<RecommendationState>((set, get) => 
     set({ error });
   }
 }));
+
+export default useRecommendationStore;

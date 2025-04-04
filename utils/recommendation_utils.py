@@ -7,8 +7,8 @@ import json
 from typing import Dict, List, Any, Optional
 import logging
 
-from stylist.models.user import UserProfile, StyleQuizResults
-from stylist.models.recommendation import RecommendationResponse
+from models.user import UserProfile, StyleQuizResults
+from models.recommendation import RecommendationResponse
 
 logger = logging.getLogger(__name__)
 

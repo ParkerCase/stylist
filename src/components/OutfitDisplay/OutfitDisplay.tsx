@@ -2,12 +2,12 @@
 
 import React from 'react';
 import './OutfitDisplay.scss';
-import { Outfit } from '@types/index';
-import FeedbackControls from '@components/FeedbackControls';
-import WishlistButton from '@components/WishlistButton';
+import { ChatTypes } from '@/types/index';
+import FeedbackControls from '../FeedbackControls';
+import WishlistButton from '../WishlistButton';
 
 interface OutfitDisplayProps {
-  outfit: Outfit;
+  outfit: ChatTypes.Outfit;
   onFeedback?: (outfitId: string, liked: boolean) => void;
   onSaveOutfit?: (outfitId: string) => void;
   onItemClick?: (itemId: string) => void;
@@ -59,7 +59,7 @@ const OutfitDisplay: React.FC<OutfitDisplayProps> = ({
       </div>
       
       <div className="stylist-outfit-display__items">
-        {items.map((item) => (
+        {items.map((item: ChatTypes.RecommendationItem) => (
           <div
             key={item.id}
             className="stylist-outfit-display__item"
@@ -88,7 +88,7 @@ const OutfitDisplay: React.FC<OutfitDisplayProps> = ({
         <div className="stylist-outfit-display__reasons">
           <div className="stylist-outfit-display__reasons-title">Why this outfit works:</div>
           <ul className="stylist-outfit-display__reasons-list">
-            {matchReasons.map((reason, index) => (
+            {matchReasons.map((reason: string, index: number) => (
               <li key={index} className="stylist-outfit-display__reason-item">
                 {reason}
               </li>

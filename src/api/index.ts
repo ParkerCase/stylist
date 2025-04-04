@@ -5,7 +5,7 @@ import { UserApi } from './userApi';
 import { RecommendationApi } from './recommendationApi';
 
 // Default API configuration
-const DEFAULT_API_URL = 'https://api.thestylist.ai';
+const DEFAULT_API_URL = 'http://localhost:8000';
 const DEFAULT_TIMEOUT = 15000;
 
 // API client configuration interface

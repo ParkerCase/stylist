@@ -1,6 +1,6 @@
 // src/services/chatService.ts
 
-import { MessageSender, MessageType, ChatMessage, RecommendationMessage, OutfitMessage, TextMessage } from '@/types/index';
+import { MessageSender, MessageType, ChatMessage, TextMessage, ChatTypes } from '@/types/index';
 import { v4 as uuidv4 } from 'uuid';
 import { RecommendationApi } from '@/api/recommendationApi';
 import { trackMessageSent } from '@/services/analytics/analyticsService';
@@ -46,7 +46,20 @@ export class ChatService {
           
           // Add recommendation message
           if (recommendations.items.length > 0) {
-            responseMessages.push(this.createRecommendationMessage(recommendations.items));
+            // Convert from Recommendation to Chat format
+            const chatItems = recommendations.items.map(item => ({
+              id: item.id,
+              name: item.name,
+              brand: item.brand,
+              category: item.category,
+              price: item.price,
+              salePrice: item.salePrice,
+              imageUrl: item.imageUrls[0] || '',
+              url: item.url,
+              matchScore: item.matchScore,
+              matchReasons: item.matchReasons
+            }));
+            responseMessages.push(this.createRecommendationMessage(chatItems));
           }
           
           // If there are outfits, add outfit message
@@ -55,7 +68,28 @@ export class ChatService {
               'I also created a complete outfit for you:',
               MessageSender.ASSISTANT
             ));
-            responseMessages.push(this.createOutfitMessage(recommendations.outfits[0]));
+            // Convert from Recommendation to Chat format
+            const outfit = recommendations.outfits[0];
+            const chatOutfit = {
+              id: outfit.id,
+              name: outfit.name,
+              occasion: outfit.occasion,
+              matchScore: outfit.matchScore,
+              matchReasons: outfit.matchReasons,
+              items: outfit.items.map(item => ({
+                id: item.id,
+                name: item.name,
+                brand: item.brand,
+                category: item.category,
+                price: item.price,
+                salePrice: item.salePrice,
+                imageUrl: item.imageUrls[0] || '',
+                url: item.url,
+                matchScore: item.matchScore,
+                matchReasons: item.matchReasons
+              }))
+            };
+            responseMessages.push(this.createOutfitMessage(chatOutfit));
           }
         } catch (error) {
           console.error('Error getting recommendations:', error);
@@ -199,7 +233,7 @@ export class ChatService {
   /**
    * Create a recommendation message
    */
-  private createRecommendationMessage(items: any[]): RecommendationMessage {
+  private createRecommendationMessage(items: ChatTypes.RecommendationItem[]): ChatTypes.RecommendationMessage {
     return {
       id: uuidv4(),
       type: MessageType.RECOMMENDATION,
@@ -212,7 +246,7 @@ export class ChatService {
   /**
    * Create an outfit message
    */
-  private createOutfitMessage(outfit: any): OutfitMessage {
+  private createOutfitMessage(outfit: ChatTypes.Outfit): ChatTypes.OutfitMessage {
     return {
       id: uuidv4(),
       type: MessageType.OUTFIT,

@@ -207,7 +207,7 @@ const UserPreferences: React.FC<UserPreferencesProps> = ({
         <div className="stylist-user-preferences__section">
           <h4 className="stylist-user-preferences__section-title">Excluded Categories</h4>
           <p className="stylist-user-preferences__section-desc">
-            Select categories you don't want to see in recommendations
+            Select categories you don&apos;t want to see in recommendations
           </p>
           
           <div className="stylist-user-preferences__categories">

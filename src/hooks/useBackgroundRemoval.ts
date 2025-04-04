@@ -57,7 +57,10 @@ export const useBackgroundRemoval = (options?: UseBackgroundRemovalOptions) => {
           method === BackgroundRemovalMethod.TENSORFLOW &&
           tensorflowSupported === false
         ) {
-          console.log('TensorFlow.js not supported, falling back to Remove.bg API');
+          // Only log in non-production environments
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('TensorFlow.js not supported, falling back to Remove.bg API');
+          }
           method = BackgroundRemovalMethod.REMOVE_BG_API;
         }
         

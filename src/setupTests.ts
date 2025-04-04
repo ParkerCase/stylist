@@ -4,7 +4,7 @@ import { TextEncoder, TextDecoder } from 'util';
 
 // Mock global objects that might be missing in the test environment
 global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
+global.TextDecoder = TextDecoder as any;
 
 // Mock canvas methods
 window.HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
@@ -23,13 +23,15 @@ window.HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
   fillText: jest.fn(),
   strokeText: jest.fn(),
   measureText: jest.fn(() => ({ width: 0 })),
-}));
+})) as any;
 
 window.HTMLCanvasElement.prototype.toDataURL = jest.fn(() => 'data:image/png;base64,mock');
 
 // Mock IntersectionObserver
 class MockIntersectionObserver {
-  constructor(callback) {
+  callback: any;
+  
+  constructor(callback: any) {
     this.callback = callback;
   }
   observe = jest.fn();
@@ -37,7 +39,7 @@ class MockIntersectionObserver {
   disconnect = jest.fn();
 }
 
-global.IntersectionObserver = MockIntersectionObserver;
+global.IntersectionObserver = MockIntersectionObserver as any;
 
 // Mock browser APIs that might be missing in the test environment
 Object.defineProperty(window, 'matchMedia', {
@@ -56,20 +58,20 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Mock localStorage
 const localStorageMock = (function() {
-  let store = {};
+  let store: Record<string, string> = {};
   return {
-    getItem: jest.fn(key => store[key] || null),
-    setItem: jest.fn((key, value) => {
+    getItem: jest.fn((key: string) => store[key] || null),
+    setItem: jest.fn((key: string, value: string) => {
       store[key] = value.toString();
     }),
-    removeItem: jest.fn(key => {
+    removeItem: jest.fn((key: string) => {
       delete store[key];
     }),
     clear: jest.fn(() => {
       store = {};
     }),
     length: 0,
-    key: jest.fn(index => Object.keys(store)[index] || null)
+    key: jest.fn((index: number) => Object.keys(store)[index] || null)
   };
 })();
 

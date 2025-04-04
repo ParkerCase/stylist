@@ -1,19 +1,20 @@
-// Updated Item card component for displaying product recommendations
-import React from 'react';
+// Enhanced item card component for displaying product recommendations
+import React, { useState } from 'react';
 import './ItemCard.scss';
-import { RecommendationItem } from '@types/index';
-import { formatPrice } from '@utils/formatters';
-import FeedbackControls from '@components/FeedbackControls';
-import TryOnButton from '@components/TryOnButton';
-import { mapProductTypeToGarmentType } from '@utils/productMappings';
+import { Recommendation } from '@/types/index';
+import { formatPrice } from '@/utils/formatters';
+import FeedbackControls from '../FeedbackControls';
+import TryOnButton from '../TryOnButton/TryOnButton';
+import { mapProductTypeToGarmentType } from '@/utils/productMappings';
 
 interface ItemCardProps {
-  item: RecommendationItem;
+  item: Recommendation.RecommendationItem;
   onFeedback?: (itemId: string, liked: boolean) => void;
   onAddToWishlist?: (itemId: string) => void;
   onAddToCart?: (itemId: string) => void;
   showDetails?: boolean;
   primaryColor?: string;
+  onClick?: (item: Recommendation.RecommendationItem) => void;
 }
 
 const ItemCard: React.FC<ItemCardProps> = ({
@@ -22,7 +23,8 @@ const ItemCard: React.FC<ItemCardProps> = ({
   onAddToWishlist,
   onAddToCart,
   showDetails = false,
-  primaryColor
+  primaryColor,
+  onClick
 }) => {
   const {
     id,
@@ -30,20 +32,41 @@ const ItemCard: React.FC<ItemCardProps> = ({
     brand,
     price,
     salePrice,
-    imageUrl,
     matchScore,
     matchReasons,
-    productType
+    category
   } = item;
+  
+  const [showFeedbackText, setShowFeedbackText] = useState<string | null>(null);
+  const [animateItem, setAnimateItem] = useState(false);
+  
+  // Use the first image URL from the imageUrls array
+  const imageUrl = item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls[0] : '';
 
   const handleItemClick = () => {
-    // Open product details or navigate to product page
-    window.open(item.url, '_blank');
+    if (onClick) {
+      onClick(item);
+    } else {
+      // Open product details or navigate to product page
+      window.open(item.url, '_blank');
+    }
   };
 
   const handleFeedback = (liked: boolean) => {
     if (onFeedback) {
       onFeedback(id, liked);
+      
+      // Show feedback text briefly
+      setShowFeedbackText(liked ? 'Added to your liked items' : 'Noted - not your style');
+      
+      // Trigger animation
+      setAnimateItem(true);
+      setTimeout(() => {
+        setAnimateItem(false);
+        setTimeout(() => {
+          setShowFeedbackText(null);
+        }, 300);
+      }, 1500);
     }
   };
 
@@ -51,6 +74,12 @@ const ItemCard: React.FC<ItemCardProps> = ({
     e.stopPropagation(); // Prevent item click
     if (onAddToWishlist) {
       onAddToWishlist(id);
+      
+      // Show feedback text briefly
+      setShowFeedbackText('Added to wishlist');
+      setTimeout(() => {
+        setShowFeedbackText(null);
+      }, 1800);
     }
   };
 
@@ -58,6 +87,12 @@ const ItemCard: React.FC<ItemCardProps> = ({
     e.stopPropagation(); // Prevent item click
     if (onAddToCart) {
       onAddToCart(id);
+      
+      // Show feedback text briefly
+      setShowFeedbackText('Added to cart');
+      setTimeout(() => {
+        setShowFeedbackText(null);
+      }, 1800);
     }
   };
 
@@ -67,17 +102,18 @@ const ItemCard: React.FC<ItemCardProps> = ({
     : null;
 
   // Check if product is try-on compatible
-  const isTryOnCompatible = productType && 
-    ['top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory'].includes(productType.toLowerCase());
+  const isTryOnCompatible = category && 
+    ['top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory'].includes(category.toLowerCase());
 
   return (
-    <div className="stylist-item-card">
+    <div className={`stylist-item-card ${animateItem ? 'stylist-item-card--animate' : ''}`}>
       <div className="stylist-item-card__image-container" onClick={handleItemClick}>
         {imageUrl ? (
           <img
             src={imageUrl}
             alt={name}
             className="stylist-item-card__image"
+            loading="lazy"
           />
         ) : (
           <div className="stylist-item-card__image-placeholder">
@@ -90,12 +126,20 @@ const ItemCard: React.FC<ItemCardProps> = ({
           </div>
         )}
         
+        {/* Feedback text overlay */}
+        {showFeedbackText && (
+          <div className="stylist-item-card__feedback-text" 
+               style={{ backgroundColor: `${primaryColor}ee` }}>
+            {showFeedbackText}
+          </div>
+        )}
+        
         {/* Add try-on button overlay if compatible */}
         {isTryOnCompatible && imageUrl && (
           <div className="stylist-item-card__try-on-overlay">
             <TryOnButton 
               imageUrl={imageUrl} 
-              productType={mapProductTypeToGarmentType(productType)} 
+              productType={mapProductTypeToGarmentType(category)} 
               small={true}
               primaryColor={primaryColor}
             />
@@ -103,7 +147,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
         )}
       </div>
 
-      <div className="stylist-item-card__content">
+      <div className="stylist-item-card__content" onClick={handleItemClick}>
         <div className="stylist-item-card__brand">{brand}</div>
         <div className="stylist-item-card__name">{name}</div>
         <div className="stylist-item-card__price">
@@ -128,7 +172,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
             {Math.round(matchScore * 100)}% Match
           </div>
           <ul className="stylist-item-card__reason-list">
-            {matchReasons.map((reason, index) => (
+            {matchReasons.map((reason: string, index: number) => (
               <li key={index} className="stylist-item-card__reason-item">
                 {reason}
               </li>
@@ -148,7 +192,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
         {isTryOnCompatible && imageUrl && (
           <TryOnButton 
             imageUrl={imageUrl} 
-            productType={mapProductTypeToGarmentType(productType)} 
+            productType={mapProductTypeToGarmentType(category)} 
             small={true}
             primaryColor={primaryColor}
           />

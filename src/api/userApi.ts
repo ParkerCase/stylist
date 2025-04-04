@@ -8,7 +8,7 @@ import {
   StyleQuizResult,
   UserPreferences,
   ClosetItem
-} from '@types/index';
+} from '../types/index';
 
 export class UserApi {
   private client: ApiClient;

@@ -1,4 +1,6 @@
 // cypress/e2e/chat-widget.spec.ts
+/// <reference types="cypress" />
+/// <reference types="cypress-file-upload" />
 describe('Chat Widget', () => {
     beforeEach(() => {
       cy.visit('/');

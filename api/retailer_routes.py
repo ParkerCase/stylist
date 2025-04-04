@@ -8,11 +8,11 @@ import json
 import jsonschema
 from jsonschema import validate, ValidationError
 
-from stylist.integrations.retailer_api import RetailerConfig, RetailerAPI
-from stylist.integrations.retailers.mock_retailer import MockRetailerAPI
-from stylist.integrations.retailers.shopify import ShopifyAPI
-from stylist.integrations.retailers.woocommerce import WooCommerceAPI
-from stylist.integrations.retailers.generic_rest import GenericRestAPI
+from integrations.retailer_api import RetailerConfig, RetailerAPI
+from integrations.retailers.mock_retailer import MockRetailerAPI
+from integrations.retailers.shopify import ShopifyAPI
+from integrations.retailers.woocommerce import WooCommerceAPI
+from integrations.retailers.generic_rest import GenericRestAPI
 
 logger = logging.getLogger(__name__)
 
