@@ -2,7 +2,11 @@
 
 import React, { useEffect } from 'react';
 import ChatWidget from '@/components/ChatWidget';
+import FloatingButton from '@/components/ChatWidget/FloatingButton';
+import SyncStatusIndicator from '@/components/common/SyncStatusIndicator';
 import { useChatStore } from '@/store/index';
+import { SyncProvider } from '@/services/SyncProvider';
+import { feedbackSyncService } from '@/services/feedbackSyncService';
 import './styles/global.scss';
 
 interface StylistWidgetProps {
@@ -15,7 +19,38 @@ interface StylistWidgetProps {
 }
 
 const StylistWidget: React.FC<StylistWidgetProps> = (props) => {
-  const { isOpen } = useChatStore();
+  const { 
+    isOpen, 
+    toggleOpen,
+    setIsOpen 
+  } = useChatStore();
+  
+  // Handle button click
+  const handleOpenWidget = () => {
+    toggleOpen();
+  };
+  
+  // Force widget to open on mount and initialize feedback sync service
+  useEffect(() => {
+    if (!isOpen) {
+      // Small delay to ensure store is ready
+      setTimeout(() => {
+        toggleOpen();
+      }, 100);
+    }
+    
+    // Initialize feedback sync service
+    feedbackSyncService.initialize({
+      apiKey: props.apiKey,
+      retailerId: props.retailerId,
+      apiUrl: props.apiUrl
+    });
+    
+    // Clean up on unmount
+    return () => {
+      feedbackSyncService.cleanup();
+    };
+  }, []);
   
   // Inject CSS variables for theme colors
   useEffect(() => {
@@ -81,12 +116,14 @@ const StylistWidget: React.FC<StylistWidgetProps> = (props) => {
     }
   };
   
-  // Only render the widget when it's open
-  if (!isOpen) {
-    return null;
-  }
-  
-  return <ChatWidget {...props} />;
+  return (
+    <SyncProvider>
+      <>
+        <ChatWidget {...props} />
+        <SyncStatusIndicator />
+      </>
+    </SyncProvider>
+  );
 };
 
 export default StylistWidget;

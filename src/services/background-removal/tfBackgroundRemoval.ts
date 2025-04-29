@@ -7,36 +7,58 @@ import * as bodyPix from '@tensorflow-models/body-pix';
 
 // Cache the loaded model
 let bodyPixModel: bodyPix.BodyPix | null = null;
+let modelLoadPromise: Promise<bodyPix.BodyPix> | null = null;
+
+// Constants for model options
+const SEGMENTATION_THRESHOLD = 0.7;
+const MODEL_CONFIG = {
+  architecture: 'MobileNetV1',
+  outputStride: 16,
+  multiplier: 0.75,
+  quantBytes: 2
+} as const;
 
 /**
  * Load the BodyPix model
  */
 export const loadBodyPixModel = async (): Promise<bodyPix.BodyPix> => {
+  // Return cached model if available
   if (bodyPixModel) {
     return bodyPixModel;
   }
   
-  try {
-    // Check if WebGL is available
-    const webGLAvailable = tf.getBackend() === 'webgl' || await tf.setBackend('webgl');
-    
-    if (!webGLAvailable) {
-      throw new Error('WebGL is not available. TensorFlow.js background removal requires WebGL support.');
-    }
-    
-    // Load the BodyPix model
-    bodyPixModel = await bodyPix.load({
-      architecture: 'MobileNetV1',
-      outputStride: 16,
-      multiplier: 0.75,
-      quantBytes: 2
-    });
-    
-    return bodyPixModel;
-  } catch (error) {
-    console.error('Failed to load BodyPix model:', error);
-    throw error;
+  // Return existing promise if model is already loading
+  if (modelLoadPromise) {
+    return modelLoadPromise;
   }
+  
+  // Create and cache the model loading promise
+  modelLoadPromise = (async () => {
+    try {
+      // Check WebGL backend first
+      const hasWebGL = tf.getBackend() === 'webgl' || await tf.setBackend('webgl');
+      if (!hasWebGL) {
+        throw new Error('WebGL is not available. TensorFlow.js requires WebGL support.');
+      }
+      
+      console.log('Loading BodyPix model...');
+      
+      // Initialize TensorFlow.js
+      await tf.ready();
+      
+      // Load model
+      bodyPixModel = await bodyPix.load(MODEL_CONFIG);
+      console.log('BodyPix model loaded successfully');
+      
+      return bodyPixModel;
+    } catch (error) {
+      console.error('Failed to load BodyPix model:', error);
+      modelLoadPromise = null;
+      throw error;
+    }
+  })();
+  
+  return modelLoadPromise;
 };
 
 /**
@@ -80,13 +102,13 @@ export const segmentImage = async (
     const segmentation = await model.segmentPerson(imgElement, {
       flipHorizontal: false,
       internalResolution: 'medium',
-      segmentationThreshold: 0.7
+      segmentationThreshold: SEGMENTATION_THRESHOLD
     });
     
     // Create a transparent background mask
     const foregroundColor = {r: 0, g: 0, b: 0, a: 0};
     const backgroundColor = {r: 0, g: 0, b: 0, a: 0};
-    const backgroundDarkeningMask = await bodyPix.toMask(
+    const mask = await bodyPix.toMask(
       segmentation,
       foregroundColor,
       backgroundColor
@@ -106,7 +128,7 @@ export const segmentImage = async (
     
     // Apply the segmentation mask
     const imageData = ctx.getImageData(0, 0, width, height);
-    const maskData = backgroundDarkeningMask.data;
+    const maskData = mask.data;
     const pixelData = imageData.data;
     
     // Add transparency based on the mask
@@ -174,6 +196,19 @@ export const removeBackgroundTensorflow = async (
 };
 
 /**
+ * Preload the BodyPix model in the background
+ * Call this early in the application to reduce delay when needed
+ */
+export const preloadBodyPixModel = (): void => {
+  // Load model in the background
+  setTimeout(() => {
+    loadBodyPixModel().catch(error => {
+      console.warn('Background preloading of BodyPix model failed:', error);
+    });
+  }, 1000);
+};
+
+/**
  * Helper function to load an image from a URL
  */
 const loadImageFromUrl = (url: string): Promise<HTMLImageElement> => {
@@ -186,4 +221,41 @@ const loadImageFromUrl = (url: string): Promise<HTMLImageElement> => {
     
     img.src = url;
   });
+};
+
+/**
+ * Check if the browser supports TensorFlow.js with WebGL backend
+ */
+export const isTensorflowSupported = async (): Promise<boolean> => {
+  try {
+    // Try to initialize TensorFlow.js
+    await tf.ready();
+    
+    // Check if WebGL is available
+    const isWebGLAvailable = tf.getBackend() === 'webgl' || await tf.setBackend('webgl');
+    
+    if (!isWebGLAvailable) {
+      return false;
+    }
+    
+    // Try to load a minimal model to further verify
+    try {
+      // Simple test with a small tensor
+      const testTensor = tf.tensor2d([[1, 2], [3, 4]]);
+      // Run simple operation to validate WebGL works
+      const result = testTensor.add(testTensor);
+      
+      // Clean up
+      testTensor.dispose();
+      result.dispose();
+      
+      return true;
+    } catch (e) {
+      console.warn('TensorFlow.js basic operations test failed:', e);
+      return false;
+    }
+  } catch (error) {
+    console.error('TensorFlow.js support check failed:', error);
+    return false;
+  }
 };

@@ -1,47 +1,47 @@
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
 
 .stylist-chat-widget {
   position: fixed;
-  width: $widget-width;
-  height: $widget-height;
-  background-color: $background-color;
-  border-radius: $border-radius-lg;
-  box-shadow: $shadow-xl;
+  width: variables.$widget-width;
+  height: variables.$widget-height;
+  background-color: variables.$background-color;
+  border-radius: variables.$border-radius-lg;
+  box-shadow: variables.$shadow-xl;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  z-index: $z-index-modal;
-  transition: transform $transition-normal ease, opacity $transition-normal ease, width $transition-normal ease, height $transition-normal ease;
-  font-family: $font-family;
+  z-index: variables.$z-index-modal;
+  transition: transform variables.$transition-normal ease, opacity variables.$transition-normal ease, width variables.$transition-normal ease, height variables.$transition-normal ease;
+  font-family: variables.$font-family;
   max-width: 95vw;
   max-height: 95vh;
-  animation: widget-appear $transition-slow ease forwards;
+  animation: widget-appear variables.$transition-slow ease forwards;
   
   // Widget positions
   &--bottom-right {
-    bottom: $spacing-md;
-    right: $spacing-md;
+    bottom: variables.$spacing-md;
+    right: variables.$spacing-md;
   }
   
   &--bottom-left {
-    bottom: $spacing-md;
-    left: $spacing-md;
+    bottom: variables.$spacing-md;
+    left: variables.$spacing-md;
   }
   
   &--top-right {
-    top: $spacing-md;
-    right: $spacing-md;
+    top: variables.$spacing-md;
+    right: variables.$spacing-md;
   }
   
   &--top-left {
-    top: $spacing-md;
-    left: $spacing-md;
+    top: variables.$spacing-md;
+    left: variables.$spacing-md;
   }
   
   // Minimized state
   &--minimized {
-    height: $header-height;
+    height: variables.$header-height;
     
     .stylist-chat-widget__content {
       display: none;
@@ -54,22 +54,91 @@
     flex-direction: column;
     overflow: hidden;
     position: relative;
-    background-color: $background-color;
+    background-color: variables.$background-color;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
     
     // Style when in lookbook view
     .stylist-lookbook {
-      animation: content-appear $transition-normal ease forwards;
+      animation: content-appear variables.$transition-normal ease forwards;
     }
   }
   
   // Animations
   &.animate-in {
-    animation: slideIn $transition-normal ease forwards;
+    animation: slideIn variables.$transition-normal ease forwards;
   }
   
   &.animate-out {
-    animation: slideOut $transition-normal ease forwards;
+    animation: slideOut variables.$transition-normal ease forwards;
+  }
+}
+
+// Floating button for widget toggle
+.stylist-floating-button {
+  position: fixed;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: variables.$primary-color;
+  color: variables.$text-inverse;
+  box-shadow: variables.$shadow-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform variables.$transition-fast ease, background-color variables.$transition-fast ease;
+  z-index: variables.$z-index-modal;
+  
+  &:hover {
+    transform: scale(1.05);
+    background-color: variables.$primary-color-dark;
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  &__icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+  
+  // Button positions
+  &--bottom-right {
+    bottom: variables.$spacing-md;
+    right: variables.$spacing-md;
+  }
+  
+  &--bottom-left {
+    bottom: variables.$spacing-md;
+    left: variables.$spacing-md;
+  }
+  
+  &--top-right {
+    top: variables.$spacing-md;
+    right: variables.$spacing-md;
+  }
+  
+  &--top-left {
+    top: variables.$spacing-md;
+    left: variables.$spacing-md;
+  }
+  
+  // Animation for the button
+  &.animate-in {
+    animation: floating-button-appear variables.$transition-normal forwards;
+  }
+  
+  &.animate-out {
+    animation: floating-button-disappear variables.$transition-normal forwards;
   }
 }
 
@@ -119,6 +188,29 @@
   }
 }
 
+// Floating button animations
+@keyframes floating-button-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes floating-button-disappear {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+}
+
 // Responsive styles
 @media (max-width: 768px) {
   .stylist-chat-widget {
@@ -131,7 +223,17 @@
     left: 0 !important;
     top: 0 !important;
     border-radius: 0;
-    animation: mobile-appear $transition-normal ease forwards;
+    animation: mobile-appear variables.$transition-normal ease forwards;
+  }
+  
+  .stylist-floating-button {
+    width: 50px;
+    height: 50px;
+    
+    &__icon {
+      width: 24px;
+      height: 24px;
+    }
   }
 }
 
@@ -143,5 +245,23 @@
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+// Tablet-specific optimizations
+@media (min-width: 769px) and (max-width: 1024px) {
+  .stylist-chat-widget {
+    width: 400px;
+    height: 550px;
+  }
+}
+
+// Add support for reduced motion preferences
+@media (prefers-reduced-motion: reduce) {
+  .stylist-chat-widget,
+  .stylist-floating-button,
+  .stylist-lookbook {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

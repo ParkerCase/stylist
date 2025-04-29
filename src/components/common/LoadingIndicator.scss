@@ -1,25 +1,25 @@
 // src/components/common/LoadingIndicator.scss
 
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
 
 .stylist-loading-indicator {
-  @include flex-center;
+  @include mixins.flex-center;
   flex-direction: column;
   
   &__spinner {
     width: 24px;
     height: 24px;
-    border: 2px solid rgba($primary-color, 0.3);
+    border: 2px solid rgba(variables.$primary-color, 0.3);
     border-radius: 50%;
-    border-top-color: $primary-color;
+    border-top-color: variables.$primary-color;
     animation: spin 1s linear infinite;
   }
   
   &__text {
-    margin-top: $spacing-sm;
-    font-size: $font-size-sm;
-    color: $text-secondary;
+    margin-top: variables.$spacing-sm;
+    font-size: variables.$font-size-sm;
+    color: variables.$text-secondary;
   }
   
   &--small {
@@ -30,7 +30,7 @@
     }
     
     .stylist-loading-indicator__text {
-      font-size: $font-size-xs;
+      font-size: variables.$font-size-xs;
     }
   }
   
@@ -42,7 +42,7 @@
     }
     
     .stylist-loading-indicator__text {
-      font-size: $font-size-md;
+      font-size: variables.$font-size-md;
     }
   }
 }

@@ -1,13 +1,13 @@
 // Hook for background removal functionality
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   UserImageInfo,
   BackgroundRemovalMethod,
   ProcessingStatus,
   BackgroundRemovalResult
 } from '@/types/tryOn';
-import { removeBackground, isTensorflowSupported } from '@/services/background-removal/utils';
+import { removeBackground, isTensorflowSupported, preloadBodyPixModel } from '@/services/background-removal/utils';
 import { useTryOnStore } from '@/store/tryOnStore';
 
 interface UseBackgroundRemovalOptions {
@@ -27,14 +27,24 @@ export const useBackgroundRemoval = (options?: UseBackgroundRemovalOptions) => {
   const [tensorflowSupported, setTensorflowSupported] = useState<boolean | null>(null);
   
   // Check TensorFlow.js support on mount
-  useState(() => {
+  useEffect(() => {
     const checkSupport = async () => {
-      const supported = await isTensorflowSupported();
-      setTensorflowSupported(supported);
+      try {
+        const supported = await isTensorflowSupported();
+        setTensorflowSupported(supported);
+        
+        // If supported, preload the model
+        if (supported) {
+          preloadBodyPixModel();
+        }
+      } catch (error) {
+        console.warn('Error checking TensorFlow support:', error);
+        setTensorflowSupported(false);
+      }
     };
     
     checkSupport();
-  });
+  }, []);
   
   // Process image to remove background
   const removeImageBackground = useCallback(
@@ -57,10 +67,7 @@ export const useBackgroundRemoval = (options?: UseBackgroundRemovalOptions) => {
           method === BackgroundRemovalMethod.TENSORFLOW &&
           tensorflowSupported === false
         ) {
-          // Only log in non-production environments
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('TensorFlow.js not supported, falling back to Remove.bg API');
-          }
+          console.log('TensorFlow.js not supported, falling back to Remove.bg API');
           method = BackgroundRemovalMethod.REMOVE_BG_API;
         }
         

@@ -1,11 +1,14 @@
 // Feedback controls component for like/dislike
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './FeedbackControls.scss';
+import { useFeedbackStore } from '@/store/feedbackStore';
 
 interface FeedbackControlsProps {
   onLike: () => void;
   onDislike: () => void;
+  itemId?: string;
+  outfitId?: string;
   liked?: boolean;
   disliked?: boolean;
   primaryColor?: string;
@@ -14,10 +17,72 @@ interface FeedbackControlsProps {
 const FeedbackControls: React.FC<FeedbackControlsProps> = ({
   onLike,
   onDislike,
-  liked = false,
-  disliked = false,
+  itemId,
+  outfitId,
+  liked: propLiked = false,
+  disliked: propDisliked = false,
   primaryColor
 }) => {
+  // Use local state to immediately reflect user interactions
+  const [liked, setLiked] = useState(propLiked);
+  const [disliked, setDisliked] = useState(propDisliked);
+
+  // Get feedback state and actions from the store
+  const feedbackStore = useFeedbackStore();
+  const addItemFeedback = feedbackStore.addItemFeedback;
+  const addOutfitFeedback = feedbackStore.addOutfitFeedback;
+  const getItemFeedbackStatus = feedbackStore.getItemFeedbackStatus;
+  const getOutfitFeedbackStatus = feedbackStore.getOutfitFeedbackStatus;
+  
+  // Sync with store on initial render if we have an ID
+  useEffect(() => {
+    if (itemId) {
+      const status = getItemFeedbackStatus(itemId);
+      setLiked(status.liked);
+      setDisliked(status.disliked);
+    } else if (outfitId) {
+      const status = getOutfitFeedbackStatus(outfitId);
+      setLiked(status.liked);
+      setDisliked(status.disliked);
+    } else {
+      // If no ID, use props
+      setLiked(propLiked);
+      setDisliked(propDisliked);
+    }
+  }, [itemId, outfitId, propLiked, propDisliked, getItemFeedbackStatus, getOutfitFeedbackStatus]);
+  
+  const handleLike = () => {
+    // Update local state immediately for responsive UI
+    setLiked(true);
+    setDisliked(false);
+    
+    // Call the passed onLike handler
+    onLike();
+    
+    // Update persistent feedback state if we have an ID
+    if (itemId) {
+      addItemFeedback(itemId, 'like');
+    } else if (outfitId) {
+      addOutfitFeedback(outfitId, 'like');
+    }
+  };
+  
+  const handleDislike = () => {
+    // Update local state immediately for responsive UI
+    setLiked(false);
+    setDisliked(true);
+    
+    // Call the passed onDislike handler
+    onDislike();
+    
+    // Update persistent feedback state if we have an ID
+    if (itemId) {
+      addItemFeedback(itemId, 'dislike');
+    } else if (outfitId) {
+      addOutfitFeedback(outfitId, 'dislike');
+    }
+  };
+  
   const likeStyle = liked && primaryColor
     ? { color: primaryColor, borderColor: primaryColor }
     : undefined;
@@ -30,7 +95,7 @@ const FeedbackControls: React.FC<FeedbackControlsProps> = ({
     <div className="stylist-feedback-controls">
       <button
         className={`stylist-feedback-controls__button ${liked ? 'stylist-feedback-controls__button--active' : ''}`}
-        onClick={onLike}
+        onClick={handleLike}
         style={likeStyle}
         aria-label="Like"
       >
@@ -41,7 +106,7 @@ const FeedbackControls: React.FC<FeedbackControlsProps> = ({
       
       <button
         className={`stylist-feedback-controls__button ${disliked ? 'stylist-feedback-controls__button--active' : ''}`}
-        onClick={onDislike}
+        onClick={handleDislike}
         style={dislikeStyle}
         aria-label="Dislike"
       >

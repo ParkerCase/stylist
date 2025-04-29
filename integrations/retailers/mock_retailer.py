@@ -13,7 +13,7 @@ import logging
 from datetime import datetime
 
 from ..retailer_api import RetailerAPI, RetailerConfig, InventoryFilter
-from models.clothing import ClothingItem
+from models.clothing import ClothingItem, RetailerInventory
 
 logger = logging.getLogger(__name__)
 
@@ -60,28 +60,46 @@ class MockRetailerAPI(RetailerAPI):
         for i in range(1, count + 1):
             category = random.choice(categories)
             subcategory = random.choice(subcategories[category])
+            brand = random.choice(brands)
             
-            item_id = f"mock_{category}_{i}"
+            # Create more recognizable ID that includes brand and category
+            item_id = f"mock_{brand.lower().replace(' ', '_')}_{category}_{i}"
+            
+            # Set sale price occasionally
+            price = round(random.uniform(15.0, 150.0), 2)
+            discount_percentage = random.choice([0, 0, 0, 10, 15, 20, 25, 30])
+            sale_price = None
+            if discount_percentage > 0:
+                sale_price = round(price * (1 - discount_percentage/100), 2)
+            
+            # Create image URLs (multiple for some items)
+            image_count = random.randint(1, 3)
+            images = [f"https://example.com/mock/{brand.lower()}/{category}/{subcategory}/{i}_{j}.jpg" for j in range(1, image_count + 1)]
+            
+            # Generate trending score with bias toward newer items
+            trending_score = round(random.uniform(0.1, 1.0), 2)
+            
+            # Generate stock status
+            stock_quantity = random.randint(0, 100)
             
             item = ClothingItem(
                 item_id=item_id,
-                name=f"{random.choice(brands)} {subcategory.title()} {i}",
-                brand=random.choice(brands),
+                name=f"{brand} {subcategory.title()} {i}",
+                brand=brand,
                 category=category,
                 subcategory=subcategory,
                 colors=[random.choice(colors) for _ in range(random.randint(1, 3))],
                 sizes=self._generate_sizes(category),
-                price=round(random.uniform(15.0, 150.0), 2),
-                images=[f"https://example.com/{category}/{subcategory}/{i}.jpg"],
+                price=price,
+                sale_price=sale_price,
+                images=images,
                 style_tags=random.sample(style_tags, random.randint(1, 3)),
                 fit_type=random.choice(fit_types),
                 occasion_tags=random.sample(occasion_tags, random.randint(1, 3)),
                 season_tags=random.sample(season_tags, random.randint(1, 2)),
-                trending_score=round(random.uniform(0.1, 1.0), 2),
-                description=f"This is a mock {subcategory} item for testing.",
-                stock_quantity=random.randint(0, 100),
-                discount_percentage=random.choice([0, 0, 0, 10, 15, 20, 25, 30]),
-                date_added=datetime.now().isoformat(),
+                trending_score=trending_score,
+                description=f"This is a mock {brand} {subcategory} item for testing.",
+                retailer_id="mock_fashion",
             )
             
             inventory[item_id] = item
@@ -99,69 +117,136 @@ class MockRetailerAPI(RetailerAPI):
         else:
             return random.sample(["XS", "S", "M", "L", "XL"], random.randint(3, 5))
 
-    def get_inventory(self, limit: int = 100, offset: int = 0) -> InventoryData:
+    def get_inventory(
+        self, 
+        limit: int = 100, 
+        page: int = 1,
+        category: Optional[str] = None,
+        filter_options: Optional[InventoryFilter] = None
+    ) -> RetailerInventory:
         """
         Get inventory data from the mock retailer.
         
         Args:
             limit: Maximum number of items to return
-            offset: Offset for pagination
+            page: Page number for pagination (1-based)
+            category: Optional category filter
+            filter_options: Optional additional filters
             
         Returns:
-            InventoryData with mock items
+            RetailerInventory with mock items
         """
         # Simulate a slight delay for realism
-        time.sleep(0.5)
+        time.sleep(0.3)
+        
+        # Calculate offset from page
+        offset = (page - 1) * limit
         
         # Apply cache if enabled
-        cache_key = f"inventory_{limit}_{offset}"
+        cache_key = f"inventory_{limit}_{page}_{category}_{filter_options}"
         if self.config.use_cache and cache_key in self._cache:
             logger.debug(f"Returning cached inventory data")
             return self._cache[cache_key]
         
-        # Paginate the inventory
-        items_list = list(self._inventory.values())
+        # Filter items if needed
+        filtered_items = {}
+        
+        for item_id, item in self._inventory.items():
+            # Skip if category filter doesn't match
+            if category and category.lower() != item.category.lower() and (
+                not item.subcategory or category.lower() != item.subcategory.lower()
+            ):
+                continue
+                
+            # Apply additional filters if provided
+            if filter_options:
+                # Filter by subcategory
+                if filter_options.subcategory and (
+                    not item.subcategory or 
+                    filter_options.subcategory.lower() != item.subcategory.lower()
+                ):
+                    continue
+                    
+                # Filter by brand
+                if filter_options.brand and filter_options.brand.lower() != item.brand.lower():
+                    continue
+                    
+                # Filter by color
+                if filter_options.color and filter_options.color.lower() not in [c.lower() for c in item.colors]:
+                    continue
+                    
+                # Filter by price_min
+                if filter_options.price_min is not None and item.price < filter_options.price_min:
+                    continue
+            
+            # Item passed all filters
+            filtered_items[item_id] = item
+        
+        # Paginate the filtered inventory
+        items_list = list(filtered_items.values())
+        
+        # Sort by newest first (using item_id as proxy since it contains index)
+        items_list.sort(key=lambda x: x.item_id, reverse=True)
+        
+        total_items = len(items_list)
         paginated_items = items_list[offset:offset + limit]
         
-        # Convert list back to dictionary
+        # Create paginated inventory
         items_dict = {item.item_id: item for item in paginated_items}
         
-        inventory_data = InventoryData(
+        # Calculate total pages
+        total_pages = (total_items + limit - 1) // limit
+        
+        # Create and return inventory
+        inventory = RetailerInventory(
+            retailer_id=self.config.retailer_id,
+            retailer_name=self.config.retailer_name,
             items=items_dict,
-            total_count=len(self._inventory),
-            page=offset // limit + 1 if limit > 0 else 1,
-            limit=limit,
-            timestamp=datetime.now().isoformat()
+            last_updated=datetime.now()
         )
         
         # Cache the result if caching is enabled
         if self.config.use_cache:
-            self._cache[cache_key] = inventory_data
+            self._cache[cache_key] = inventory
         
-        return inventory_data
+        return inventory
     
-    async def get_inventory_async(self, limit: int = 100, offset: int = 0) -> InventoryData:
+    async def get_inventory_async(
+        self, 
+        limit: int = 100, 
+        page: int = 1,
+        category: Optional[str] = None,
+        filter_options: Optional[InventoryFilter] = None
+    ) -> RetailerInventory:
         """
         Get inventory data asynchronously from the mock retailer.
         
         Args:
             limit: Maximum number of items to return
-            offset: Offset for pagination
+            page: Page number for pagination (1-based)
+            category: Optional category filter
+            filter_options: Optional additional filters
             
         Returns:
-            InventoryData with mock items
+            RetailerInventory with mock items
         """
         # Simulate async operation with a delay
-        await asyncio.sleep(0.5)
-        return self.get_inventory(limit, offset)
+        await asyncio.sleep(0.3)
+        return self.get_inventory(limit, page, category, filter_options)
     
-    def search_items(self, query: str, limit: int = 10) -> List[ClothingItem]:
+    def search_items(
+        self, 
+        query: str, 
+        limit: int = 20, 
+        filter_options: Optional[InventoryFilter] = None
+    ) -> List[ClothingItem]:
         """
         Search for items matching the query.
         
         Args:
             query: Search query string
             limit: Maximum number of items to return
+            filter_options: Optional additional filters
             
         Returns:
             List of matching ClothingItems
@@ -177,17 +262,45 @@ class MockRetailerAPI(RetailerAPI):
             if (query in item.name.lower() or 
                 query in item.brand.lower() or 
                 query in item.category.lower() or 
-                query in item.subcategory.lower() or
+                (item.subcategory and query in item.subcategory.lower()) or
                 any(query in color.lower() for color in item.colors) or
                 any(query in tag.lower() for tag in item.style_tags)):
+                
+                # Apply additional filters if provided
+                if filter_options:
+                    # Filter by category
+                    if filter_options.category and filter_options.category.lower() != item.category.lower():
+                        continue
+                        
+                    # Filter by subcategory
+                    if filter_options.subcategory and (
+                        not item.subcategory or 
+                        filter_options.subcategory.lower() != item.subcategory.lower()
+                    ):
+                        continue
+                        
+                    # Filter by brand
+                    if filter_options.brand and filter_options.brand.lower() != item.brand.lower():
+                        continue
+                        
+                    # Filter by color
+                    if filter_options.color and filter_options.color.lower() not in [c.lower() for c in item.colors]:
+                        continue
+                        
+                    # Filter by price_min
+                    if filter_options.price_min is not None and item.price < filter_options.price_min:
+                        continue
+                
+                # If we get here, the item matched all criteria
                 matches.append(item)
                 
-            if len(matches) >= limit:
-                break
+                # Stop if we've reached the limit
+                if len(matches) >= limit:
+                    break
                 
         return matches
     
-    def get_item_details(self, item_id: str) -> Optional[ClothingItem]:
+    def get_item(self, item_id: str) -> Optional[ClothingItem]:
         """
         Get detailed information for a specific item.
         

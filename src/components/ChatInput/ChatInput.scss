@@ -1,31 +1,31 @@
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
 
 .stylist-chat-input {
-  @include flex-between;
-  padding: $spacing-sm $spacing-md;
-  background-color: $background-color;
-  border-top: 1px solid $border-color;
-  min-height: $input-height;
+  @include mixins.flex-between;
+  padding: variables.$spacing-sm variables.$spacing-md;
+  background-color: variables.$background-color;
+  border-top: 1px solid variables.$border-color;
+  min-height: variables.$input-height;
   
   &__container {
     flex: 1;
-    margin-right: $spacing-sm;
+    margin-right: variables.$spacing-sm;
   }
   
   &__textarea {
-    @include input-base;
+    @include mixins.input-base;
     resize: none;
-    padding: $spacing-sm $spacing-md;
+    padding: variables.$spacing-sm variables.$spacing-md;
     min-height: 36px;
     max-height: 120px;
-    border-radius: $border-radius-round;
-    transition: all $transition-normal ease;
+    border-radius: variables.$border-radius-round;
+    transition: all variables.$transition-normal ease;
     overflow-y: auto;
     width: 100%;
     
     &:focus {
-      box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
+      box-shadow: 0 0 0 2px rgba(variables.$primary-color, 0.2);
     }
     
     &:disabled {
@@ -35,17 +35,17 @@
   }
   
   &__send-button {
-    @include flex-center;
+    @include mixins.flex-center;
     width: 36px;
     height: 36px;
-    border-radius: $border-radius-round;
-    background-color: $primary-color;
-    color: $text-inverse;
+    border-radius: variables.$border-radius-round;
+    background-color: variables.$primary-color;
+    color: variables.$text-inverse;
     flex-shrink: 0;
-    transition: all $transition-normal ease;
+    transition: all variables.$transition-normal ease;
     
     &:hover {
-      background-color: $primary-color-dark;
+      background-color: variables.$primary-color-dark;
     }
     
     &:disabled {

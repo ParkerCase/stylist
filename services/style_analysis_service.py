@@ -1,10 +1,20 @@
 """
 Service for analyzing user style preferences based on quiz results and feedback.
+Also provides AI-powered style advice using Claude.
 """
 
+import os
 import re
-from typing import Dict, List, Set, Tuple
+import json
+from typing import Dict, List, Set, Tuple, Any, Optional, Union
 import logging
+
+# Conditionally import Anthropic SDK if available
+try:
+    import anthropic
+    ANTHROPIC_AVAILABLE = True
+except ImportError:
+    ANTHROPIC_AVAILABLE = False
 
 from models.user import (
     UserProfile,
@@ -25,7 +35,115 @@ logger = logging.getLogger(__name__)
 
 
 class StyleAnalysisService:
-    """Service for analyzing user style and preferences."""
+    """Service for analyzing user style and preferences with AI assistance."""
+    
+    def __init__(self):
+        """Initialize the style analysis service."""
+        self.anthropic_client = None
+        self.claude_available = False
+        
+        # Initialize Claude client if API key is available
+        if ANTHROPIC_AVAILABLE:
+            try:
+                api_key = os.environ.get("ANTHROPIC_API_KEY")
+                if api_key:
+                    self.anthropic_client = anthropic.Anthropic(api_key=api_key)
+                    self.claude_available = True
+                    logger.info("Claude AI initialized successfully")
+                else:
+                    logger.warning("No ANTHROPIC_API_KEY found in environment. AI style assistance will be limited.")
+            except Exception as e:
+                logger.error(f"Error initializing Claude AI: {str(e)}")
+                self.claude_available = False
+        else:
+            logger.warning("Anthropic SDK not available. Install with 'pip install anthropic'")
+            
+    def answer_style_question(
+        self, 
+        question: str, 
+        user: Optional[UserProfile] = None, 
+        context: Optional[str] = None,
+        user_preferences: Optional[str] = None
+    ) -> str:
+        """
+        Answer a style-related question using Claude or fallback response.
+        
+        Args:
+            question: The user's style question
+            user: Optional user profile for personalization
+            context: Optional previous conversation context
+            user_preferences: Optional formatted string of user preferences
+            
+        Returns:
+            AI-generated or fallback response
+        """
+        if not self.claude_available or not self.anthropic_client:
+            return self._generate_fallback_response(question)
+            
+        try:
+            # Create prompt with context and user preferences
+            system_prompt = f"""You are a helpful, friendly AI style assistant for a fashion platform called "The Stylist".
+You provide personalized style advice and fashion recommendations.
+Keep your responses concise (2-3 paragraphs max), friendly, and helpful.
+If you don't know something specific about fashion, you can suggest general style principles."""
+
+            # Add user preferences to system prompt if available
+            if user_preferences and len(user_preferences) > 0:
+                system_prompt += f"\n\nThe user has the following style preferences:\n{user_preferences}"
+                
+            # Create the message
+            messages = []
+            
+            # Add context if available
+            if context and len(context) > 0:
+                messages.append({
+                    "role": "user", 
+                    "content": f"Here is our conversation so far: {context}"
+                })
+                messages.append({
+                    "role": "assistant", 
+                    "content": "I understand. Let's continue our conversation about style."
+                })
+                
+            # Add the current question
+            messages.append({"role": "user", "content": question})
+            
+            # Call Claude API
+            response = self.anthropic_client.messages.create(
+                model="claude-3-haiku-20240307",  # Using cheaper model for chat
+                max_tokens=1024,
+                temperature=0.7,
+                system=system_prompt,
+                messages=messages
+            )
+            
+            return response.content[0].text
+        except Exception as e:
+            logger.error(f"Error generating Claude response: {e}")
+            return self._generate_fallback_response(question)
+            
+    def _generate_fallback_response(self, question: str) -> str:
+        """Generate a fallback response when Claude is not available."""
+        # Map common question patterns to canned responses
+        question_lower = question.lower()
+        
+        if "what should i wear" in question_lower:
+            return "When choosing an outfit, consider the occasion, weather, and your comfort. A classic combination is well-fitted jeans with a nice top and a blazer or jacket, which creates a versatile look that can be dressed up or down. Add accessories to personalize your style!"
+            
+        if "how to style" in question_lower:
+            return "Styling is about balance and proportions. Pair statement pieces with simpler items, and don't be afraid to experiment with combinations. Try different accessories to transform your look, and remember that confidence is always the best accessory!"
+            
+        if "what colors" in question_lower or "which colors" in question_lower:
+            return "When choosing colors, consider what flatters your skin tone and makes you feel confident. Neutrals like black, white, navy, and beige are versatile and pair well with almost everything. For color combinations, complementary colors (opposite on the color wheel) create vibrant looks, while analogous colors (next to each other) create harmonious combinations."
+            
+        if "trend" in question_lower:
+            return "While trends can be fun to incorporate, focus on building a wardrobe with timeless pieces that suit your personal style. You can add trendy elements through accessories or less expensive items, which allows you to stay current without compromising your signature look."
+            
+        if "capsule wardrobe" in question_lower:
+            return "A capsule wardrobe consists of versatile, timeless pieces that work well together. Start with high-quality basics like well-fitted jeans, t-shirts, button-downs, and a good blazer. Add a few statement pieces that reflect your personal style, and ensure everything can be mixed and matched to create multiple outfits."
+            
+        # Default fallback response
+        return "Thanks for your style question! I'd love to help you with fashion advice. Could you tell me more about your personal style preferences so I can provide more personalized recommendations?"
 
     @staticmethod
     def analyze_style_quiz(quiz: StyleQuizResults) -> Dict[str, float]:

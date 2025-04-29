@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stylist Feedback System Demo</title>
+  <link rel="stylesheet" href="stylist-widget.css">
+  <style>
+    /* Base styling */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, 
+                   Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f7f7f7;
+    }
+    
+    .demo-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .demo-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .demo-header h1 {
+      color: #4361ee;
+      margin-bottom: 10px;
+    }
+    
+    .demo-description {
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+    
+    .demo-features {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+    }
+    
+    .demo-features h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    
+    .features-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    
+    .feature-icon {
+      width: 36px;
+      height: 36px;
+      background-color: #eef1ff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      color: #4361ee;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    
+    .feature-content {
+      flex: 1;
+    }
+    
+    .feature-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 18px;
+    }
+    
+    .feature-description {
+      color: #666;
+      line-height: 1.5;
+    }
+    
+    .demo-actions {
+      text-align: center;
+      margin-top: 30px;
+      margin-bottom: 40px;
+    }
+    
+    .demo-button {
+      background-color: #4361ee;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 0 10px;
+      box-shadow: 0 4px 6px rgba(67, 97, 238, 0.2);
+      transition: all 0.2s ease;
+    }
+    
+    .demo-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(67, 97, 238, 0.3);
+    }
+    
+    .demo-button:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 5px rgba(67, 97, 238, 0.2);
+    }
+    
+    .demo-button.secondary {
+      background-color: white;
+      color: #4361ee;
+      border: 1px solid #4361ee;
+    }
+    
+    .widget-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+    
+    @media (max-width: 768px) {
+      .demo-features {
+        padding: 15px;
+      }
+      
+      .feature-title {
+        font-size: 16px;
+      }
+      
+      .feature-description {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <div class="demo-header">
+      <h1>The Stylist Feedback System</h1>
+      <p>Experience how user feedback enhances fashion recommendations</p>
+    </div>
+    
+    <div class="demo-description">
+      <p>The Stylist now includes a comprehensive feedback system that lets users express preferences through likes, dislikes, and helpful feedback. All feedback is saved and used to personalize your shopping experience.</p>
+    </div>
+    
+    <div class="demo-features">
+      <h2>Key Features</h2>
+      <ul class="features-list">
+        <li class="feature-item">
+          <div class="feature-icon">👍</div>
+          <div class="feature-content">
+            <div class="feature-title">Like Products</div>
+            <div class="feature-description">Tell the system which products match your style by clicking the thumbs up button on any item.</div>
+          </div>
+        </li>
+        <li class="feature-item">
+          <div class="feature-icon">👎</div>
+          <div class="feature-content">
+            <div class="feature-title">Dislike Products</div>
+            <div class="feature-description">Help refine recommendations by indicating which items don't match your preferences.</div>
+          </div>
+        </li>
+        <li class="feature-item">
+          <div class="feature-icon">💬</div>
+          <div class="feature-content">
+            <div class="feature-title">Rate Recommendations</div>
+            <div class="feature-description">Mark helpful recommendations with a thumbs up to improve future style suggestions.</div>
+          </div>
+        </li>
+        <li class="feature-item">
+          <div class="feature-icon">💾</div>
+          <div class="feature-content">
+            <div class="feature-title">Persistent Preferences</div>
+            <div class="feature-description">Your feedback is saved across sessions and synchronized when you log in.</div>
+          </div>
+        </li>
+        <li class="feature-item">
+          <div class="feature-icon">🔄</div>
+          <div class="feature-content">
+            <div class="feature-title">Real-time Updates</div>
+            <div class="feature-description">See immediate changes to recommendations based on your feedback.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+    
+    <div class="demo-actions">
+      <button id="openWidgetBtn" class="demo-button">Open Stylist Widget</button>
+      <button id="clearFeedbackBtn" class="demo-button secondary">Reset Feedback Data</button>
+    </div>
+  </div>
+  
+  <div id="widget-container" class="widget-container"></div>
+  
+  <script src="stylist-widget.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize the widget
+      window.StylistWidget.init({
+        apiKey: 'demo_key',
+        retailerId: 'demo_retailer',
+        position: 'bottom-right',
+        primaryColor: '#4361ee',
+        greeting: "Hi there! I'm your AI style assistant with enhanced feedback capabilities. Like or dislike items to improve your recommendations!"
+      });
+      
+      // Open button handler
+      document.getElementById('openWidgetBtn').addEventListener('click', function() {
+        window.StylistWidget.open();
+      });
+      
+      // Clear feedback data handler
+      document.getElementById('clearFeedbackBtn').addEventListener('click', function() {
+        if (window.confirm('Are you sure you want to reset all feedback data? This will clear your likes, dislikes, and rating history.')) {
+          localStorage.removeItem('stylist-feedback-storage');
+          alert('Feedback data has been reset. Reload the page to see the changes.');
+          location.reload();
+        }
+      });
+      
+      // Auto-open the widget after 1 second
+      setTimeout(() => {
+        window.StylistWidget.open();
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

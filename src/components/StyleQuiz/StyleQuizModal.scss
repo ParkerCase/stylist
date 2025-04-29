@@ -1,7 +1,7 @@
 // src/components/StyleQuiz/StyleQuizModal.scss
 
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
 
 .stylist-style-quiz-modal {
   position: fixed;
@@ -9,7 +9,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  z-index: $z-index-modal;
+  z-index: variables.$z-index-modal;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -20,8 +20,9 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    animation: fadeIn $transition-normal ease forwards;
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(3px);
+    animation: fadeIn variables.$transition-normal ease forwards;
   }
   
   &__container {
@@ -29,17 +30,75 @@
     width: 90%;
     max-width: 800px;
     max-height: 90vh;
-    background-color: $background-color;
-    border-radius: $border-radius-lg;
-    box-shadow: $shadow-xl;
+    background-color: variables.$background-color;
+    border-radius: variables.$border-radius-lg;
+    box-shadow: variables.$shadow-xl;
     overflow: hidden;
-    animation: scaleIn $transition-normal ease forwards;
+    animation: scaleIn variables.$transition-normal ease forwards;
     
-    @include responsive('xs') {
+    @include mixins.responsive('xs') {
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      max-height: none;
+      border-radius: 0;
+    }
+    
+    @include mixins.responsive('sm') {
       width: 95%;
       height: 95%;
       max-width: none;
       max-height: none;
+      border-radius: variables.$border-radius-md;
+    }
+    
+    @include mixins.responsive('md') {
+      width: 90%;
+      max-width: 700px;
+      max-height: 90vh;
+      height: auto;
+    }
+    
+    @include mixins.responsive('lg') {
+      width: 800px;
+      max-width: 800px;
+    }
+  }
+  
+  &__close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 30px;
+    height: 30px;
+    background-color: variables.$surface-color;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1;
+    transition: all variables.$transition-fast ease;
+    
+    &:hover {
+      background-color: variables.$border-color;
+    }
+    
+    &::before, &::after {
+      content: '';
+      position: absolute;
+      width: 15px;
+      height: 2px;
+      background-color: variables.$text-secondary;
+    }
+    
+    &::before {
+      transform: rotate(45deg);
+    }
+    
+    &::after {
+      transform: rotate(-45deg);
     }
   }
 }
@@ -57,5 +116,28 @@
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+// Fix scrolling inside modal for mobile
+.stylist-style-quiz {
+  @include mixins.responsive('xs') {
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    margin: 0;
+    
+    &__header {
+      position: sticky;
+      top: 0;
+      background-color: variables.$background-color;
+      z-index: 1;
+    }
+    
+    &__actions {
+      position: sticky;
+      bottom: 0;
+      background-color: variables.$background-color;
+      z-index: 1;
+    }
   }
 }

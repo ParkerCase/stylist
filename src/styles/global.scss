@@ -1,7 +1,7 @@
 // Global styles for the widget
 
-@import './variables.scss';
-@import './mixins.scss';
+@use './variables.scss' as v;
+@use './mixins.scss' as m;
 
 // Reset box-sizing
 *,
@@ -12,9 +12,9 @@
 
 // Widget container styles
 .stylist-widget {
-  font-family: $font-family;
-  font-size: $font-size-md;
-  color: $text-primary;
+  font-family: v.$font-family;
+  font-size: v.$font-size-md;
+  color: v.$text-primary;
   line-height: 1.5;
   text-align: left;
   
@@ -57,7 +57,7 @@
   
   // Links
   a {
-    color: $primary-color;
+    color: v.$primary-color;
     text-decoration: none;
     
     &:hover {
@@ -118,15 +118,15 @@
 
 // Common animation classes
 .animate-fade-in {
-  animation: fadeIn $transition-normal ease forwards;
+  animation: fadeIn v.$transition-normal ease forwards;
 }
 
 .animate-slide-up {
-  animation: slideInUp $transition-normal ease forwards;
+  animation: slideInUp v.$transition-normal ease forwards;
 }
 
 .animate-slide-right {
-  animation: slideInRight $transition-normal ease forwards;
+  animation: slideInRight v.$transition-normal ease forwards;
 }
 
 .animate-pulse {
@@ -159,39 +159,39 @@
 }
 
 .text-primary {
-  color: $primary-color;
+  color: v.$primary-color;
 }
 
 .text-secondary {
-  color: $secondary-color;
+  color: v.$secondary-color;
 }
 
 .text-success {
-  color: $success-color;
+  color: v.$success-color;
 }
 
 .text-warning {
-  color: $warning-color;
+  color: v.$warning-color;
 }
 
 .text-error {
-  color: $error-color;
+  color: v.$error-color;
 }
 
 .text-muted {
-  color: $text-tertiary;
+  color: v.$text-tertiary;
 }
 
 .font-bold {
-  font-weight: $font-weight-bold;
+  font-weight: v.$font-weight-bold;
 }
 
 .font-medium {
-  font-weight: $font-weight-medium;
+  font-weight: v.$font-weight-medium;
 }
 
 .font-regular {
-  font-weight: $font-weight-regular;
+  font-weight: v.$font-weight-regular;
 }
 
 .m-0 {
@@ -199,35 +199,35 @@
 }
 
 .mt-xs {
-  margin-top: $spacing-xs;
+  margin-top: v.$spacing-xs;
 }
 
 .mt-sm {
-  margin-top: $spacing-sm;
+  margin-top: v.$spacing-sm;
 }
 
 .mt-md {
-  margin-top: $spacing-md;
+  margin-top: v.$spacing-md;
 }
 
 .mt-lg {
-  margin-top: $spacing-lg;
+  margin-top: v.$spacing-lg;
 }
 
 .mb-xs {
-  margin-bottom: $spacing-xs;
+  margin-bottom: v.$spacing-xs;
 }
 
 .mb-sm {
-  margin-bottom: $spacing-sm;
+  margin-bottom: v.$spacing-sm;
 }
 
 .mb-md {
-  margin-bottom: $spacing-md;
+  margin-bottom: v.$spacing-md;
 }
 
 .mb-lg {
-  margin-bottom: $spacing-lg;
+  margin-bottom: v.$spacing-lg;
 }
 
 // Loader
@@ -235,9 +235,9 @@
   display: inline-block;
   width: 24px;
   height: 24px;
-  border: 2px solid rgba($primary-color, 0.2);
+  border: 2px solid rgba(v.$primary-color, 0.2);
   border-radius: 50%;
-  border-top-color: $primary-color;
+  border-top-color: v.$primary-color;
   animation: spin 0.8s linear infinite;
 }
 

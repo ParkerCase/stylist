@@ -1,38 +1,38 @@
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
 
 .stylist-virtual-try-on {
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
-  background-color: $background-color;
+  background-color: variables.$background-color;
   
   &__header {
-    @include flex-between;
-    padding: $spacing-md;
-    border-bottom: 1px solid $border-color;
+    @include mixins.flex-between;
+    padding: variables.$spacing-md;
+    border-bottom: 1px solid variables.$border-color;
   }
   
   &__title {
-    font-size: $font-size-xl;
-    font-weight: $font-weight-bold;
-    color: $text-primary;
+    font-size: variables.$font-size-xl;
+    font-weight: variables.$font-weight-bold;
+    color: variables.$text-primary;
     margin: 0;
   }
   
   &__close-btn {
-    @include flex-center;
+    @include mixins.flex-center;
     width: 36px;
     height: 36px;
-    background-color: $surface-color;
-    border-radius: $border-radius-round;
-    color: $text-secondary;
-    transition: all $transition-normal ease;
+    background-color: variables.$surface-color;
+    border-radius: variables.$border-radius-round;
+    color: variables.$text-secondary;
+    transition: all variables.$transition-normal ease;
     
     &:hover {
       opacity: 0.9; /* Use opacity instead of darken for CSS variables */
-      color: $text-primary;
+      color: variables.$text-primary;
     }
   }
   
@@ -42,7 +42,7 @@
     min-height: 0; // Required for Firefox
     overflow: hidden;
     
-    @include responsive('xs') {
+    @include mixins.responsive('xs') {
       flex-direction: column;
     }
   }
@@ -54,69 +54,100 @@
   }
   
   &__processing {
-    @include flex-center;
+    @include mixins.flex-center;
     flex-direction: column;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba($background-color, 0.8);
+    background-color: rgba(variables.$background-color, 0.8);
     z-index: 10;
     
     p {
-      margin-top: $spacing-md;
-      font-size: $font-size-md;
-      color: $text-primary;
+      margin-top: variables.$spacing-md;
+      font-size: variables.$font-size-md;
+      color: variables.$text-primary;
     }
   }
   
   &__spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid rgba($primary-color, 0.3);
+    border: 3px solid rgba(variables.$primary-color, 0.3);
     border-radius: 50%;
-    border-top-color: $primary-color;
+    border-top-color: variables.$primary-color;
     animation: spin 1s linear infinite;
   }
   
   &__error {
-    @include flex-center;
+    @include mixins.flex-center;
     flex-direction: column;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba($background-color, 0.9);
+    background-color: rgba(variables.$background-color, 0.9);
     z-index: 10;
-    padding: $spacing-md;
+    padding: variables.$spacing-md;
     text-align: center;
     
     p {
-      margin-bottom: $spacing-md;
-      color: $error-color;
-      font-size: $font-size-md;
+      margin-bottom: variables.$spacing-md;
+      color: variables.$error-color;
+      font-size: variables.$font-size-md;
     }
   }
   
   &__retry-btn {
-    @include button-primary;
-    padding: $spacing-sm $spacing-lg;
-    font-size: $font-size-md;
+    @include mixins.button-primary;
+    padding: variables.$spacing-sm variables.$spacing-lg;
+    font-size: variables.$font-size-md;
+  }
+  
+  &__success {
+    @include mixins.flex-center;
+    background-color: rgba(variables.$success-color, 0.1);
+    border: 1px solid variables.$success-color;
+    border-radius: variables.$border-radius-md;
+    margin: variables.$spacing-md;
+    padding: variables.$spacing-sm variables.$spacing-md;
+    
+    &-icon {
+      @include mixins.flex-center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: variables.$success-color;
+      color: white;
+      margin-right: variables.$spacing-sm;
+      
+      svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+      }
+    }
+    
+    &-message {
+      color: variables.$success-color;
+      font-weight: variables.$font-weight-bold;
+      margin: 0;
+    }
   }
   
   &__footer {
-    @include flex-between;
-    padding: $spacing-md;
-    border-top: 1px solid $border-color;
+    @include mixins.flex-between;
+    padding: variables.$spacing-md;
+    border-top: 1px solid variables.$border-color;
   }
   
   &__primary-btn {
-    @include button-primary;
-    padding: $spacing-sm $spacing-lg;
-    font-size: $font-size-md;
-    min-width: 120px;
+    @include mixins.button-primary;
+    padding: variables.$spacing-sm variables.$spacing-lg;
+    font-size: variables.$font-size-md;
+    min-width: 150px;
     
     &:disabled {
       opacity: 0.6;
@@ -125,9 +156,9 @@
   }
   
   &__secondary-btn {
-    @include button-secondary;
-    padding: $spacing-sm $spacing-lg;
-    font-size: $font-size-md;
+    @include mixins.button-secondary;
+    padding: variables.$spacing-sm variables.$spacing-lg;
+    font-size: variables.$font-size-md;
     min-width: 120px;
   }
 }

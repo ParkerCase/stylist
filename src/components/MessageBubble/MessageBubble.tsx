@@ -1,32 +1,61 @@
 // Message bubble component for text messages
 
-import React from 'react';
+import React, { useState } from 'react';
 import classNames from 'classnames';
 import './MessageBubble.scss';
 import { TextMessage, MessageSender } from '../../types/index';
 import { formatDate } from '../../utils/formatters';
+import { ThumbsUpButton } from '@/components/FeedbackControls';
+import { trackEvent } from '@/utils/analytics';
+import { getUserId } from '@/utils/localStorage';
 
 interface MessageBubbleProps {
   message: TextMessage;
   primaryColor?: string;
+  onFeedback?: (messageId: string, helpful: boolean) => void;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message, primaryColor }) => {
-  const { sender, text, timestamp } = message;
+const MessageBubble: React.FC<MessageBubbleProps> = ({ 
+  message, 
+  primaryColor,
+  onFeedback
+}) => {
+  const { id, sender, text, timestamp } = message;
+  const [feedbackGiven, setFeedbackGiven] = useState<boolean>(false);
   
   const isUser = sender === MessageSender.USER;
   const isAssistant = sender === MessageSender.ASSISTANT;
   const isSystem = sender === MessageSender.SYSTEM;
   
+  // Only show feedback for assistant messages that are long enough to be meaningful
+  const shouldShowFeedback = isAssistant && 
+                           text.length > 20 && 
+                           !text.includes('Would you like') && 
+                           onFeedback;
+  
   const bubbleClasses = classNames('stylist-message-bubble', {
     'stylist-message-bubble--user': isUser,
     'stylist-message-bubble--assistant': isAssistant,
-    'stylist-message-bubble--system': isSystem
+    'stylist-message-bubble--system': isSystem,
+    'stylist-message-bubble--with-feedback': shouldShowFeedback
   });
   
   const contentStyle = isUser && primaryColor
     ? { backgroundColor: primaryColor }
     : undefined;
+  
+  const handleThumbsUp = () => {
+    setFeedbackGiven(true);
+    if (onFeedback) {
+      onFeedback(id, true);
+      
+      // Track the event
+      trackEvent('ASSISTANT_RESPONSE_THUMBS_UP', getUserId(), {
+        messageId: id,
+        messageContent: text.substring(0, 100) // First 100 chars for context
+      });
+    }
+  };
   
   return (
     <div className={bubbleClasses}>
@@ -51,6 +80,17 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, primaryColor }) 
             {i < text.split('\n').length - 1 && <br />}
           </React.Fragment>
         ))}
+        
+        {/* Thumbs up button for assistant recommendations */}
+        {shouldShowFeedback && (
+          <div className="stylist-message-bubble__feedback">
+            <ThumbsUpButton 
+              messageId={id}
+              onThumbsUp={handleThumbsUp}
+              primaryColor={primaryColor}
+            />
+          </div>
+        )}
       </div>
       
       <div className="stylist-message-bubble__time">

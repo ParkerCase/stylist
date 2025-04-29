@@ -1,0 +1,79 @@
+// Styles for the sync status indicator
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.sync-status-indicator {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  max-width: 150px;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  
+  &.sync-status-syncing {
+    background-color: rgba($primary-color, 0.1);
+    color: $primary-color;
+  }
+  
+  &.sync-status-pending {
+    background-color: rgba($warning-color, 0.1);
+    color: $warning-color;
+  }
+  
+  &.sync-status-offline {
+    background-color: rgba($error-color, 0.1);
+    color: $error-color;
+  }
+  
+  .sync-status-icon {
+    margin-right: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    .sync-spinner {
+      width: 16px;
+      height: 16px;
+      animation: rotate 2s linear infinite;
+      
+      .sync-spinner-path {
+        stroke-dasharray: 60, 150;
+        stroke-dashoffset: 0;
+        animation: dash 1.5s ease-in-out infinite;
+      }
+    }
+  }
+  
+  .sync-status-message {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
+}

@@ -6,20 +6,29 @@ from typing import Dict, List, Any, Optional, Tuple, Union
 import logging
 import json
 import uuid
+import os
 from datetime import datetime
 import jsonschema
 from jsonschema import validate, ValidationError
+from fastapi import APIRouter, Depends, HTTPException, Query, Body, Request, Response
 
 from models.user import UserProfile, StyleQuizResults, UserClosetItem
 from models.clothing import ClothingItem
 from models.recommendation import RecommendationResponse
 from services.recommendation_service import RecommendationService
+from services.style_analysis_service import StyleAnalysisService
 from utils.recommendation_utils import (
     parse_style_quiz_answers,
     format_recommendation_response,
 )
 
 logger = logging.getLogger(__name__)
+
+# Initialize router
+router = APIRouter(prefix="/api", tags=["recommendations"])
+
+# Initialize Style Analysis Service
+style_analysis_service = StyleAnalysisService()
 
 # Mock database for demo purposes
 # In a real implementation, these would be connected to a database
@@ -90,7 +99,8 @@ def validate_request_data(
         return False, f"Unexpected error during validation: {str(e)}"
 
 
-def create_user(user_data: Dict[str, Any]) -> Dict[str, Any]:
+@router.post("/users", response_model=Dict[str, Any])
+async def create_user(user_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Create a new user profile.
 
@@ -101,18 +111,18 @@ def create_user(user_data: Dict[str, Any]) -> Dict[str, Any]:
         Created user profile
 
     Raises:
-        ValueError: If input data validation fails
+        HTTPException: If input data validation fails
     """
     # Validate input data
     is_valid, error = validate_request_data(user_data, USER_SCHEMA)
     if not is_valid:
-        raise ValueError(error)
+        raise HTTPException(status_code=400, detail=error)
 
     user_id = user_data.get("user_id", f"user_{uuid.uuid4().hex[:8]}")
 
     # Check if user already exists
     if user_id in mock_users:
-        raise ValueError(f"User with ID {user_id} already exists")
+        raise HTTPException(status_code=409, detail=f"User with ID {user_id} already exists")
 
     # Parse style quiz if available
     style_quiz = None
@@ -121,7 +131,7 @@ def create_user(user_data: Dict[str, Any]) -> Dict[str, Any]:
             style_quiz = parse_style_quiz_answers(user_data["style_quiz"])
         except Exception as e:
             logger.error(f"Error parsing style quiz: {str(e)}")
-            raise ValueError(f"Invalid style quiz data: {str(e)}")
+            raise HTTPException(status_code=400, detail=f"Invalid style quiz data: {str(e)}")
 
     # Create user profile
     user = UserProfile(
@@ -148,7 +158,7 @@ def create_user(user_data: Dict[str, Any]) -> Dict[str, Any]:
                 user.closet_items.append(item)
             except Exception as e:
                 logger.error(f"Error creating closet item: {str(e)}")
-                raise ValueError(f"Invalid closet item data: {str(e)}")
+                raise HTTPException(status_code=400, detail=f"Invalid closet item data: {str(e)}")
 
     # Store in mock database
     try:
@@ -156,12 +166,13 @@ def create_user(user_data: Dict[str, Any]) -> Dict[str, Any]:
         logger.info(f"Created new user with ID: {user_id}")
     except Exception as e:
         logger.error(f"Error storing user: {str(e)}")
-        raise ValueError(f"Failed to store user: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to store user: {str(e)}")
 
     return user.to_dict()
 
 
-def update_user(user_id: str, update_data: Dict[str, Any]) -> Dict[str, Any]:
+@router.put("/users/{user_id}", response_model=Dict[str, Any])
+async def update_user(user_id: str, update_data: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
     """
     Update an existing user profile.
 
@@ -173,16 +184,16 @@ def update_user(user_id: str, update_data: Dict[str, Any]) -> Dict[str, Any]:
         Updated user profile
 
     Raises:
-        ValueError: If user not found or input data validation fails
+        HTTPException: If user not found or input data validation fails
     """
     # Validate input data
     is_valid, error = validate_request_data(update_data, USER_SCHEMA)
     if not is_valid:
-        raise ValueError(error)
+        raise HTTPException(status_code=400, detail=error)
 
     if user_id not in mock_users:
         logger.error(f"User with ID {user_id} not found")
-        raise ValueError(f"User with ID {user_id} not found")
+        raise HTTPException(status_code=404, detail=f"User with ID {user_id} not found")
 
     try:
         user = mock_users[user_id]
@@ -195,7 +206,7 @@ def update_user(user_id: str, update_data: Dict[str, Any]) -> Dict[str, Any]:
                 logger.info(f"Updated style quiz for user {user_id}")
             except Exception as e:
                 logger.error(f"Error updating style quiz: {str(e)}")
-                raise ValueError(f"Invalid style quiz data: {str(e)}")
+                raise HTTPException(status_code=400, detail=f"Invalid style quiz data: {str(e)}")
 
         # Update or add closet items if provided
         if "closet_items" in update_data:
@@ -233,7 +244,7 @@ def update_user(user_id: str, update_data: Dict[str, Any]) -> Dict[str, Any]:
                         logger.debug(f"Added new closet item for user {user_id}")
                 except Exception as e:
                     logger.error(f"Error updating closet item: {str(e)}")
-                    raise ValueError(f"Invalid closet item data: {str(e)}")
+                    raise HTTPException(status_code=400, detail=f"Invalid closet item data: {str(e)}")
 
         # Update feedback if provided
         if "feedback" in update_data:
@@ -267,19 +278,23 @@ def update_user(user_id: str, update_data: Dict[str, Any]) -> Dict[str, Any]:
                 user.feedback.last_interaction = datetime.now()
             except Exception as e:
                 logger.error(f"Error updating feedback: {str(e)}")
-                raise ValueError(f"Invalid feedback data: {str(e)}")
+                raise HTTPException(status_code=400, detail=f"Invalid feedback data: {str(e)}")
 
         logger.info(f"Successfully updated user {user_id}")
         return user.to_dict()
-    except ValueError:
+    except ValueError as ve:
         # Re-raise ValueError exceptions
-        raise
+        raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:
         logger.error(f"Unexpected error updating user {user_id}: {str(e)}")
-        raise ValueError(f"Error updating user: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error updating user: {str(e)}")
 
 
-def get_recommendations(user_id: str, context: Optional[str] = None) -> Dict[str, Any]:
+@router.get("/recommendations", response_model=Dict[str, Any])
+async def get_recommendations(
+    user_id: str = Query(..., description="User ID"),
+    context: Optional[str] = Query(None, description="Optional context for recommendations")
+) -> Dict[str, Any]:
     """
     Get personalized recommendations for a user.
 
@@ -289,17 +304,12 @@ def get_recommendations(user_id: str, context: Optional[str] = None) -> Dict[str
 
     Returns:
         Dictionary with recommendation data
-
-    Raises:
-        ValueError: If user not found or error generating recommendations
     """
     if not user_id:
-        logger.error("User ID is required")
-        raise ValueError("User ID is required")
+        raise HTTPException(status_code=400, detail="User ID is required")
 
     if user_id not in mock_users:
-        logger.error(f"User with ID {user_id} not found")
-        raise ValueError(f"User with ID {user_id} not found")
+        raise HTTPException(status_code=404, detail=f"User with ID {user_id} not found")
 
     # Validate context if provided
     valid_contexts = [
@@ -368,11 +378,14 @@ def get_recommendations(user_id: str, context: Optional[str] = None) -> Dict[str
         return result
     except Exception as e:
         logger.error(f"Error generating recommendations for user {user_id}: {str(e)}")
-        raise ValueError(f"Failed to generate recommendations: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate recommendations: {str(e)}")
 
 
-def add_item_feedback(
-    user_id: str, item_id: str, feedback_data: Dict[str, Any]
+@router.post("/feedback/item", response_model=Dict[str, Any])
+async def add_item_feedback(
+    user_id: str = Query(..., description="User ID"),
+    item_id: str = Query(..., description="Item ID"),
+    feedback_data: Dict[str, Any] = Body(...)
 ) -> Dict[str, Any]:
     """
     Add user feedback for an item.
@@ -384,24 +397,20 @@ def add_item_feedback(
 
     Returns:
         Updated user feedback data
-
-    Raises:
-        ValueError: If user not found, item not found, or validation fails
     """
     # Validate input data
     is_valid, error = validate_request_data(feedback_data, FEEDBACK_SCHEMA)
     if not is_valid:
-        raise ValueError(error)
+        raise HTTPException(status_code=400, detail=error)
 
     if not user_id:
-        raise ValueError("User ID is required")
+        raise HTTPException(status_code=400, detail="User ID is required")
 
     if not item_id:
-        raise ValueError("Item ID is required")
+        raise HTTPException(status_code=400, detail="Item ID is required")
 
     if user_id not in mock_users:
-        logger.error(f"User with ID {user_id} not found")
-        raise ValueError(f"User with ID {user_id} not found")
+        raise HTTPException(status_code=404, detail=f"User with ID {user_id} not found")
 
     # In a real implementation, verify the item exists
     item_exists = item_id in mock_items or any(
@@ -438,61 +447,291 @@ def add_item_feedback(
         logger.error(
             f"Error processing feedback for user {user_id}, item {item_id}: {str(e)}"
         )
-        raise ValueError(f"Error processing feedback: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing feedback: {str(e)}")
 
 
-def save_outfit(user_id: str, outfit_items: List[str]) -> Dict[str, Any]:
+@router.post("/outfits", response_model=Dict[str, Any])
+async def save_outfit(
+    user_id: str = Query(..., description="User ID"),
+    outfit_data: Dict[str, Any] = Body(...)
+) -> Dict[str, Any]:
     """
     Save an outfit to the user's saved outfits.
 
     Args:
         user_id: ID of the user
-        outfit_items: List of item IDs in the outfit
+        outfit_data: Data with "items" list of item IDs in the outfit
 
     Returns:
         Updated user feedback data
     """
+    # Validate input data
+    is_valid, error = validate_request_data(outfit_data, OUTFIT_SCHEMA)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error)
+
     if user_id not in mock_users:
-        raise ValueError(f"User with ID {user_id} not found")
+        raise HTTPException(status_code=404, detail=f"User with ID {user_id} not found")
 
-    user = mock_users[user_id]
+    try:
+        user = mock_users[user_id]
+        outfit_items = outfit_data.get("items", [])
 
-    if outfit_items not in user.feedback.saved_outfits:
-        user.feedback.saved_outfits.append(outfit_items)
+        if outfit_items not in user.feedback.saved_outfits:
+            user.feedback.saved_outfits.append(outfit_items)
 
-    user.feedback.last_interaction = datetime.now()
+        user.feedback.last_interaction = datetime.now()
 
-    return user.feedback.to_dict()
+        return user.feedback.to_dict()
+    except Exception as e:
+        logger.error(f"Error saving outfit for user {user_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error saving outfit: {str(e)}")
 
 
-# The following would be real API routes in a Flask or FastAPI implementation
-"""
-Example API route implementations:
+@router.post("/users/{user_id}/style-quiz", response_model=Dict[str, Any])
+async def submit_style_quiz(
+    user_id: str, quiz_data: Dict[str, Any] = Body(...)
+) -> Dict[str, Any]:
+    """
+    Submit style quiz answers for a user.
+    
+    Args:
+        user_id: ID of the user
+        quiz_data: Dictionary with quiz answers in the format {"answers": [...]}
+        
+    Returns:
+        Dictionary with processed style profile
+    """
+    try:
+        # Validate request
+        if not user_id:
+            raise HTTPException(
+                status_code=400, detail="User ID is required"
+            )
+            
+        if "answers" not in quiz_data:
+            raise HTTPException(
+                status_code=400, detail="Quiz answers are required"
+            )
+            
+        # Check if user exists
+        if user_id not in mock_users:
+            # Create a new user if they don't exist
+            logger.info(f"Creating new user with ID {user_id} for style quiz")
+            mock_users[user_id] = UserProfile(
+                user_id=user_id,
+                created_at=datetime.now(),
+                updated_at=datetime.now()
+            )
+            
+        user = mock_users[user_id]
+        
+        # Process quiz answers
+        answers = quiz_data["answers"]
+        
+        # Convert the raw quiz answers to a format our system can process
+        formatted_quiz_data = {}
+        
+        # Process each answer
+        for answer in answers:
+            question_id = answer.get("questionId", "")
+            answer_id = answer.get("answerId", "")
+            answer_ids = answer.get("answerIds", [])
+            answer_value = answer.get("answerValue", None)
+            
+            # Map question IDs to our expected format
+            # For example, q1 (overall style) maps to overall_style
+            if question_id == "q1":  # Overall style
+                if answer_id:
+                    formatted_quiz_data["overall_style"] = [answer_id]
+            elif question_id == "q2":  # Color palette
+                if answer_id:
+                    formatted_quiz_data["color_palette"] = [answer_id]
+            elif question_id == "q3":  # Occasion preferences
+                if answer_ids:
+                    formatted_quiz_data["occasion_preferences"] = answer_ids
+            elif question_id == "q4":  # Pattern preferences
+                if answer_ids:
+                    formatted_quiz_data["preferred_patterns"] = answer_ids
+            elif question_id == "q5":  # Top fit
+                if answer_id:
+                    formatted_quiz_data["top_fit"] = [answer_id]
+            elif question_id == "q6":  # Bottom fit
+                if answer_id:
+                    formatted_quiz_data["bottom_fit"] = [answer_id]
+            elif question_id == "q7":  # Top size
+                if answer_id:
+                    formatted_quiz_data["top_size"] = answer_id
+            elif question_id == "q8":  # Bottom size
+                if answer_id:
+                    formatted_quiz_data["bottom_size"] = answer_id
+            elif question_id == "q9":  # Budget range
+                if answer_id:
+                    formatted_quiz_data["budget_range"] = answer_id
+            elif question_id == "q10":  # Brand preferences
+                if answer_ids:
+                    formatted_quiz_data["favorite_brands"] = answer_ids
+            elif question_id == "q11":  # Celebrity style
+                if answer_id:
+                    formatted_quiz_data["style_inspiration"] = answer_id
+            elif question_id == "q12":  # Shoe preferences
+                if answer_ids:
+                    formatted_quiz_data["shoe_preference"] = answer_ids
+            elif question_id == "q13":  # Accessory preferences
+                if answer_ids:
+                    formatted_quiz_data["accessory_preference"] = answer_ids
+            elif question_id == "q14":  # Seasonal preference
+                if answer_id:
+                    formatted_quiz_data["seasonal_preference"] = answer_id
+            elif question_id == "q15":  # Layering preference
+                if answer_id:
+                    formatted_quiz_data["layering_preference"] = answer_id
+            elif question_id == "q16":  # Shopping frequency
+                if answer_id:
+                    formatted_quiz_data["shopping_frequency"] = answer_id
+            elif question_id == "q17":  # Trend following
+                if answer_id:
+                    formatted_quiz_data["trend_following"] = answer_id
+            elif question_id == "q18":  # Comfort vs style priority
+                if answer_value is not None:
+                    # Convert slider value to preference
+                    if answer_value < 25:
+                        formatted_quiz_data["comfort_priority"] = "high"
+                    elif answer_value < 75:
+                        formatted_quiz_data["comfort_priority"] = "balanced"
+                    else:
+                        formatted_quiz_data["comfort_priority"] = "low"
+            elif question_id == "q19":  # Sustainability
+                if answer_id:
+                    formatted_quiz_data["sustainability_priority"] = answer_id in ["very", "somewhat"]
+            elif question_id == "q20":  # Secondhand
+                if answer_id:
+                    formatted_quiz_data["secondhand_interest"] = answer_id in ["frequently", "sometimes"]
+            elif question_id == "q21":  # Work environment
+                if answer_id:
+                    formatted_quiz_data["work_environment"] = answer_id
+            elif question_id == "q22":  # Active lifestyle
+                if answer_id:
+                    formatted_quiz_data["activity_level"] = answer_id
+            elif question_id == "q23":  # Fabric preferences
+                if answer_ids:
+                    formatted_quiz_data["fabric_preferences"] = answer_ids
+            elif question_id == "q24":  # Special requirements
+                if answer_ids:
+                    formatted_quiz_data["special_requirements"] = answer_ids
+            elif question_id == "q25":  # Style goal
+                if answer_id:
+                    formatted_quiz_data["style_goal"] = answer_id
+        
+        # Parse the style quiz data
+        try:
+            user.style_quiz = parse_style_quiz_answers(formatted_quiz_data)
+            logger.info(f"Successfully processed style quiz for user {user_id}")
+        except Exception as e:
+            logger.error(f"Error parsing style quiz data: {str(e)}")
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Failed to process style quiz: {str(e)}"
+            )
+        
+        # Update user profile with timestamp
+        user.updated_at = datetime.now()
+        
+        # Generate style profile based on quiz results
+        style_profile = style_analysis_service.analyze_style_quiz(user.style_quiz)
+        logger.info(f"Generated style profile for user {user_id} with {len(style_profile)} attributes")
+        
+        # Return the processed style quiz and profile
+        return {
+            "user_id": user_id,
+            "quiz_processed": True,
+            "timestamp": datetime.now().isoformat(),
+            "style_profile": style_profile,
+            "message": "Style quiz processed successfully"
+        }
+            
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        logger.error(f"Error processing style quiz for user {user_id}: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to process style quiz: {str(e)}"
+        )
 
-@app.route('/api/v1/users', methods=['POST'])
-def api_create_user():
-    data = request.json
-    return jsonify(create_user(data))
-
-@app.route('/api/v1/users/<user_id>', methods=['PUT'])
-def api_update_user(user_id):
-    data = request.json
-    return jsonify(update_user(user_id, data))
-
-@app.route('/api/v1/users/<user_id>/recommendations', methods=['GET'])
-def api_get_recommendations(user_id):
-    context = request.args.get('context')
-    return jsonify(get_recommendations(user_id, context))
-
-@app.route('/api/v1/users/<user_id>/feedback/items/<item_id>', methods=['POST'])
-def api_add_item_feedback(user_id, item_id):
-    data = request.json
-    liked = data.get('liked', False)
-    return jsonify(add_item_feedback(user_id, item_id, liked))
-
-@app.route('/api/v1/users/<user_id>/outfits', methods=['POST'])
-def api_save_outfit(user_id):
-    data = request.json
-    outfit_items = data.get('items', [])
-    return jsonify(save_outfit(user_id, outfit_items))
-"""
+@router.post("/chat", response_model=Dict[str, str])
+async def chat_with_assistant(request_data: Dict[str, Any] = Body(...)) -> Dict[str, str]:
+    """
+    Process a chat message with the AI style assistant.
+    
+    This endpoint handles:
+    1. User messages sent to the Claude AI
+    2. Integration with user style preferences
+    3. Fallback responses if Claude API is unavailable
+    """
+    try:
+        # Extract request details
+        user_id = request_data.get("userId")
+        message = request_data.get("message")
+        context = request_data.get("context", [])
+        
+        # Validate request
+        if not user_id or not message:
+            raise HTTPException(
+                status_code=400, detail="userId and message are required fields"
+            )
+        
+        # Check if user exists 
+        if user_id not in mock_users:
+            # For chat, we can be lenient and create a user if they don't exist
+            logger.info(f"Creating new user with ID {user_id} for chat")
+            mock_users[user_id] = UserProfile(
+                user_id=user_id,
+                created_at=datetime.now(),
+                updated_at=datetime.now()
+            )
+            
+        user = mock_users[user_id]
+        
+        # Check if Claude API is available
+        anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
+        
+        if not anthropic_api_key:
+            # Use fallback response if Claude API is not available
+            response = style_analysis_service.answer_style_question(message, user)
+            return {"response": response}
+        
+        # Use Claude API to generate response
+        # Get user style profile for context
+        user_preferences = ""
+        if user.stylePreferences:
+            prefs = user.stylePreferences
+            if prefs.preferredStyles:
+                user_preferences += f"- Preferred styles: {', '.join(prefs.preferredStyles)}\n"
+            if prefs.preferredColors:
+                user_preferences += f"- Preferred colors: {', '.join(prefs.preferredColors)}\n"
+            if prefs.preferredOccasions:
+                user_preferences += f"- Preferred occasions: {', '.join(prefs.preferredOccasions)}\n"
+            if prefs.dislikedStyles:
+                user_preferences += f"- Disliked styles: {', '.join(prefs.dislikedStyles)}\n"
+        
+        # Previous message context
+        context_str = "\n".join(context) if context else ""
+        
+        # Generate AI response through style analysis service
+        ai_response = style_analysis_service.answer_style_question(
+            message, 
+            user,
+            context=context_str,
+            user_preferences=user_preferences
+        )
+        
+        return {"response": ai_response}
+        
+    except Exception as e:
+        logger.error(f"Error processing chat: {str(e)}")
+        # Provide a generic response in case of error
+        return {
+            "response": "I'm sorry, I had trouble processing your request. Could you try again?"
+        }

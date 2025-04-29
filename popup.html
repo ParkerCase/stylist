@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Stylist</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon16.png">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      width: 320px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    
+    header {
+      background-color: #4361ee;
+      color: white;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo svg {
+      margin-right: 10px;
+      width: 24px;
+      height: 24px;
+    }
+    
+    main {
+      padding: 15px;
+    }
+    
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    button {
+      background-color: #4361ee;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    button:hover {
+      background-color: #3a54d6;
+    }
+    
+    button:disabled {
+      background-color: #c1c1c1;
+      cursor: not-allowed;
+    }
+    
+    button svg {
+      margin-right: 8px;
+      width: 16px;
+      height: 16px;
+    }
+    
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      background-color: #e9ecef;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    
+    .settings {
+      margin-top: 20px;
+    }
+    
+    .settings h2 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+    }
+    
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .setting-row label {
+      font-size: 14px;
+    }
+    
+    select, input {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+    }
+    
+    footer {
+      padding: 15px;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      border-top: 1px solid #ddd;
+    }
+    
+    a {
+      color: #4361ee;
+      text-decoration: none;
+    }
+    
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path d="M12 1a9 9 0 019 9c0 4.56-3.37 8.33-7.76 8.95l-.19-.47a7.99 7.99 0 002.93-10.57A8.02 8.02 0 004.06 13.1 9 9 0 0112 1zm7.12 13.93l.37.37-.36.36.01-.73zm1.36-1.55a2.83 2.83 0 00-.5-.31l.36-.74c.28.12.54.29.78.48l-.64.57zm-14.81.19l.36.73c-.29.16-.57.35-.8.57l-.57-.64c.31-.3.65-.54 1.01-.66zM6.66 22l1.93-3.1c-.47-.55-.85-1.16-1.14-1.8L2.8 19.13V22h3.86zm10.46-2.91L19 21.99v-2.86l-1.14-.93c.12-.39.19-.8.19-1.22l.08-.04A8.96 8.96 0 0022 10 10 10 0 002 10a9 9 0 003.34 7.03L1.94 20.5A1 1 0 002.86 22h16.28a1 1 0 00.92-1.5l-2.94-3.41z"/>
+      </svg>
+      <h1>AI Stylist</h1>
+    </div>
+  </header>
+
+  <main>
+    <div class="status" id="status">
+      Loading widget status...
+    </div>
+
+    <div class="actions">
+      <button id="openWidgetBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+          <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+        </svg>
+        Open Widget
+      </button>
+      
+      <button id="injectWidgetBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+          <path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2v9.67z"/>
+        </svg>
+        Force Inject Widget
+      </button>
+      
+      <button id="switchViewBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+        Switch to Lookbook
+      </button>
+    </div>
+
+    <div class="settings">
+      <h2>Settings</h2>
+      
+      <div class="setting-row">
+        <label for="positionSelect">Position:</label>
+        <select id="positionSelect">
+          <option value="bottom-right">Bottom Right</option>
+          <option value="bottom-left">Bottom Left</option>
+          <option value="top-right">Top Right</option>
+          <option value="top-left">Top Left</option>
+        </select>
+      </div>
+      
+      <div class="setting-row">
+        <label for="colorInput">Theme Color:</label>
+        <input type="color" id="colorInput" value="#4361ee">
+      </div>
+      
+      <div class="setting-row">
+        <label for="autoInjectCheckbox">Auto-inject on shopping sites:</label>
+        <input type="checkbox" id="autoInjectCheckbox" checked>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>AI Stylist v1.0.0 | <a href="https://thestylist.ai/help" target="_blank">Help</a></p>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

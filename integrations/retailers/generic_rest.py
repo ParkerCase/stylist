@@ -10,9 +10,9 @@ from typing import Dict, List, Any, Optional, Set, Union, Callable
 from datetime import datetime
 import re
 
-from stylist.integrations.retailer_api import RetailerAPI, RetailerConfig, InventoryFilter, RetailerAPIError
-from stylist.models.clothing import ClothingItem, RetailerInventory
-from stylist.config import StyleCategory
+from ..retailer_api import RetailerAPI, RetailerConfig, InventoryFilter, RetailerAPIError
+from models.clothing import ClothingItem, RetailerInventory
+from config import StyleCategory
 
 logger = logging.getLogger(__name__)
 
@@ -591,27 +591,30 @@ class GenericRestAPI(RetailerAPI):
             # Extract gender
             gender = self._extract_field(item_data, "gender", None)
             
+            # Combine image URLs into images list
+            images = []
+            if image_url:
+                images.append(image_url)
+            if additional_images:
+                images.extend(additional_images)
+
             # Create ClothingItem object
             return ClothingItem(
                 item_id=prefixed_id,
-                retailer_id=self.config.retailer_id,
                 name=name,
-                description=description,
-                price=price,
-                sale_price=sale_price,
+                brand=brand,
                 category=category,
                 subcategory=subcategory,
-                brand=brand,
-                image_url=image_url,
-                additional_images=additional_images,
                 colors=colors,
                 sizes=sizes,
-                in_stock=in_stock,
-                stock_level=stock_level,
-                tags=tags,
+                price=price,
+                sale_price=sale_price if sale_price else None,
+                images=images,
+                description=description,
                 style_tags=style_tags,
                 occasion_tags=occasion_tags,
-                gender=gender,
+                retailer_id=self.config.retailer_id,
+                trending_score=0.5  # Default value
             )
             
         except Exception as e:

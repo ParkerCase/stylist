@@ -1,7 +1,7 @@
 // src/components/TryOnCanvas/BodyGuide.scss
 
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
 
 .stylist-body-guide {
   position: absolute;
@@ -16,16 +16,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px dashed rgba($text-tertiary, 0.3);
-    background-color: rgba($text-tertiary, 0.1);
-    color: $text-tertiary;
-    font-size: $font-size-sm;
-    transition: all $transition-normal ease;
+    border: 2px dashed rgba(variables.$text-tertiary, 0.3);
+    background-color: rgba(variables.$text-tertiary, 0.1);
+    color: variables.$text-tertiary;
+    font-size: variables.$font-size-sm;
+    transition: all variables.$transition-normal ease;
     
     &--active {
-      border-color: rgba($primary-color, 0.5);
-      background-color: rgba($primary-color, 0.1);
-      color: $primary-color;
+      border-color: rgba(variables.$primary-color, 0.5);
+      background-color: rgba(variables.$primary-color, 0.1);
+      color: variables.$primary-color;
     }
     
     &--head {
@@ -83,8 +83,8 @@
   
   &__label {
     text-transform: uppercase;
-    font-weight: $font-weight-bold;
-    font-size: $font-size-xs;
-    text-shadow: 0 0 4px rgba($background-color, 0.8);
+    font-weight: variables.$font-weight-bold;
+    font-size: variables.$font-size-xs;
+    text-shadow: 0 0 4px rgba(variables.$background-color, 0.8);
   }
 }

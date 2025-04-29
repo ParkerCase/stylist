@@ -1,0 +1,159 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.user-profile {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  
+  .profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    
+    h2 {
+      margin: 0;
+      color: $color-text-primary;
+    }
+    
+    .close-button {
+      font-size: 24px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: $color-text-secondary;
+      
+      &:hover {
+        color: $color-text-primary;
+      }
+    }
+  }
+  
+  .profile-error {
+    background-color: rgba($color-error, 0.1);
+    color: $color-error;
+    padding: 12px 15px;
+    border-radius: $border-radius;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  
+  .profile-success {
+    background-color: rgba($color-success, 0.1);
+    color: $color-success;
+    padding: 12px 15px;
+    border-radius: $border-radius;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  
+  .profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    
+    .form-section {
+      padding-bottom: 20px;
+      border-bottom: 1px solid $color-border;
+      
+      h3 {
+        margin-bottom: 15px;
+        color: $color-text-primary;
+      }
+      
+      .hint-text {
+        color: $color-text-secondary;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 15px;
+      
+      &.disabled {
+        opacity: 0.7;
+      }
+      
+      label {
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: $color-text-primary;
+      }
+      
+      input {
+        padding: 12px 15px;
+        border: 1px solid $color-border;
+        border-radius: $border-radius;
+        font-size: 16px;
+        transition: border-color 0.3s ease;
+        
+        &:focus {
+          border-color: $color-primary;
+          outline: none;
+        }
+        
+        &:disabled {
+          background-color: $color-background-disabled;
+          cursor: not-allowed;
+        }
+      }
+      
+      small {
+        margin-top: 5px;
+        font-size: 12px;
+        color: $color-text-secondary;
+      }
+    }
+    
+    .style-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      
+      .style-option {
+        padding: 8px 15px;
+        border: 1px solid $color-border;
+        border-radius: $border-radius;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        
+        &:hover {
+          border-color: $color-primary;
+        }
+        
+        &.selected {
+          background-color: $color-primary;
+          color: white;
+          border-color: $color-primary;
+        }
+      }
+    }
+  }
+  
+  .save-button {
+    padding: 12px 15px;
+    background-color: $color-primary;
+    color: white;
+    border: none;
+    border-radius: $border-radius;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+    
+    &:hover:not(:disabled) {
+      background-color: darken($color-primary, 10%);
+    }
+    
+    &:disabled {
+      background-color: lighten($color-primary, 20%);
+      cursor: not-allowed;
+    }
+  }
+}

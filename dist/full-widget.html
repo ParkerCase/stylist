@@ -1,0 +1,4687 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stylist Full Widget Demo</title>
+    <!-- Fallback for icons -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%2280%22 height=%2280%22 x=%2210%22 y=%2210%22 rx=%225%22 fill=%22%234361ee%22 /><path d=%22M35,30 L65,30 L65,70 L35,70 Z%22 fill=%22white%22 /><path d=%22M35,30 L50,45 L65,30%22 fill=%22white%22 /></svg>"
+    />
+    <style>
+      /* Base styling */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f7f7f7;
+      }
+
+      .demo-container {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      button.open-button {
+        background-color: #000;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 20px;
+        font-weight: bold;
+      }
+
+      /* Widget styling */
+      .stylist-widget {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 380px;
+        height: 600px;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        z-index: 9999;
+      }
+
+      .widget-header {
+        background-color: #000;
+        color: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .widget-title {
+        font-weight: bold;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+      }
+
+      .home-button {
+        display: none;
+        margin-right: 8px;
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 18px;
+        opacity: 0.9;
+        transition: all 0.2s ease;
+      }
+
+      .home-button:hover {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+
+      .widget-controls {
+        display: flex;
+        gap: 15px;
+      }
+
+      .control-button {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        opacity: 0.9;
+      }
+
+      .control-button:hover {
+        opacity: 1;
+      }
+
+      .radial-hub-container {
+        text-align: center;
+        background-color: transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .radial-hub {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        row-gap: 8px;
+        column-gap: 20px;
+        justify-items: center;
+        align-items: center;
+        width: 100%;
+        max-width: 260px; /* Shrunk from 300px */
+        margin: 0 auto;
+        padding: 8px;
+      }
+
+      .hub-item {
+        width: 55px; /* Smaller! */
+        height: 55px;
+        border-radius: 50%;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .hub-item:hover {
+        transform: scale(1.08);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      }
+
+      .hub-icon {
+        font-size: 20px; /* Adjusted slightly smaller */
+        margin-bottom: 3px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .hub-label {
+        font-size: 9px;
+        font-weight: bold;
+        color: #333;
+        text-align: center;
+      }
+
+      .hub-title {
+        font-weight: 500;
+        padding-top: 2%;
+        padding-bottom: 2%;
+      }
+
+      /* Center Item */
+      .center-item {
+        width: 65px;
+        height: 65px;
+        background-color: white; /* No highlight color on home */
+        color: #333;
+      }
+
+      .center-item .hub-icon {
+        font-size: 22px;
+      }
+
+      .center-item .hub-label {
+        color: #333;
+      }
+
+      /* No radial lines anymore */
+      .radial-lines {
+        display: none;
+      }
+
+      /* Generate suggestions button */
+      .generate-container {
+        margin-bottom: 5px;
+      }
+
+      .generate-button {
+        background-color: #000;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(67, 97, 238, 0.3);
+        transition: all 0.2s ease;
+      }
+
+      .message.assistant.assistant-card {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        max-width: 320px;
+        padding: 10px;
+        background: transparent;
+        margin: 10px 2%;
+      }
+
+      .message.assistant.assistant-card .product-card {
+        width: 100% !important;
+        max-width: none !important;
+      }
+
+      .message.assistant.assistant-card .product-recommendation {
+        width: 100%;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      /* Styling for each product inside the card */
+      .assistant-card .product-recommendation {
+        width: 100%;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .hover-action-btn.monochrome {
+        width: 90%;
+        padding: 8px;
+        margin-bottom: 6px;
+        border: none;
+        background-color: #f0f0f0;
+        color: #111;
+        font-size: 12px;
+        font-weight: bold;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s ease, color 0.2s ease;
+      }
+
+      .hover-action-btn.monochrome:hover {
+        background-color: #dcdcdc;
+        color: #000;
+      }
+
+      .generate-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+      }
+
+      /* Legacy tab styling (keeping for compatibility) */
+      .widget-tabs {
+        display: none; /* Hide the old tabs */
+      }
+
+      .widget-content {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .tab-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        overflow-y: auto;
+        padding: 10px 5px 15px 15px;
+        box-sizing: border-box;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      /* Chat Tab Styling */
+      .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px 0;
+      }
+
+      .message {
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        border-radius: 18px;
+        max-width: 80%;
+        position: relative;
+        line-height: 1.4;
+      }
+
+      .message.assistant {
+        background-color: #f1f3f4;
+        align-self: flex-start;
+        margin-right: auto;
+        border-bottom-left-radius: 4px;
+      }
+
+      .message.user {
+        background-color: #4361ee;
+        color: white;
+        align-self: flex-end;
+        margin-left: auto;
+        border-bottom-right-radius: 4px;
+      }
+
+      .chat-input {
+        display: flex;
+        padding: 10px;
+        border-top: 1px solid #e0e0e0;
+        background: white;
+      }
+
+      .chat-input input {
+        flex: 1;
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 20px;
+        margin-right: 10px;
+        font-size: 14px;
+      }
+
+      .chat-input button {
+        background-color: #000;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      /* Closet Tab Styling */
+      .closet-container {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .closet-header {
+        margin-bottom: 15px;
+      }
+
+      .closet-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .closet-item {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .closet-item-image {
+        width: 100%;
+        height: 120px;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        font-size: 12px;
+      }
+
+      .closet-item-info {
+        padding: 10px;
+      }
+
+      .closet-item-name {
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      .closet-item-category {
+        color: #777;
+        font-size: 12px;
+      }
+
+      .closet-upload {
+        background-color: #f5f5f5;
+        border: 2px dashed #d0d0d0;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        margin-top: 10px;
+      }
+
+      .closet-upload-button {
+        background-color: #000;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 15px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 10px;
+      }
+
+      /* Trending Tab Styling */
+      .trending-container h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+
+      .trending-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+      }
+
+      .trending-item {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white;
+        transition: transform 0.2s;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .trending-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .trending-item-actions {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+        background-color: rgba(255, 255, 255, 0.9);
+        border-top: 1px solid #e0e0e0;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+
+      .trending-item:hover .trending-item-actions {
+        opacity: 1;
+      }
+
+      .action-button {
+        background: none;
+        border: none;
+        padding: 5px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .action-button:hover {
+        background-color: #f0f0f0;
+      }
+
+      .like-button,
+      .dislike-button,
+      .save-button {
+        font-size: 18px;
+      }
+
+      .product-recommendation {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        height: 100%;
+      }
+
+      .product-info-section {
+        flex-grow: 1;
+      }
+
+      .action-buttons-section {
+        display: flex;
+        justify-content: space-around;
+        padding: 8px;
+        border-top: 1px solid #f0f0f0;
+        background-color: white;
+      }
+
+      .hover-actions {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 50px;
+        background: rgba(255, 255, 255, 0.95);
+        display: none;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        max-height: calc(100% - 50px);
+        padding: 20px 10px 10px; /* 20px top */
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .action-wrapper {
+        position: relative;
+      }
+
+      .hover-menu {
+        position: absolute;
+        top: 110%;
+        left: 50%;
+        transform: translateX(-50%) translateY(10px);
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 6px;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.25s ease;
+        white-space: nowrap;
+        z-index: 10;
+      }
+
+      .menu-item {
+        padding: 5px 10px;
+        font-size: 12px;
+        color: #333;
+        cursor: pointer;
+      }
+
+      .menu-item:hover {
+        background: #f0f0f0;
+      }
+
+      .action-wrapper:hover .hover-menu {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+        pointer-events: auto;
+      }
+
+      .heart-icon {
+        transition: all 0.3s ease;
+        font-size: 1.2em;
+      }
+
+      .like-button.active .heart-icon {
+        color: #ff385c;
+      }
+
+      .like-button .heart-icon {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        background-size: contain;
+        background-repeat: no-repeat;
+        vertical-align: middle;
+      }
+
+      .like-button.active .heart-icon {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff385c'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+      }
+
+      .like-button:not(.active) .heart-icon {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+      }
+
+      .like-button.active {
+        color: #000;
+      }
+
+      .dislike-button.active {
+        color: #e63946;
+      }
+
+      .save-button.active {
+        color: #10b981;
+      }
+
+      .trending-image {
+        width: 100%;
+        height: 130px;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        position: relative;
+      }
+
+      .trending-image::after {
+        content: "";
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 20px;
+        height: 20px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000000'%3E%3Cpath d='M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z'/%3E%3C/svg%3E");
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+
+      .trending-info {
+        padding: 10px;
+      }
+
+      .trending-name {
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      .trending-brand {
+        color: #777;
+        font-size: 12px;
+      }
+
+      .trending-price {
+        color: #e63946;
+        font-weight: bold;
+        margin-top: 4px;
+      }
+
+      /* Try-On Tab Styling */
+      .tryon-container {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .tryon-header {
+        margin-bottom: 15px;
+      }
+
+      .tryon-canvas {
+        width: 100%;
+        height: 300px;
+        background-color: #f0f0f0;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        margin-bottom: 15px;
+        position: relative;
+      }
+
+      .tryon-canvas::before {
+        content: "";
+        display: block;
+        width: 80px;
+        height: 200px;
+        background-color: #d0d0d0;
+        border-radius: 40px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23888888'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E");
+        background-position: center 30px;
+        background-repeat: no-repeat;
+        background-size: 60px 60px;
+      }
+
+      .tryon-selector {
+        display: flex;
+        overflow-x: auto;
+        gap: 10px;
+        padding: 5px 0;
+        margin-bottom: 15px;
+      }
+
+      .tryon-item {
+        min-width: 60px;
+        height: 60px;
+        background-color: #e0e0e0;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        font-size: 10px;
+        cursor: pointer;
+        border: 2px solid transparent;
+      }
+
+      .tryon-item.selected {
+        border-color: #000;
+      }
+
+      .tryon-controls {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .tryon-button {
+        background-color: #000;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 15px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      /* Style Quiz Tab Styling */
+      .quiz-container {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .quiz-header {
+        margin-bottom: 15px;
+      }
+
+      .quiz-progress {
+        width: 100%;
+        height: 8px;
+        background-color: #e0e0e0;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+
+      .quiz-progress-bar {
+        height: 100%;
+        background-color: #000;
+        width: 30%;
+      }
+
+      .quiz-question {
+        margin-bottom: 20px;
+      }
+
+      .quiz-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .quiz-option {
+        padding: 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .quiz-option:hover {
+        background-color: #f5f7fa;
+      }
+
+      .quiz-option.selected {
+        border-color: #000;
+        background-color: #eef1ff;
+      }
+
+      .quiz-navigation {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
+
+      .quiz-button {
+        background-color: #000;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .quiz-button.back {
+        background-color: #e0e0e0;
+        color: #333;
+      }
+
+      /* Social Proof Tab Styling */
+      .social-container {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .social-header {
+        margin-bottom: 15px;
+      }
+
+      .testimonials {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .testimonial {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+      }
+
+      .testimonial-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .testimonial-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 20px;
+        background-color: #e0e0e0;
+        margin-right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        font-size: 16px;
+      }
+
+      .testimonial-user {
+        font-weight: bold;
+      }
+
+      .testimonial-content {
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .testimonial-images {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .testimonial-image {
+        width: 80px;
+        height: 80px;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        font-size: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-container">
+      <h1>Stylist Full Widget Demo</h1>
+      <p>
+        Click the button below to open the complete stylist widget with all
+        features:
+      </p>
+      <button class="open-button" id="openWidgetBtn">
+        Open Stylist Widget
+      </button>
+    </div>
+
+    <!-- Full Stylist Widget -->
+    <div class="stylist-widget" id="stylistWidget" style="display: none">
+      <!-- Widget Header -->
+      <div class="widget-header">
+        <div class="widget-title">
+          <button class="home-button" id="homeButton" title="Return to Home">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </button>
+          <span>The Stylist</span>
+        </div>
+        <div class="widget-controls">
+          <button
+            class="control-button"
+            id="mockModeToggleBtn"
+            title="Toggle mock mode"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              viewBox="0 0 24 24"
+            >
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"></path>
+              <path d="M20.49 15a9 9 0 0 1-14.13 3.36L1 14"></path>
+            </svg>
+          </button>
+
+          <button class="control-button" id="minimizeWidgetBtn">—</button>
+          <button class="control-button" id="closeWidgetBtn">✕</button>
+        </div>
+      </div>
+
+      <!-- Radial Hub Menu -->
+      <div class="radial-hub-container">
+        <div class="radial-hub">
+          <!-- Center item (My Closet) -->
+          <div class="hub-item center-item" data-tab="closet">
+            <div class="hub-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </div>
+            <div class="hub-label">My Closet</div>
+          </div>
+
+          <!-- Top item (Trending Items) -->
+          <div class="hub-item top-item" data-tab="trending">
+            <div class="hub-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+            </div>
+            <div class="hub-label">Trending</div>
+          </div>
+
+          <!-- Right item (Virtual Try-On) -->
+          <div class="hub-item right-item" data-tab="tryOn">
+            <div class="hub-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"
+                ></path>
+              </svg>
+            </div>
+            <div class="hub-label">Try-On</div>
+          </div>
+
+          <div class="hub-item bottom-item" data-tab="quiz">
+            <div class="hub-icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                viewBox="0 0 24 24"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 1 1 5.82 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12" y2="17"></line>
+              </svg>
+            </div>
+            <div class="hub-label">Style Quiz</div>
+          </div>
+
+          <!-- Left item (Social Proof) -->
+          <div class="hub-item left-item" data-tab="social">
+            <div class="hub-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect
+                  x="2"
+                  y="2"
+                  width="20"
+                  height="20"
+                  rx="2.18"
+                  ry="2.18"
+                ></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+            </div>
+            <div class="hub-label">Social Proof</div>
+          </div>
+
+          <!-- Top-Right item (Wishlist) - NEW -->
+          <div class="hub-item top-right-item" data-tab="wishlist">
+            <div class="hub-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                ></path>
+              </svg>
+            </div>
+            <div class="hub-label">Wishlist</div>
+          </div>
+
+          <!-- Radial lines connecting center to items -->
+          <div class="radial-lines">
+            <div class="radial-line line-top"></div>
+            <div class="radial-line line-right"></div>
+            <div class="radial-line line-bottom"></div>
+            <div class="radial-line line-left"></div>
+            <div class="radial-line line-top-right"></div>
+          </div>
+        </div>
+
+        <!-- Hub Title -->
+        <div class="hub-title">Personalized Stylist</div>
+
+        <!-- Generate Suggestions Button -->
+        <div class="generate-container">
+          <button id="generateSuggestionsBtn" class="generate-button">
+            Generate Suggestions
+          </button>
+        </div>
+      </div>
+
+      <!-- Widget Content Area -->
+      <div class="widget-content">
+        <!-- Chat Tab (Home) -->
+        <div class="tab-content active" id="chatTab">
+          <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+              <div class="message assistant">
+                Hi there! I'm your AI style assistant. How can I help you today?
+              </div>
+              <div class="message assistant">
+                I can help you with: • Finding clothes that match your style •
+                Creating complete outfits • Virtual try-ons • Style advice and
+                tips
+              </div>
+            </div>
+            <div class="chat-input">
+              <button
+                id="uploadImageBtn"
+                style="
+                  background: none;
+                  border: none;
+                  cursor: pointer;
+                  font-size: 20px;
+                  color: #777;
+                  margin-right: 5px;
+                "
+                title="Upload Image"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 19V5M5 12l7-7 7 7" />
+                </svg>
+              </button>
+              <input
+                type="text"
+                id="chatInput"
+                placeholder="Type your message..."
+              />
+              <button id="sendMessageBtn">Send</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- My Closet Tab -->
+        <div class="tab-content" id="closetTab">
+          <div class="closet-container">
+            <div class="closet-header">
+              <h3>My Closet</h3>
+              <p>Your saved clothing items will appear here.</p>
+            </div>
+            <div class="closet-grid">
+              <div class="closet-item">
+                <div class="closet-item-image">White T-Shirt</div>
+                <div class="closet-item-info">
+                  <div class="closet-item-name">White T-Shirt</div>
+                  <div class="closet-item-category">Tops / Casual</div>
+                </div>
+              </div>
+              <div class="closet-item">
+                <div class="closet-item-image">Blue Jeans</div>
+                <div class="closet-item-info">
+                  <div class="closet-item-name">Slim Fit Jeans</div>
+                  <div class="closet-item-category">Bottoms / Jeans</div>
+                </div>
+              </div>
+              <div class="closet-item">
+                <div class="closet-item-image">Leather Jacket</div>
+                <div class="closet-item-info">
+                  <div class="closet-item-name">Leather Jacket</div>
+                  <div class="closet-item-category">Outerwear / Jackets</div>
+                </div>
+              </div>
+              <div class="closet-item">
+                <div class="closet-item-image">Sneakers</div>
+                <div class="closet-item-info">
+                  <div class="closet-item-name">White Sneakers</div>
+                  <div class="closet-item-category">Footwear / Casual</div>
+                </div>
+              </div>
+            </div>
+            <div class="closet-upload">
+              <p>Add items to your closet by uploading photos</p>
+              <button class="closet-upload-button">Upload Item</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trending Tab -->
+        <div class="tab-content" id="trendingTab">
+          <div class="trending-container">
+            <h3>Trending Items</h3>
+            <div class="trending-grid">
+              <div class="trending-item" data-item-id="item1">
+                <div class="trending-image">Oversized Sweater</div>
+                <div class="trending-info">
+                  <div class="trending-name">Oversized Sweater</div>
+                  <div class="trending-brand">Brand: Cozy Wear</div>
+                  <div class="trending-price">$49.99</div>
+                </div>
+                <div class="trending-item-actions">
+                  <button class="action-button like-button" title="Like">
+                    <span class="heart-icon"></span>
+                  </button>
+                  <button class="action-button dislike-button" title="Dislike">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M10 15v4a2 2 0 0 0 2 2l4-10v-6H5.5A2.5 2.5 0 0 0 3 7.5v0a2.5 2.5 0 0 0 2.5 2.5H9l-1 1v1a2 2 0 0 0 2 2h0z"
+                      ></path>
+                      <path d="M16 5h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3"></path>
+                    </svg>
+                  </button>
+                  <button
+                    class="action-button save-button"
+                    title="Save to Closet"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"
+                      ></path>
+                      <path d="M3 6h18"></path>
+                      <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="trending-item" data-item-id="item2">
+                <div class="trending-image">Cargo Pants</div>
+                <div class="trending-info">
+                  <div class="trending-name">Cargo Pants</div>
+                  <div class="trending-brand">Brand: UrbanStyle</div>
+                  <div class="trending-price">$59.99</div>
+                </div>
+                <div class="trending-item-actions">
+                  <button class="action-button like-button" title="Like">
+                    <span class="heart-icon"></span>
+                  </button>
+                  <button class="action-button dislike-button" title="Dislike">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M10 15v4a2 2 0 0 0 2 2l4-10v-6H5.5A2.5 2.5 0 0 0 3 7.5v0a2.5 2.5 0 0 0 2.5 2.5H9l-1 1v1a2 2 0 0 0 2 2h0z"
+                      ></path>
+                      <path d="M16 5h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3"></path>
+                    </svg>
+                  </button>
+                  <button
+                    class="action-button save-button"
+                    title="Save to Closet"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"
+                      ></path>
+                      <path d="M3 6h18"></path>
+                      <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="trending-item" data-item-id="item3">
+                <div class="trending-image">Platform Boots</div>
+                <div class="trending-info">
+                  <div class="trending-name">Platform Boots</div>
+                  <div class="trending-brand">Brand: FootFashion</div>
+                  <div class="trending-price">$89.99</div>
+                </div>
+                <div class="trending-item-actions">
+                  <button class="action-button like-button" title="Like">
+                    <span class="heart-icon"></span>
+                  </button>
+                  <button class="action-button dislike-button" title="Dislike">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M10 15v4a2 2 0 0 0 2 2l4-10v-6H5.5A2.5 2.5 0 0 0 3 7.5v0a2.5 2.5 0 0 0 2.5 2.5H9l-1 1v1a2 2 0 0 0 2 2h0z"
+                      ></path>
+                      <path d="M16 5h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3"></path>
+                    </svg>
+                  </button>
+                  <button
+                    class="action-button save-button"
+                    title="Save to Closet"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"
+                      ></path>
+                      <path d="M3 6h18"></path>
+                      <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="trending-item" data-item-id="item4">
+                <div class="trending-image">Crossbody Bag</div>
+                <div class="trending-info">
+                  <div class="trending-name">Crossbody Bag</div>
+                  <div class="trending-brand">Brand: Accessorize</div>
+                  <div class="trending-price">$39.99</div>
+                </div>
+                <div class="trending-item-actions">
+                  <button class="action-button like-button" title="Like">
+                    <span class="heart-icon"></span>
+                  </button>
+                  <button class="action-button dislike-button" title="Dislike">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M10 15v4a2 2 0 0 0 2 2l4-10v-6H5.5A2.5 2.5 0 0 0 3 7.5v0a2.5 2.5 0 0 0 2.5 2.5H9l-1 1v1a2 2 0 0 0 2 2h0z"
+                      ></path>
+                      <path d="M16 5h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-3"></path>
+                    </svg>
+                  </button>
+                  <button
+                    class="action-button save-button"
+                    title="Save to Closet"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"
+                      ></path>
+                      <path d="M3 6h18"></path>
+                      <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Try-On Tab -->
+        <div class="tab-content" id="tryOnTab">
+          <div class="tryon-container">
+            <div class="tryon-header">
+              <h3>Virtual Try-On</h3>
+              <p>See how clothes will look on you</p>
+            </div>
+            <div class="tryon-canvas">
+              <!-- Placeholder for try-on canvas -->
+            </div>
+            <div class="tryon-selector">
+              <div class="tryon-item selected">Shirt 1</div>
+              <div class="tryon-item">Shirt 2</div>
+              <div class="tryon-item">Hoodie</div>
+              <div class="tryon-item">Jacket</div>
+              <div class="tryon-item">Sweater</div>
+              <div class="tryon-item">Blouse</div>
+            </div>
+            <div class="tryon-controls">
+              <button class="tryon-button">Upload Photo</button>
+              <button class="tryon-button">Try It On</button>
+              <button class="tryon-button">Save Result</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Style Quiz Tab -->
+        <div class="tab-content" id="quizTab">
+          <div class="quiz-container">
+            <div class="quiz-header">
+              <h3>Style Quiz</h3>
+              <p>Let's find your perfect style</p>
+            </div>
+            <div class="quiz-progress">
+              <div class="quiz-progress-bar"></div>
+            </div>
+            <div class="quiz-question">
+              <h4>What's your preferred style?</h4>
+            </div>
+            <div class="quiz-options">
+              <div class="quiz-option">Casual & Comfortable</div>
+              <div class="quiz-option selected">Modern & Minimalist</div>
+              <div class="quiz-option">Bold & Colorful</div>
+              <div class="quiz-option">Classic & Elegant</div>
+              <div class="quiz-option">Streetwear & Urban</div>
+            </div>
+            <div class="quiz-navigation">
+              <button class="quiz-button back">Back</button>
+              <button class="quiz-button next">Next</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Social Proof Tab -->
+        <div class="tab-content" id="socialTab">
+          <div class="social-container">
+            <div class="social-header">
+              <h3>Style Community</h3>
+              <p>See what others are saying</p>
+            </div>
+            <div class="testimonials">
+              <div class="testimonial">
+                <div class="testimonial-header">
+                  <div class="testimonial-avatar">JD</div>
+                  <div class="testimonial-user">Jane Doe</div>
+                </div>
+                <div class="testimonial-content">
+                  "This style assistant helped me find the perfect outfit for my
+                  job interview! The recommendations were on point."
+                </div>
+                <div class="testimonial-images">
+                  <div class="testimonial-image">Outfit 1</div>
+                  <div class="testimonial-image">Outfit 2</div>
+                </div>
+              </div>
+              <div class="testimonial">
+                <div class="testimonial-header">
+                  <div class="testimonial-avatar">MS</div>
+                  <div class="testimonial-user">Mike Smith</div>
+                </div>
+                <div class="testimonial-content">
+                  "The virtual try-on feature is amazing! I could see exactly
+                  how the jacket would look on me before buying."
+                </div>
+              </div>
+              <div class="testimonial">
+                <div class="testimonial-header">
+                  <div class="testimonial-avatar">AT</div>
+                  <div class="testimonial-user">Alex Taylor</div>
+                </div>
+                <div class="testimonial-content">
+                  "I've been using this for a month and my style has improved so
+                  much. Their recommendations are always on trend!"
+                </div>
+                <div class="testimonial-images">
+                  <div class="testimonial-image">Before</div>
+                  <div class="testimonial-image">After</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Create a simple Zustand-like store for maintaining state
+      const createStore = (initialState) => {
+        let state = initialState;
+        const listeners = new Set();
+
+        const setState = (partial) => {
+          // Update state
+          const nextState =
+            typeof partial === "function" ? partial(state) : partial;
+
+          state = { ...state, ...nextState };
+
+          // Notify listeners
+          listeners.forEach((listener) => listener(state));
+        };
+
+        const getState = () => state;
+
+        const subscribe = (listener) => {
+          listeners.add(listener);
+          return () => listeners.delete(listener);
+        };
+
+        return {
+          setState,
+          getState,
+          subscribe,
+        };
+      };
+
+      // Create a user store
+      const userStore = createStore({
+        likedItems: [],
+        dislikedItems: [],
+        closetItems: [],
+        viewedItems: [],
+        styleQuizResults: null,
+        addLikedItem: (itemId) => {
+          const currentState = userStore.getState();
+          // Remove from disliked items if it exists there
+          const dislikedItems = currentState.dislikedItems.filter(
+            (id) => id !== itemId
+          );
+
+          // Only add to liked if not already there
+          let likedItems = [...currentState.likedItems];
+          if (!likedItems.includes(itemId)) {
+            likedItems.push(itemId);
+          }
+
+          userStore.setState({
+            likedItems,
+            dislikedItems,
+          });
+
+          // Save to localStorage
+          localStorage.setItem(
+            "stylist_liked_items",
+            JSON.stringify(likedItems)
+          );
+          localStorage.setItem(
+            "stylist_disliked_items",
+            JSON.stringify(dislikedItems)
+          );
+        },
+        addDislikedItem: (itemId) => {
+          const currentState = userStore.getState();
+          // Remove from liked items if it exists there
+          const likedItems = currentState.likedItems.filter(
+            (id) => id !== itemId
+          );
+
+          // Only add to disliked if not already there
+          let dislikedItems = [...currentState.dislikedItems];
+          if (!dislikedItems.includes(itemId)) {
+            dislikedItems.push(itemId);
+          }
+
+          userStore.setState({
+            likedItems,
+            dislikedItems,
+          });
+
+          // Save to localStorage
+          localStorage.setItem(
+            "stylist_liked_items",
+            JSON.stringify(likedItems)
+          );
+          localStorage.setItem(
+            "stylist_disliked_items",
+            JSON.stringify(dislikedItems)
+          );
+        },
+        addToCloset: (item) => {
+          const currentState = userStore.getState();
+          // Check if item already exists in closet
+          if (!currentState.closetItems.some((i) => i.id === item.id)) {
+            const closetItems = [...currentState.closetItems, item];
+            userStore.setState({ closetItems });
+            // Save to localStorage
+            localStorage.setItem(
+              "stylist_closet_items",
+              JSON.stringify(closetItems)
+            );
+          }
+        },
+        removeFromCloset: (itemId) => {
+          const currentState = userStore.getState();
+          const closetItems = currentState.closetItems.filter(
+            (item) => item.id !== itemId
+          );
+          userStore.setState({ closetItems });
+          // Save to localStorage
+          localStorage.setItem(
+            "stylist_closet_items",
+            JSON.stringify(closetItems)
+          );
+        },
+        addViewedItem: (itemId) => {
+          const currentState = userStore.getState();
+          let viewedItems = [...currentState.viewedItems];
+          if (!viewedItems.includes(itemId)) {
+            viewedItems.push(itemId);
+            userStore.setState({ viewedItems });
+            // Save to localStorage
+            localStorage.setItem(
+              "stylist_viewed_items",
+              JSON.stringify(viewedItems)
+            );
+          }
+        },
+        setStyleQuizResults: (results) => {
+          userStore.setState({ styleQuizResults: results });
+          // Save to localStorage
+          localStorage.setItem("stylist_quiz_results", JSON.stringify(results));
+        },
+      });
+
+      // Load data from localStorage if available
+      document.addEventListener("DOMContentLoaded", () => {
+        try {
+          const likedItems =
+            JSON.parse(localStorage.getItem("stylist_liked_items")) || [];
+          const dislikedItems =
+            JSON.parse(localStorage.getItem("stylist_disliked_items")) || [];
+          const closetItems =
+            JSON.parse(localStorage.getItem("stylist_closet_items")) || [];
+          const viewedItems =
+            JSON.parse(localStorage.getItem("stylist_viewed_items")) || [];
+          const styleQuizResults = JSON.parse(
+            localStorage.getItem("stylist_quiz_results")
+          );
+
+          userStore.setState({
+            likedItems,
+            dislikedItems,
+            closetItems,
+            viewedItems,
+            styleQuizResults,
+          });
+        } catch (e) {
+          console.error("Error loading data from localStorage:", e);
+        }
+      });
+
+      // API client for backend communication with mock fallbacks
+      const API = {
+        baseUrl: "http://localhost:8000/api/v1",
+        apiKey: "development_key", // Match the API key from config.py
+        mockMode: true, // Set to true to use mock data instead of real API calls
+
+        // Helper to handle CORS issues
+        handleCorsError(error) {
+          console.error("Possible CORS or network error:", error);
+          this.mockMode = true; // Switch to mock mode on error
+          // In a production environment, you'd want to show a user-friendly message
+        },
+        userId:
+          localStorage.getItem("stylist_user_id") ||
+          "user_" + Math.random().toString(36).substring(2, 10),
+
+        async createUser() {
+          // If in mock mode, return mock data
+          if (this.mockMode) {
+            console.log("Using mock user:", this.userId);
+            return { user_id: this.userId };
+          }
+
+          try {
+            // Create with schema-matching user data
+            const response = await fetch(`${this.baseUrl}/users`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-API-Key": this.apiKey,
+              },
+              body: JSON.stringify({
+                user_id: this.userId,
+                style_quiz: {},
+                closet_items: [],
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error(`Failed to create user: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            this.userId = data.user_id;
+            localStorage.setItem("stylist_user_id", this.userId);
+            console.log("Created new user:", this.userId);
+            return data;
+          } catch (error) {
+            console.error("Error creating user:", error);
+            this.mockMode = true; // Switch to mock mode
+            return { user_id: this.userId };
+          }
+        },
+
+        async getRecommendations(limit = 6) {
+          // Define mock data
+          const mockRecommendations = {
+            recommended_items: [
+              {
+                id: "item1",
+                name: "Oversized Sweater",
+                brand: "Cozy Wear",
+                category: "Tops",
+                price: 49.99,
+                image_url: "Oversized Sweater",
+              },
+              {
+                id: "item2",
+                name: "Cargo Pants",
+                brand: "UrbanStyle",
+                category: "Bottoms",
+                price: 59.99,
+                image_url: "Cargo Pants",
+              },
+              {
+                id: "item3",
+                name: "Platform Boots",
+                brand: "FootFashion",
+                category: "Shoes",
+                price: 89.99,
+                image_url: "Platform Boots",
+              },
+              {
+                id: "item4",
+                name: "Crossbody Bag",
+                brand: "Accessorize",
+                category: "Accessories",
+                price: 39.99,
+                image_url: "Crossbody Bag",
+              },
+            ],
+          };
+
+          // If in mock mode, return mock data immediately
+          if (this.mockMode) {
+            console.log("Using mock recommendations");
+            return mockRecommendations;
+          }
+
+          try {
+            const response = await fetch(
+              `${this.baseUrl}/users/${this.userId}/recommendations?limit=${limit}`,
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-API-Key": this.apiKey,
+                },
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error(
+                `Failed to get recommendations: ${response.statusText}`
+              );
+            }
+
+            return await response.json();
+          } catch (error) {
+            console.error("Error getting recommendations:", error);
+            // Switch to mock mode on error
+            this.mockMode = true;
+            return mockRecommendations;
+          }
+        },
+
+        async sendChatMessage(message, context = []) {
+          // Define mock response generator function
+          const getMockResponse = (userMessage) => {
+            let response =
+              "I'm sorry, I'm not sure how to help with that. Could you try asking about fashion or style advice?";
+
+            if (
+              userMessage.toLowerCase().includes("hello") ||
+              userMessage.toLowerCase().includes("hi")
+            ) {
+              response = "Hello! How can I help with your fashion needs today?";
+            } else if (userMessage.toLowerCase().includes("style")) {
+              response =
+                "I'd be happy to give you style advice! What kind of look are you going for?";
+            } else if (
+              userMessage.toLowerCase().includes("outfit") ||
+              userMessage.toLowerCase().includes("wear")
+            ) {
+              response =
+                "I can help you put together a great outfit! What occasion are you dressing for?";
+            } else if (userMessage.toLowerCase().includes("color")) {
+              response =
+                "Colors are so important in fashion! What's your skin tone or hair color? That helps me recommend colors that would suit you.";
+            } else if (userMessage.toLowerCase().includes("recommend")) {
+              response =
+                "I'd recommend checking out some classic pieces that never go out of style, like a well-fitted white shirt, good jeans, and a versatile blazer.";
+            }
+
+            return { response };
+          };
+
+          // If in mock mode, return mock response immediately
+          if (this.mockMode) {
+            console.log("Using mock chat response");
+            return getMockResponse(message);
+          }
+
+          try {
+            const response = await fetch(`${this.baseUrl}/chat`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-API-Key": this.apiKey,
+              },
+              body: JSON.stringify({
+                userId: this.userId, // Note: API expects "userId" not "user_id" for chat
+                message: message,
+                context: context,
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error(
+                `Failed to send chat message: ${response.statusText}`
+              );
+            }
+
+            return await response.json();
+          } catch (error) {
+            console.error("Error sending chat message:", error);
+            // Switch to mock mode on error
+            this.mockMode = true;
+            return getMockResponse(message);
+          }
+        },
+
+        async submitStyleQuiz(answers) {
+          // Define mock data
+          const mockResponse = {
+            quiz_processed: true,
+            message: "Your style preferences have been saved!",
+          };
+
+          // If in mock mode, return mock data immediately
+          if (this.mockMode) {
+            console.log("Using mock style quiz submission");
+            return mockResponse;
+          }
+
+          try {
+            const response = await fetch(
+              `${this.baseUrl}/users/${this.userId}/style-quiz`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-API-Key": this.apiKey,
+                },
+                body: JSON.stringify({
+                  answers: answers,
+                }),
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error(
+                `Failed to submit style quiz: ${response.statusText}`
+              );
+            }
+
+            return await response.json();
+          } catch (error) {
+            console.error("Error submitting style quiz:", error);
+            // Switch to mock mode on error
+            this.mockMode = true;
+            return mockResponse;
+          }
+        },
+
+        async addItemToCloset(itemData) {
+          // Define mock data
+          const mockItemId =
+            "item_" + Math.random().toString(36).substring(2, 10);
+          const mockResponse = {
+            success: true,
+            item_id: mockItemId,
+          };
+
+          // If in mock mode, return mock data immediately
+          if (this.mockMode) {
+            console.log("Using mock closet item addition");
+            return mockResponse;
+          }
+
+          try {
+            const response = await fetch(
+              `${this.baseUrl}/users/${this.userId}/closet`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-API-Key": this.apiKey,
+                },
+                body: JSON.stringify(itemData),
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error(
+                `Failed to add item to closet: ${response.statusText}`
+              );
+            }
+
+            return await response.json();
+          } catch (error) {
+            console.error("Error adding item to closet:", error);
+            // Switch to mock mode on error
+            this.mockMode = true;
+            return mockResponse;
+          }
+        },
+
+        async getClosetItems() {
+          // Define mock data
+          const mockClosetItems = {
+            items: [
+              {
+                item_id: "c1",
+                name: "White T-Shirt",
+                category: "Tops",
+                subcategory: "Casual",
+              },
+              {
+                item_id: "c2",
+                name: "Slim Fit Jeans",
+                category: "Bottoms",
+                subcategory: "Jeans",
+              },
+              {
+                item_id: "c3",
+                name: "Leather Jacket",
+                category: "Outerwear",
+                subcategory: "Jackets",
+              },
+              {
+                item_id: "c4",
+                name: "White Sneakers",
+                category: "Footwear",
+                subcategory: "Casual",
+              },
+            ],
+          };
+
+          // If in mock mode, return mock data immediately
+          if (this.mockMode) {
+            console.log("Using mock closet items");
+            return mockClosetItems;
+          }
+
+          try {
+            const response = await fetch(
+              `${this.baseUrl}/users/${this.userId}/closet`,
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-API-Key": this.apiKey,
+                },
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error(
+                `Failed to get closet items: ${response.statusText}`
+              );
+            }
+
+            return await response.json();
+          } catch (error) {
+            console.error("Error getting closet items:", error);
+            // Switch to mock mode on error
+            this.mockMode = true;
+            return mockClosetItems;
+          }
+        },
+
+        async processVirtualTryOn(userImage, clothingItem) {
+          // Define mock data
+          const mockTryOnResult = {
+            success: true,
+            result_url: "virtual-try-on-result",
+          };
+
+          // For try-on, we'll always use mock mode since we don't have a real backend for this
+          // But we'll respect the global mockMode flag for consistency
+          if (this.mockMode) {
+            console.log("Using mock virtual try-on process");
+            // Still add a delay to simulate processing even in mock mode
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            return mockTryOnResult;
+          }
+
+          try {
+            // This would be a real API call in production
+            console.log("Processing virtual try-on:", userImage, clothingItem);
+
+            // In a real implementation, this would upload both images to a backend service
+            // For demo purposes, we'll simulate a network call with a delay
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+
+            // Simulate a 50% chance of API success/failure to demonstrate fallback
+            if (Math.random() > 0.5) {
+              throw new Error("Simulated backend error for try-on");
+            }
+
+            return mockTryOnResult;
+          } catch (error) {
+            console.error("Error processing virtual try-on:", error);
+            // Switch to mock mode on error
+            this.mockMode = true;
+            return mockTryOnResult;
+          }
+        },
+      };
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // Get widget elements
+        const widget = document.getElementById("stylistWidget");
+        const openBtn = document.getElementById("openWidgetBtn");
+        const closeBtn = document.getElementById("closeWidgetBtn");
+        const minimizeBtn = document.getElementById("minimizeWidgetBtn");
+        const mockModeToggleBtn = document.getElementById("mockModeToggleBtn");
+        const homeBtn = document.getElementById("homeButton");
+        const hubItems = document.querySelectorAll(".hub-item");
+        const tabContents = document.querySelectorAll(".tab-content");
+        const chatInput = document.getElementById("chatInput");
+        const sendBtn = document.getElementById("sendMessageBtn");
+        const chatMessages = document.getElementById("chatMessages");
+        const generateBtn = document.getElementById("generateSuggestionsBtn");
+        const uploadImageBtn = document.getElementById("uploadImageBtn");
+
+        // Initialize user and load data
+        async function initializeWidget() {
+          try {
+            // Hide home button initially (since we're on home tab)
+            homeBtn.style.display = "none";
+
+            // Create or get user
+            await API.createUser();
+
+            // Load recommendations for trending tab
+            const recommendations = await API.getRecommendations();
+            updateTrendingItems(recommendations);
+
+            // Load closet items
+            const closetData = await API.getClosetItems();
+            updateClosetItems(closetData);
+
+            console.log(
+              "Widget initialized successfully with mockMode:",
+              API.mockMode
+            );
+          } catch (error) {
+            console.error("Widget initialization had errors:", error);
+            console.warn("Proceeding with mock data");
+
+            // Force mockMode on if any initialization fails
+            API.mockMode = true;
+
+            // Try again with mockMode forced
+            const recommendations = await API.getRecommendations();
+            updateTrendingItems(recommendations);
+
+            const closetData = await API.getClosetItems();
+            updateClosetItems(closetData);
+          }
+        }
+
+        // Update trending items from API data
+        function updateTrendingItems(data) {
+          const trendingGrid = document.querySelector(".trending-grid");
+
+          // Clear existing items
+          trendingGrid.innerHTML = "";
+
+          // Current user store state
+          const userState = userStore.getState();
+
+          // Add items from API
+          if (data.recommended_items && data.recommended_items.length > 0) {
+            data.recommended_items.forEach((item) => {
+              // Track this item as viewed
+              userStore.getState().addViewedItem(item.id);
+
+              const itemElement = document.createElement("div");
+              itemElement.className = "trending-item";
+              itemElement.setAttribute("data-item-id", item.id);
+
+              // Check if item is liked/disliked
+              const isLiked = userState.likedItems.includes(item.id);
+              const isDisliked = userState.dislikedItems.includes(item.id);
+              const isInCloset = userState.closetItems.some(
+                (i) => i.id === item.id
+              );
+
+              itemElement.innerHTML = `
+              <div class="trending-image">${item.image_url || item.name}</div>
+              <div class="trending-info">
+                <div class="trending-name">${item.name}</div>
+                <div class="trending-brand">Brand: ${item.brand}</div>
+                <div class="trending-price">$${item.price.toFixed(2)}</div>
+              </div>
+              <div class="trending-item-actions">
+  <button class="action-button like-button ${
+    isLiked ? "active" : ""
+  }" title="Like">
+    <span class="heart-icon"></span>
+  </button>
+
+  <button class="action-button dislike-button ${
+    isDisliked ? "active" : ""
+  }" title="Dislike">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="3 6 5 6 21 6"></polyline>
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+      <path d="M10 11v6"></path>
+      <path d="M14 11v6"></path>
+      <path d="M5 6l1-2h12l1 2"></path>
+    </svg>
+  </button>
+
+  <button class="action-button save-button ${
+    isInCloset ? "active" : ""
+  }" title="Save to Closet">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+      <polyline points="21 15 16 10 5 21"></polyline>
+    </svg>
+  </button>
+</div>
+
+            `;
+              trendingGrid.appendChild(itemElement);
+
+              // Get the buttons from the item
+              const likeBtn = itemElement.querySelector(".like-button");
+              const dislikeBtn = itemElement.querySelector(".dislike-button");
+              const saveBtn = itemElement.querySelector(".save-button");
+
+              // Add event listeners for buttons
+              likeBtn.addEventListener("click", function (e) {
+                e.stopPropagation(); // Prevent item click event
+
+                // Update UI first for immediate feedback
+                if (!likeBtn.classList.contains("active")) {
+                  likeBtn.classList.add("active");
+                  dislikeBtn.classList.remove("active");
+
+                  // Add subtle animation
+                  likeBtn.style.transform = "scale(1.2)";
+                  setTimeout(() => {
+                    likeBtn.style.transform = "scale(1)";
+                  }, 200);
+
+                  // Show feedback in chat
+                  addAssistantMessage(
+                    `Great! I'll recommend more items like "${item.name}" in the future.`
+                  );
+                }
+
+                // Update store
+                userStore.getState().addLikedItem(item.id);
+              });
+
+              dislikeBtn.addEventListener("click", function (e) {
+                e.stopPropagation(); // Prevent item click event
+
+                // Update UI first for immediate feedback
+                if (!dislikeBtn.classList.contains("active")) {
+                  dislikeBtn.classList.add("active");
+                  likeBtn.classList.remove("active");
+
+                  // Add subtle animation
+                  dislikeBtn.style.transform = "scale(1.2)";
+                  setTimeout(() => {
+                    dislikeBtn.style.transform = "scale(1)";
+                  }, 200);
+
+                  // Show feedback in chat
+                  addAssistantMessage(
+                    `Thanks for the feedback. I'll show you fewer items like "${item.name}" in the future.`
+                  );
+                }
+
+                // Update store
+                userStore.getState().addDislikedItem(item.id);
+              });
+
+              saveBtn.addEventListener("click", function (e) {
+                e.stopPropagation(); // Prevent item click event
+
+                // Update UI first for immediate feedback
+                if (!saveBtn.classList.contains("active")) {
+                  saveBtn.classList.add("active");
+
+                  // Add subtle animation
+                  saveBtn.style.transform = "scale(1.2)";
+                  setTimeout(() => {
+                    saveBtn.style.transform = "scale(1)";
+                  }, 200);
+
+                  // Show feedback in chat
+                  addAssistantMessage(
+                    `I've saved "${item.name}" to your closet. You can access it anytime from the My Closet tab.`
+                  );
+
+                  // Update the store
+                  userStore.getState().addToCloset({
+                    id: item.id,
+                    name: item.name,
+                    brand: item.brand,
+                    category: item.category || "Unknown",
+                    subcategory: item.subcategory || "",
+                    price: item.price,
+                    imageUrl: item.image_url || item.name,
+                  });
+
+                  // Refresh closet tab data
+                  updateClosetItems({
+                    items: userStore.getState().closetItems.map((i) => ({
+                      item_id: i.id,
+                      name: i.name,
+                      category: i.category,
+                      subcategory: i.subcategory,
+                    })),
+                  });
+                }
+              });
+
+              // Add click event to try item on
+              itemElement.addEventListener("click", function () {
+                // Switch to try-on tab with this item
+                switchToTab("tryOn");
+
+                // Show message that item is selected
+                addAssistantMessage(
+                  `Let's try on ${item.name}! Upload your photo to see how it looks.`
+                );
+              });
+            });
+          }
+        }
+
+        // Update closet items from API data
+        function updateClosetItems(data) {
+          const closetGrid = document.querySelector(".closet-grid");
+
+          // Clear existing items
+          closetGrid.innerHTML = "";
+
+          // Priority to items from store for persistence
+          const storeItems = userStore.getState().closetItems;
+          const itemsToDisplay =
+            storeItems.length > 0
+              ? storeItems.map((item) => ({
+                  item_id: item.id,
+                  name: item.name,
+                  category: item.category,
+                  subcategory: item.subcategory,
+                  imageUrl: item.imageUrl,
+                }))
+              : data.items;
+
+          // Add items from store or API
+          if (itemsToDisplay && itemsToDisplay.length > 0) {
+            itemsToDisplay.forEach((item) => {
+              const itemElement = document.createElement("div");
+              itemElement.className = "closet-item";
+              itemElement.setAttribute("data-item-id", item.item_id);
+
+              // Check if we have a real image URL
+              const isImageUrl =
+                item.imageUrl &&
+                (item.imageUrl.startsWith("http") ||
+                  item.imageUrl.startsWith("data:image"));
+
+              const imageContent = isImageUrl
+                ? `<img src="${item.imageUrl}" style="width: 100%; height: 100%; object-fit: cover;">`
+                : item.name;
+
+              itemElement.innerHTML = `
+              <div class="closet-item-image">${imageContent}</div>
+              <div class="closet-item-info">
+                <div class="closet-item-name">${item.name}</div>
+                <div class="closet-item-category">${item.category} ${
+                item.subcategory ? "/ " + item.subcategory : ""
+              }</div>
+              </div>
+              <button class="remove-item-btn" style="position: absolute; top: 5px; right: 5px; background: rgba(255,255,255,0.7); border-radius: 50%; width: 24px; height: 24px; border: none; cursor: pointer; display: none;">✕</button>
+            `;
+
+              // Show remove button on hover
+              itemElement.addEventListener("mouseenter", function () {
+                this.querySelector(".remove-item-btn").style.display = "block";
+              });
+
+              itemElement.addEventListener("mouseleave", function () {
+                this.querySelector(".remove-item-btn").style.display = "none";
+              });
+
+              // Handle remove button click
+              const removeBtn = itemElement.querySelector(".remove-item-btn");
+              removeBtn.addEventListener("click", function (e) {
+                e.stopPropagation();
+
+                // Get item ID from parent element
+                const itemId = itemElement.getAttribute("data-item-id");
+
+                // Remove from store
+                userStore.getState().removeFromCloset(itemId);
+
+                // Remove from UI with animation
+                itemElement.style.transition = "all 0.3s ease";
+                itemElement.style.opacity = "0";
+                itemElement.style.transform = "scale(0.8)";
+                setTimeout(() => {
+                  closetGrid.removeChild(itemElement);
+                }, 300);
+
+                // Show feedback in chat
+                addAssistantMessage(`I've removed that item from your closet.`);
+              });
+
+              // Handle item click - show details or options
+              itemElement.addEventListener("click", function () {
+                // In a real app, this would show a detail view
+                // For now, just switch to try-on with this item
+                switchToTab("tryOn");
+                addAssistantMessage(
+                  `Let's try styling with your "${item.name}". Select another item to pair with it!`
+                );
+              });
+
+              closetGrid.appendChild(itemElement);
+            });
+          }
+
+          // Add upload item card
+          const uploadElement = document.createElement("div");
+          uploadElement.className = "closet-item";
+          uploadElement.style.position = "relative";
+          uploadElement.style.cursor = "pointer";
+          uploadElement.innerHTML = `
+          <div class="closet-item-image" style="display: flex; justify-content: center; align-items: center;">
+            <span style="font-size: 24px;">+</span>
+          </div>
+          <div class="closet-item-info">
+            <div class="closet-item-name">Add New Item</div>
+            <div class="closet-item-category">Upload a photo</div>
+          </div>
+        `;
+          closetGrid.appendChild(uploadElement);
+
+          // Add click event for upload
+          uploadElement.addEventListener("click", function () {
+            document.querySelector(".closet-upload-button").click();
+          });
+
+          // Subtle animation for newly added items
+          const items = closetGrid.querySelectorAll(".closet-item");
+          items.forEach((item, index) => {
+            item.style.opacity = "0";
+            item.style.transform = "translateY(20px)";
+            item.style.transition = "all 0.3s ease";
+
+            setTimeout(() => {
+              item.style.opacity = "1";
+              item.style.transform = "translateY(0)";
+            }, 50 * index); // Staggered animation
+          });
+        }
+
+        // Create a store for widget UI state
+        const uiStore = createStore({
+          activeTab: "chat", // Chat is the default tab (home)
+          lastActiveTab: "chat",
+          isMinimized: false,
+          setActiveTab: (tab) => {
+            const currentState = uiStore.getState();
+            uiStore.setState({
+              activeTab: tab,
+              lastActiveTab: currentState.activeTab,
+            });
+
+            // Save to localStorage
+            localStorage.setItem("stylist_active_tab", tab);
+          },
+          toggleMinimize: () => {
+            const currentState = uiStore.getState();
+            uiStore.setState({ isMinimized: !currentState.isMinimized });
+          },
+        });
+
+        // Function to switch tabs with animation
+        function switchToTab(tabName) {
+          const currentTabContent = document.querySelector(
+            ".tab-content.active"
+          );
+          const targetTabContent = document.getElementById(`${tabName}Tab`);
+
+          if (!targetTabContent || currentTabContent === targetTabContent)
+            return;
+
+          // Update store state first
+          uiStore.getState().setActiveTab(tabName);
+
+          // Update hub items (radial menu)
+          hubItems.forEach((item) => item.classList.remove("active"));
+
+          // Only try to highlight a hub item if we're not switching to chat
+          // Chat doesn't have a hub item, it's the default/home view
+          if (tabName !== "chat") {
+            const tabElement = document.querySelector(
+              `.hub-item[data-tab="${tabName}"]`
+            );
+            if (tabElement) {
+              tabElement.classList.add("active");
+            }
+          }
+
+          // Hide radial hub container if not on the home view
+          const hubContainer = document.querySelector(".radial-hub-container");
+          const isHome = tabName === "chat"; // Chat is our home tab
+
+          // Animate hub container
+          hubContainer.style.transition = "all 0.3s ease";
+
+          if (!isHome) {
+            // Hide the hub when not on home
+            hubContainer.style.maxHeight = "0";
+            hubContainer.style.overflow = "hidden";
+            hubContainer.style.padding = "0";
+            hubContainer.style.opacity = "0";
+
+            // Show the home button
+            homeBtn.style.display = "block";
+          } else {
+            // Show the hub on home
+            hubContainer.style.maxHeight = "180px";
+            hubContainer.style.overflow = "visible";
+            hubContainer.style.padding = "5px";
+            hubContainer.style.opacity = "1";
+
+            // Hide the home button
+            homeBtn.style.display = "none";
+          }
+
+          // Animate tab transition
+          currentTabContent.style.transition = "all 0.3s ease";
+          currentTabContent.style.opacity = "0";
+          currentTabContent.style.transform = "translateY(20px)";
+
+          setTimeout(() => {
+            // Hide previous tab
+            currentTabContent.classList.remove("active");
+
+            // Show new tab but initially transparent
+            targetTabContent.classList.add("active");
+            targetTabContent.style.transition = "all 0.3s ease";
+            targetTabContent.style.opacity = "0";
+            targetTabContent.style.transform = "translateY(-20px)";
+
+            // Force reflow
+            void targetTabContent.offsetWidth;
+
+            // Animate in
+            setTimeout(() => {
+              targetTabContent.style.opacity = "1";
+              targetTabContent.style.transform = "translateY(0)";
+            }, 50);
+          }, 300);
+
+          // Special tab-specific actions
+          if (tabName === "trending") {
+            // Refresh trending recommendations
+            API.getRecommendations().then((data) => {
+              updateTrendingItems(data);
+            });
+          } else if (tabName === "closet") {
+            // Make sure closet displays latest user store data
+            updateClosetItems({
+              items: userStore.getState().closetItems.map((i) => ({
+                item_id: i.id,
+                name: i.name,
+                category: i.category,
+                subcategory: i.subcategory,
+              })),
+            });
+          }
+        }
+
+        // Function to add assistant message to chat
+        function addAssistantMessage(text) {
+          const messageEl = document.createElement("div");
+          messageEl.className = "message assistant";
+          messageEl.textContent = text;
+          chatMessages.appendChild(messageEl);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Add a connection status indicator
+        const statusIndicator = document.createElement("div");
+        statusIndicator.style.position = "fixed";
+        statusIndicator.style.top = "10px";
+        statusIndicator.style.right = "10px";
+        statusIndicator.style.padding = "5px 10px";
+        statusIndicator.style.borderRadius = "4px";
+        statusIndicator.style.fontSize = "12px";
+        statusIndicator.style.fontWeight = "bold";
+        statusIndicator.style.zIndex = "10000";
+        statusIndicator.style.display = "none";
+        document.body.appendChild(statusIndicator);
+
+        // Function to update connection status
+        function updateConnectionStatus(isConnected) {
+          if (isConnected) {
+            statusIndicator.textContent = "Connected to Backend";
+            statusIndicator.style.backgroundColor = "#4ade80"; // Green
+            statusIndicator.style.color = "#052e16";
+          } else {
+            statusIndicator.textContent = "Using Mock Data (Offline)";
+            statusIndicator.style.backgroundColor = "#fcd34d"; // Yellow
+            statusIndicator.style.color = "#78350f";
+          }
+          statusIndicator.style.display = "block";
+
+          // Hide after 5 seconds
+          setTimeout(() => {
+            statusIndicator.style.display = "none";
+          }, 5000);
+        }
+
+        function addProductCardToChat(item) {
+          // Check if there's an existing open assistant-card container
+          let assistantCardContainer = chatMessages.querySelector(
+            ".message.assistant.assistant-card:last-of-type"
+          );
+
+          if (
+            !assistantCardContainer ||
+            assistantCardContainer.dataset.full === "true"
+          ) {
+            // If no container exists, create a new one
+            assistantCardContainer = document.createElement("div");
+            assistantCardContainer.className =
+              "message assistant assistant-card";
+            assistantCardContainer.style.padding = "0";
+            chatMessages.appendChild(assistantCardContainer);
+          }
+
+          // Create the product card
+          const productEl = createProductRecommendation(item);
+
+          // Add to the assistant card container
+          assistantCardContainer.appendChild(productEl);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+
+          // After 2 cards, mark this container as full
+          if (assistantCardContainer.children.length >= 2) {
+            assistantCardContainer.dataset.full = "true";
+          }
+        }
+
+        // Initialize and auto-open the widget
+        initializeWidget()
+          .catch((err) => {
+            console.error(
+              "Widget initialization had errors, proceeding with fallbacks:",
+              err
+            );
+          })
+          .finally(() => {
+            // Always show the widget even if there were errors
+            setTimeout(() => {
+              widget.style.display = "flex";
+              console.log("Auto-opening widget with mockMode:", API.mockMode);
+              updateConnectionStatus(!API.mockMode);
+
+              // Force the chat tab to be active (home view)
+              switchToTab("chat");
+
+              // Add welcome recommendations after a delay
+              setTimeout(async () => {
+                // Check if user has completed style quiz
+                const styleProfile = JSON.parse(
+                  localStorage.getItem("stylist_style_profile")
+                );
+
+                if (styleProfile) {
+                  // User has completed style quiz
+                  addAssistantMessage(
+                    `Welcome back! Based on your style profile (${styleProfile.primaryStyle}), I've prepared some recommendations for you.`
+                  );
+                } else {
+                  // New user
+                  addAssistantMessage(
+                    "Welcome to The Stylist! I can help you discover your personal style and find the perfect outfits."
+                  );
+                  addAssistantMessage(
+                    "To get started, you can take our style quiz, chat with me about what you're looking for, or browse trending items."
+                  );
+                }
+
+                // If no messages yet, add some recommendations
+                setTimeout(async () => {
+                  if (chatMessages.querySelectorAll(".message").length < 5) {
+                    // Add a product recommendation to demonstrate features
+                    addAssistantMessage(
+                      "Here are some trending items you might like:"
+                    );
+
+                    // Get recommendations
+                    const recs = await API.getRecommendations(2);
+                    if (
+                      recs &&
+                      recs.recommended_items &&
+                      recs.recommended_items.length > 0
+                    ) {
+                      // Add recommendations to chat with delay
+                      // Add recommendations to chat with delay
+                      recs.recommended_items
+                        .slice(0, 2)
+                        .forEach((item, index) => {
+                          setTimeout(() => {
+                            addProductCardToChat(item);
+                          }, 500 * index);
+                        });
+                    }
+                  }
+                }, 1000);
+              }, 2000);
+            }, 1000);
+          });
+
+        // Open widget button
+        openBtn.addEventListener("click", function () {
+          widget.style.display = "flex";
+        });
+
+        // Close widget button
+        closeBtn.addEventListener("click", function () {
+          widget.style.display = "none";
+        });
+
+        // Minimize widget button (we'll just close it for this demo)
+        minimizeBtn.addEventListener("click", function () {
+          widget.style.display = "none";
+        });
+
+        // Home button to return to home view (chat)
+        homeBtn.addEventListener("click", function () {
+          switchToTab("chat");
+        });
+
+        // Mock mode toggle button
+        mockModeToggleBtn.addEventListener("click", async function () {
+          // Toggle mock mode
+          API.mockMode = !API.mockMode;
+
+          // Display status
+          updateConnectionStatus(!API.mockMode);
+
+          // Reload data with new mode
+          try {
+            // Reload recommendations
+            const recommendations = await API.getRecommendations();
+            updateTrendingItems(recommendations);
+
+            // Reload closet items
+            const closetData = await API.getClosetItems();
+            updateClosetItems(closetData);
+
+            // Add message to chat about mode change
+            if (API.mockMode) {
+              addAssistantMessage(
+                "I've switched to offline mode. All features will work with mock data."
+              );
+            } else {
+              addAssistantMessage(
+                "I've switched to online mode. Connecting to the backend API."
+              );
+            }
+          } catch (error) {
+            console.error("Error reloading data after mode change:", error);
+            addAssistantMessage(
+              "There was an error changing modes. Using mock data as fallback."
+            );
+            API.mockMode = true;
+            updateConnectionStatus(false);
+          }
+        });
+
+        // Radial Hub Menu interaction - navigate to the corresponding section
+        hubItems.forEach((item) => {
+          item.addEventListener("click", function () {
+            const tabName = this.getAttribute("data-tab");
+
+            // First highlight this item
+            const wasActive = this.classList.contains("active-enlarged");
+
+            // Reset all items
+            hubItems.forEach((i) => {
+              i.classList.remove("active-enlarged");
+              i.style.transform = "";
+              if (i !== this) {
+                i.style.opacity = "1";
+              }
+            });
+
+            // Toggle clicked item's state
+            if (!wasActive) {
+              this.classList.add("active-enlarged");
+              this.style.transform = "scale(1.25)";
+              this.style.zIndex = "5";
+
+              // Dim other items slightly
+              hubItems.forEach((i) => {
+                if (i !== this) {
+                  i.style.opacity = "0.7";
+                }
+              });
+
+              // Switch to the corresponding tab (except for chat which is the home)
+              if (tabName !== "chat") {
+                switchToTab(tabName);
+              } else {
+                // If it's already the home tab, just update the UI
+                // Show a message about the selected section
+                let message = "";
+
+                switch (tabName) {
+                  case "trending":
+                    message =
+                      "Trending items are what's hot right now! These are popular with other shoppers.";
+                    break;
+                  case "tryOn":
+                    message =
+                      "Virtual Try-On lets you see how clothes would look on you before buying.";
+                    break;
+                  case "closet":
+                    message =
+                      "My Closet stores all your favorite clothes and helps you build complete outfits.";
+                    break;
+                  case "social":
+                    message =
+                      "Social Proof shows you what other fashion-conscious shoppers are loving.";
+                    break;
+                  case "quiz":
+                    message =
+                      "Style Quiz helps me understand your preferences so I can make better recommendations.";
+                    break;
+                }
+
+                // Add message to chat
+                if (message) {
+                  addAssistantMessage(message);
+                }
+              }
+            }
+          });
+        });
+
+        // Generate Suggestions button
+        generateBtn.addEventListener("click", async function () {
+          // Show loading state
+          this.textContent = "Generating...";
+          this.disabled = true;
+
+          // Go to chat tab but don't use switchToTab function since we want to keep the radial hub visible
+          const currentTabContent = document.querySelector(
+            ".tab-content.active"
+          );
+          const chatTabContent = document.getElementById("chatTab");
+
+          if (currentTabContent !== chatTabContent) {
+            // Just show the chat tab without hiding the hub
+            currentTabContent.classList.remove("active");
+            chatTabContent.classList.add("active");
+
+            // Animate transition
+            chatTabContent.style.opacity = "0";
+            chatTabContent.style.transform = "translateY(-20px)";
+
+            setTimeout(() => {
+              chatTabContent.style.transition = "all 0.3s ease";
+              chatTabContent.style.opacity = "1";
+              chatTabContent.style.transform = "translateY(0)";
+            }, 50);
+          }
+
+          // Add message to chat
+          addAssistantMessage(
+            "I'm generating personalized suggestions for you based on your preferences and closet items..."
+          );
+
+          try {
+            // Get user data
+            const userState = userStore.getState();
+            const styleProfile = JSON.parse(
+              localStorage.getItem("stylist_style_profile") || "{}"
+            );
+
+            // Get recommendations
+            const recommendations = await API.getRecommendations(10);
+
+            if (
+              recommendations &&
+              recommendations.recommended_items &&
+              recommendations.recommended_items.length > 0
+            ) {
+              // Sort items into categories
+              const items = recommendations.recommended_items;
+              const categories = {};
+
+              // Ensure we have key categories for display
+              const categoryOrder = [
+                "Tops",
+                "Bottoms",
+                "Outerwear",
+                "Dresses",
+                "Shoes",
+                "Accessories",
+              ];
+
+              // Categorize items
+              items.forEach((item) => {
+                let category = item.category || "Other";
+
+                // Some normalization for demo purposes
+                if (
+                  category.toLowerCase().includes("top") ||
+                  category.toLowerCase().includes("shirt") ||
+                  category.toLowerCase().includes("blouse")
+                ) {
+                  category = "Tops";
+                } else if (
+                  category.toLowerCase().includes("pant") ||
+                  category.toLowerCase().includes("jean") ||
+                  category.toLowerCase().includes("skirt") ||
+                  category.toLowerCase().includes("short")
+                ) {
+                  category = "Bottoms";
+                } else if (
+                  category.toLowerCase().includes("jacket") ||
+                  category.toLowerCase().includes("coat") ||
+                  category.toLowerCase().includes("sweater")
+                ) {
+                  category = "Outerwear";
+                } else if (category.toLowerCase().includes("dress")) {
+                  category = "Dresses";
+                } else if (
+                  category.toLowerCase().includes("shoe") ||
+                  category.toLowerCase().includes("boot") ||
+                  category.toLowerCase().includes("sneaker")
+                ) {
+                  category = "Shoes";
+                } else if (
+                  category.toLowerCase().includes("bag") ||
+                  category.toLowerCase().includes("accessory") ||
+                  category.toLowerCase().includes("jewelry") ||
+                  category.toLowerCase().includes("hat") ||
+                  category.toLowerCase().includes("watch")
+                ) {
+                  category = "Accessories";
+                }
+
+                if (!categories[category]) categories[category] = [];
+                categories[category].push(item);
+              });
+
+              // Add category headers and items to chat
+              addAssistantMessage(
+                "Here are your personalized recommendations:"
+              );
+
+              // Process categories in a specific order
+              // First display the ordered categories that have items
+              for (const orderedCategory of categoryOrder) {
+                if (
+                  categories[orderedCategory] &&
+                  categories[orderedCategory].length > 0
+                ) {
+                  // Add category header with bold styling
+                  const categoryHeaderEl = document.createElement("div");
+                  categoryHeaderEl.className =
+                    "message assistant category-header";
+                  categoryHeaderEl.innerHTML = `<strong>${orderedCategory}</strong>`;
+                  categoryHeaderEl.style.fontWeight = "bold";
+                  categoryHeaderEl.style.borderBottom = "1px solid #e0e0e0";
+                  categoryHeaderEl.style.paddingBottom = "8px";
+                  categoryHeaderEl.style.marginTop = "15px";
+                  chatMessages.appendChild(categoryHeaderEl);
+
+                  // Add category items in a row (horizontal)
+                  const categoryRowEl = document.createElement("div");
+                  categoryRowEl.className = "message assistant category-items";
+                  categoryRowEl.style.display = "flex";
+                  categoryRowEl.style.flexWrap = "nowrap";
+                  categoryRowEl.style.overflowX = "auto";
+                  categoryRowEl.style.gap = "10px";
+                  categoryRowEl.style.padding = "10px 0";
+                  chatMessages.appendChild(categoryRowEl);
+
+                  // Create all items at once but reveal with animation
+                  const categoryItems = categories[orderedCategory].slice(0, 5); // Limit to 5 items per category
+
+                  for (let j = 0; j < categoryItems.length; j++) {
+                    const item = categoryItems[j];
+
+                    // Create a container for this item that goes in the row
+                    const itemContainerEl = document.createElement("div");
+                    itemContainerEl.style.minWidth = "150px";
+                    itemContainerEl.style.opacity = "0";
+                    itemContainerEl.style.transform = "translateY(20px)";
+                    itemContainerEl.style.transition = "all 0.3s ease";
+                    categoryRowEl.appendChild(itemContainerEl);
+
+                    // Create the product recommendation inside the container
+                    const productEl = createProductRecommendation(item);
+                    itemContainerEl.appendChild(productEl);
+
+                    // Stagger the reveal animation
+                    setTimeout(() => {
+                      itemContainerEl.style.opacity = "1";
+                      itemContainerEl.style.transform = "translateY(0)";
+                    }, j * 200); // Stagger by 200ms
+                  }
+
+                  // Scroll to see the new items
+                  chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+              }
+
+              // Then display any remaining categories that aren't in our ordered list
+              const remainingCategories = Object.keys(categories).filter(
+                (cat) => !categoryOrder.includes(cat)
+              );
+              for (const category of remainingCategories) {
+                if (categories[category] && categories[category].length > 0) {
+                  // Add category header
+                  const categoryHeaderEl = document.createElement("div");
+                  categoryHeaderEl.className =
+                    "message assistant category-header";
+                  categoryHeaderEl.innerHTML = `<strong>${category}</strong>`;
+                  categoryHeaderEl.style.fontWeight = "bold";
+                  categoryHeaderEl.style.borderBottom = "1px solid #e0e0e0";
+                  categoryHeaderEl.style.paddingBottom = "8px";
+                  categoryHeaderEl.style.marginTop = "15px";
+                  chatMessages.appendChild(categoryHeaderEl);
+
+                  // Add category items
+                  const categoryRowEl = document.createElement("div");
+                  categoryRowEl.className = "message assistant category-items";
+                  categoryRowEl.style.display = "flex";
+                  categoryRowEl.style.flexWrap = "nowrap";
+                  categoryRowEl.style.overflowX = "auto";
+                  categoryRowEl.style.gap = "10px";
+                  categoryRowEl.style.padding = "10px 0";
+                  chatMessages.appendChild(categoryRowEl);
+
+                  // Create all items at once but reveal with animation
+                  const categoryItems = categories[category].slice(0, 5); // Limit to 5 items per category
+
+                  for (let j = 0; j < categoryItems.length; j++) {
+                    const item = categoryItems[j];
+
+                    // Create a container for this item that goes in the row
+                    const itemContainerEl = document.createElement("div");
+                    itemContainerEl.style.minWidth = "150px";
+                    itemContainerEl.style.opacity = "0";
+                    itemContainerEl.style.transform = "translateY(20px)";
+                    itemContainerEl.style.transition = "all 0.3s ease";
+                    categoryRowEl.appendChild(itemContainerEl);
+
+                    // Create the product recommendation inside the container
+                    const productEl = createProductRecommendation(item);
+                    itemContainerEl.appendChild(productEl);
+
+                    // Stagger the reveal animation
+                    setTimeout(() => {
+                      itemContainerEl.style.opacity = "1";
+                      itemContainerEl.style.transform = "translateY(0)";
+                    }, j * 200); // Stagger by 200ms
+                  }
+                }
+              }
+
+              // Add outfit suggestion based on closet items
+              if (userState.closetItems.length > 0) {
+                const randomClosetItem =
+                  userState.closetItems[
+                    Math.floor(Math.random() * userState.closetItems.length)
+                  ];
+
+                // Add a message suggesting to wear it with something from their closet
+                setTimeout(() => {
+                  addAssistantMessage(
+                    `Tip: The ${recommendations.recommended_items[0].name} would pair well with your ${randomClosetItem.name} from your closet!`
+                  );
+                }, 1000);
+              }
+            } else {
+              addAssistantMessage(
+                "I couldn't find recommendations that match your preferences. Please try again or adjust your preferences."
+              );
+            }
+          } catch (error) {
+            console.error("Error generating suggestions:", error);
+            addAssistantMessage(
+              "I'm sorry, I encountered an error while generating suggestions. Please try again."
+            );
+          } finally {
+            // Reset button state
+            this.textContent = "Generate Suggestions";
+            this.disabled = false;
+          }
+        });
+
+        // Create product recommendation and return the element
+        function createProductRecommendation(item) {
+          const recommendationElement = document.createElement("div");
+          recommendationElement.className = "product-card";
+          recommendationElement.style.width = "100%";
+          recommendationElement.style.maxWidth = "150px";
+          recommendationElement.style.borderRadius = "12px";
+          recommendationElement.style.overflow = "hidden";
+          recommendationElement.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
+          recommendationElement.style.backgroundColor = "white";
+          recommendationElement.style.position = "relative";
+          recommendationElement.setAttribute("data-item-id", item.id);
+
+          const randomMessageId =
+            "msg_" + Math.random().toString(36).substring(2, 10);
+          recommendationElement.setAttribute(
+            "data-message-id",
+            randomMessageId
+          );
+
+          // Initialize variables that will be used throughout the function
+          let hoverActionsPanel;
+          let productRecommendation = recommendationElement; // Set default value
+
+          // Get user preferences from store
+          const userState = userStore.getState();
+          const isLiked = userState.likedItems.includes(item.id);
+          const isDisliked = userState.dislikedItems.includes(item.id);
+
+          const imageContent =
+            item.image_url && item.image_url.startsWith("http")
+              ? `<img src="${item.image_url}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px 8px 0 0;">`
+              : `<div style="height: 120px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px; box-sizing: border-box; font-size: 12px;">${item.name}</div>`;
+
+          recommendationElement.innerHTML = `
+          <div class="product-recommendation" style="position: relative;">
+            ${imageContent}
+            <div class="product-info-section" style="padding: 10px;">
+    <div style="font-weight: bold; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      ${item.name}
+    </div>
+    <div style="color: #777; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+      Brand: ${item.brand}
+    </div>
+    <div style="color: #e63946; font-weight: bold; margin-top: 4px; font-size: 13px;">
+      $${item.price.toFixed(2)}
+    </div>
+  </div>
+
+
+  <!-- Hover Actions Overlay (Empty initially) -->
+  <div class="hover-actions" style="position: absolute; top: 0; left: 0; width: 100%; height: calc(100% - 50px); background-color: rgba(255,255,255,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; padding: 10px; box-sizing: border-box; z-index: 10;">
+  </div>
+              
+  <!-- Action Buttons Section -->
+  <div class="action-buttons-section" style="margin-top: auto; display: flex; justify-content: space-between; border-top: 1px solid #f0f0f0; padding-top: 8px; padding-left: 10px; padding-right: 10px;">
+    <button class="action-button like-button ${
+      isLiked ? "active" : ""
+    }" title="Like" style="font-size: 14px; padding: 3px;">
+      <span class="heart-icon"></span>
+    </button>
+
+
+    <button class="action-button dislike-button ${
+      isDisliked ? "active" : ""
+    }" title="Remove" style="font-size: 14px; padding: 3px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="3 6 5 6 21 6"></polyline>
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+      <path d="M10 11v6"></path>
+      <path d="M14 11v6"></path>
+      <path d="M5 6l1-2h12l1 2"></path>
+    </svg>
+  </button>
+  
+
+  <button class="action-button save-button" title="See Social Proof" style="font-size: 14px; padding: 3px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+      <polyline points="21 15 16 10 5 21"></polyline>
+    </svg>
+  </button>
+
+
+  <button class="action-button try-on-button" title="Try it on" style="font-size: 14px; padding: 3px;">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"></path>
+  </svg>
+</button>
+
+</div>            
+
+          </div>
+        `;
+
+          // Setup action buttons
+          const likeBtn = recommendationElement.querySelector(".like-button");
+          const dislikeBtn =
+            recommendationElement.querySelector(".dislike-button");
+          const saveBtn = recommendationElement.querySelector(".save-button");
+          const tryOnBtn =
+            recommendationElement.querySelector(".try-on-button");
+
+          // Like button
+          likeBtn.addEventListener("click", function () {
+            if (!likeBtn.classList.contains("active")) {
+              likeBtn.classList.add("active");
+              dislikeBtn.classList.remove("active");
+
+              // Animation
+              likeBtn.style.transform = "scale(1.2)";
+              setTimeout(() => {
+                likeBtn.style.transform = "scale(1)";
+              }, 200);
+
+              // Update store
+              userStore.getState().addLikedItem(item.id);
+
+              // Show confirmation message
+              addAssistantMessage(
+                `I'll recommend more items like this in the future!`
+              );
+            }
+          });
+
+          // Dislike button
+          dislikeBtn.addEventListener("click", function () {
+            if (!dislikeBtn.classList.contains("active")) {
+              dislikeBtn.classList.add("active");
+              likeBtn.classList.remove("active");
+
+              // Animation
+              dislikeBtn.style.transform = "scale(1.2)";
+              setTimeout(() => {
+                dislikeBtn.style.transform = "scale(1)";
+              }, 200);
+
+              // Update store
+              userStore.getState().addDislikedItem(item.id);
+
+              // Show confirmation message
+              addAssistantMessage(
+                `Got it. I'll avoid recommendations like this.`
+              );
+            }
+          });
+
+          // Save to closet button
+          saveBtn.addEventListener("click", function () {
+            // Animation
+            saveBtn.style.transform = "scale(1.2)";
+            setTimeout(() => {
+              saveBtn.style.transform = "scale(1)";
+            }, 200);
+
+            // Show confirmation
+            addAssistantMessage(`I've saved "${item.name}" to your closet!`);
+
+            // Add to closet in store
+            userStore.getState().addToCloset({
+              id: item.id,
+              name: item.name,
+              brand: item.brand,
+              category: item.category || "Recommended",
+              subcategory: "",
+              price: item.price,
+              imageUrl: item.image_url || "",
+            });
+
+            // Refresh closet tab
+            updateClosetItems({
+              items: userStore.getState().closetItems.map((i) => ({
+                item_id: i.id,
+                name: i.name,
+                category: i.category,
+                subcategory: i.subcategory,
+              })),
+            });
+          });
+
+          // Try-on button
+          tryOnBtn.addEventListener("click", function () {
+            // Animation
+            tryOnBtn.style.transform = "scale(1.2)";
+            setTimeout(() => {
+              tryOnBtn.style.transform = "scale(1)";
+            }, 200);
+
+            // Switch to try-on tab
+            switchToTab("tryOn");
+
+            // Show message about trying on
+            addAssistantMessage(
+              `Let's try on the ${item.name}! Upload a photo to see how it looks.`
+            );
+          });
+
+          // Handle hover actions display
+          hoverActionsPanel =
+            recommendationElement.querySelector(".hover-actions");
+          const likeButton =
+            recommendationElement.querySelector(".like-button");
+          const dislikeButton =
+            recommendationElement.querySelector(".dislike-button");
+          const saveButton =
+            recommendationElement.querySelector(".save-button");
+          const tryOnButton =
+            recommendationElement.querySelector(".try-on-button");
+
+          if (
+            hoverActionsPanel &&
+            likeButton &&
+            dislikeButton &&
+            saveButton &&
+            tryOnButton
+          ) {
+            let hoverTimeout; // NEW: manage smooth hover-in/hover-out
+
+            function fillHoverMenu(options) {
+              hoverActionsPanel.innerHTML = "";
+              options.forEach((text) => {
+                const btn = document.createElement("button");
+                btn.className = "hover-action-btn monochrome";
+                btn.textContent = text;
+                hoverActionsPanel.appendChild(btn);
+
+                btn.addEventListener("click", () => {
+                  handleHoverAction(text);
+                });
+              });
+            }
+
+            function handleHoverAction(actionText) {
+              hideHoverMenuInstant(); // hide menu immediately on click
+              switch (actionText) {
+                case "Add to Wishlist":
+                  addAssistantMessage(`Added ${item.name} to your wishlist!`);
+                  userStore.getState().addLikedItem(item.id);
+                  break;
+                case "Add to Cart":
+                  showSizeSelectionModal(item);
+                  break;
+                case "Complete the Look":
+                  addAssistantMessage(
+                    `Finding matching items for ${item.name}...`
+                  );
+                  break;
+                case "Suggest Outfit with Closet":
+                  addAssistantMessage(
+                    `Creating outfit suggestions using ${item.name}...`
+                  );
+                  break;
+                case "Dislike":
+                  addAssistantMessage(
+                    `Got it — we'll avoid items like ${item.name}.`
+                  );
+                  userStore.getState().addDislikedItem(item.id);
+                  break;
+                case "Dislike and Make a Note":
+                  addAssistantMessage(
+                    `Made a note to avoid similar styles to ${item.name}.`
+                  );
+                  break;
+                case "Already Own This":
+                  addAssistantMessage(`I'll add ${item.name} to your closet!`);
+                  userStore.getState().addToCloset({
+                    id: item.id,
+                    name: item.name,
+                    brand: item.brand,
+                    price: item.price,
+                    imageUrl: item.image_url || "",
+                  });
+                  break;
+                case "See it in Social Proof":
+                  switchToTab("social");
+                  break;
+                case "Let's Try It On":
+                  switchToTab("tryOn");
+                  break;
+              }
+            }
+
+            function showHoverMenu(options) {
+              clearTimeout(hoverTimeout);
+              fillHoverMenu(options);
+              hoverActionsPanel.style.display = "flex";
+              requestAnimationFrame(() => {
+                hoverActionsPanel.style.opacity = 1;
+              });
+            }
+
+            function hideHoverMenu() {
+              hoverTimeout = setTimeout(() => {
+                hoverActionsPanel.style.opacity = 0;
+                setTimeout(() => {
+                  hoverActionsPanel.style.display = "none";
+                }, 300); // wait for opacity transition
+              }, 200); // short delay in case user moves from button to panel
+            }
+
+            function hideHoverMenuInstant() {
+              hoverActionsPanel.style.opacity = 0;
+              hoverActionsPanel.style.display = "none";
+            }
+
+            // Setup hover to open with different options
+            likeButton.addEventListener("mouseenter", () => {
+              showHoverMenu([
+                "Add to Wishlist",
+                "Add to Cart",
+                "Complete the Look",
+                "Suggest Outfit with Closet",
+              ]);
+            });
+
+            dislikeButton.addEventListener("mouseenter", () => {
+              showHoverMenu([
+                "Dislike",
+                "Dislike and Make a Note",
+                "Already Own This",
+              ]);
+            });
+
+            saveButton.addEventListener("mouseenter", () => {
+              showHoverMenu(["See it in Social Proof"]);
+            });
+
+            tryOnButton.addEventListener("mouseenter", () => {
+              showHoverMenu(["Let's Try It On"]);
+            });
+
+            // Hide menu when mouse leaves button or panel
+            [
+              likeButton,
+              dislikeButton,
+              saveButton,
+              tryOnButton,
+              hoverActionsPanel,
+            ].forEach((el) => {
+              el.addEventListener("mouseleave", hideHoverMenu);
+              el.addEventListener("mouseenter", () => {
+                clearTimeout(hoverTimeout);
+              });
+            });
+          }
+
+          // For mobile - use touch and hold
+          let touchTimer;
+          productRecommendation.addEventListener("touchstart", function (e) {
+            touchTimer = setTimeout(function () {
+              hoverActionsPanel.style.display = "flex";
+            }, 500); // 500ms hold to show actions
+          });
+
+          productRecommendation.addEventListener("touchend", function () {
+            clearTimeout(touchTimer);
+          });
+
+          productRecommendation.addEventListener("touchmove", function () {
+            clearTimeout(touchTimer); // Cancel if user is scrolling
+          });
+
+          // Close hover panel on touch outside
+          document.addEventListener("touchstart", function (e) {
+            if (
+              hoverActionsPanel.style.display === "flex" &&
+              !productRecommendation.contains(e.target)
+            ) {
+              hoverActionsPanel.style.display = "none";
+            }
+          });
+
+          // Setup hover action buttons
+          const hoverActionBtns =
+            recommendationElement.querySelectorAll(".hover-action-btn");
+
+          hoverActionBtns.forEach((btn) => {
+            btn.addEventListener("click", function (e) {
+              e.stopPropagation();
+              const action = this.getAttribute("data-action");
+
+              // Hide panel after action
+              hoverActionsPanel.style.display = "none";
+
+              // Handle different actions
+              switch (action) {
+                case "dressing-room":
+                  addAssistantMessage(
+                    `Added ${item.name} to your dressing room! You can mix and match with other items.`
+                  );
+                  break;
+
+                case "wishlist":
+                  addAssistantMessage(
+                    `Added ${item.name} to your wishlist! I'll notify you if it goes on sale.`
+                  );
+                  userStore.getState().addLikedItem(item.id); // Mark as liked in store
+                  break;
+
+                case "add-to-cart":
+                  // Show size selection modal
+                  showSizeSelectionModal(item);
+                  break;
+
+                case "complete-look":
+                  // Show additional matching items
+                  addAssistantMessage(
+                    `Finding items that complete the look with ${item.name}...`
+                  );
+
+                  // Simulate API delay
+                  setTimeout(async () => {
+                    // Get more recommendations
+                    const moreItems = await API.getRecommendations(3);
+
+                    if (
+                      moreItems &&
+                      moreItems.recommended_items &&
+                      moreItems.recommended_items.length > 0
+                    ) {
+                      addAssistantMessage(
+                        `Here are some items that would complete your look with the ${item.name}:`
+                      );
+
+                      // Add matching items with delay
+                      moreItems.recommended_items.forEach(
+                        (matchItem, index) => {
+                          setTimeout(() => {
+                            const productEl =
+                              createProductRecommendation(matchItem);
+
+                            // Create container for the product
+                            const container = document.createElement("div");
+                            container.className = "message assistant";
+                            container.style.padding = "0";
+
+                            // Add the product to the container
+                            container.appendChild(productEl);
+
+                            // Add container to chat
+                            chatMessages.appendChild(container);
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                          }, 500 * index);
+                        }
+                      );
+                    }
+                  }, 1000);
+                  break;
+
+                case "suggest-outfit":
+                  // AI suggests outfit with existing closet items
+                  addAssistantMessage(
+                    `Creating outfit suggestions using ${item.name} and your closet items...`
+                  );
+
+                  // Check if user has closet items
+                  const closetItems = userStore.getState().closetItems;
+
+                  if (closetItems.length > 0) {
+                    // Get up to 3 random items from closet for the suggestion
+                    const shuffled = [...closetItems].sort(
+                      () => 0.5 - Math.random()
+                    );
+                    const selectedItems = shuffled.slice(
+                      0,
+                      Math.min(3, shuffled.length)
+                    );
+
+                    setTimeout(() => {
+                      let suggestion = `<div style="background-color: #f7f7f9; padding: 15px; border-radius: 10px; margin-top: 10px;">
+                      <div style="font-weight: bold; margin-bottom: 10px;">Outfit Suggestion with Your Closet</div>
+                      <div>Wear it with: </div>
+                      <ul style="margin-top: 5px; padding-left: 20px;">`;
+
+                      selectedItems.forEach((closetItem) => {
+                        suggestion += `<li style="margin-bottom: 5px;">Your ${closetItem.name}</li>`;
+                      });
+
+                      suggestion += `</ul>
+                      <div style="margin-top: 10px; font-style: italic;">This combination will create a cohesive and stylish look!</div>
+                    </div>`;
+
+                      const outfitMsgEl = document.createElement("div");
+                      outfitMsgEl.className = "message assistant";
+                      outfitMsgEl.innerHTML = suggestion;
+                      chatMessages.appendChild(outfitMsgEl);
+                      chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }, 1500);
+                  } else {
+                    // No closet items
+                    setTimeout(() => {
+                      addAssistantMessage(
+                        "I don't see any items in your closet yet. Add some items to your closet, and I'll create outfit suggestions for you!"
+                      );
+                    }, 1000);
+                  }
+                  break;
+              }
+            });
+          });
+
+          // For our row display, apply some styling to make it fit better
+          productRecommendation = recommendationElement.querySelector(
+            ".product-recommendation"
+          );
+          productRecommendation.style.height = "100%";
+          productRecommendation.style.display = "flex";
+          productRecommendation.style.flexDirection = "column";
+
+          // // For desktop - use hover
+          // productRecommendation.addEventListener("mouseenter", function () {
+          //   hoverActionsPanel.style.display = "flex";
+          // });
+
+          // productRecommendation.addEventListener("mouseleave", function () {
+          //   hoverActionsPanel.style.display = "none";
+          // });
+
+          // Return the element to be inserted wherever needed
+          return recommendationElement;
+
+          // Function to show size selection modal
+          function showSizeSelectionModal(item) {
+            // Create modal container
+            const modalContainer = document.createElement("div");
+            modalContainer.className = "size-modal-container";
+            modalContainer.style.position = "fixed";
+            modalContainer.style.top = "0";
+            modalContainer.style.left = "0";
+            modalContainer.style.width = "100%";
+            modalContainer.style.height = "100%";
+            modalContainer.style.backgroundColor = "rgba(0,0,0,0.5)";
+            modalContainer.style.display = "flex";
+            modalContainer.style.alignItems = "center";
+            modalContainer.style.justifyContent = "center";
+            modalContainer.style.zIndex = "10000";
+
+            // Create modal content
+            const modalContent = document.createElement("div");
+            modalContent.className = "size-modal-content";
+            modalContent.style.backgroundColor = "white";
+            modalContent.style.borderRadius = "10px";
+            modalContent.style.padding = "20px";
+            modalContent.style.width = "300px";
+            modalContent.style.maxWidth = "90%";
+            modalContent.style.boxShadow = "0 5px 15px rgba(0,0,0,0.2)";
+
+            // Modal header
+            modalContent.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px;">
+              <h3 style="margin: 0 0 5px 0;">Select Size</h3>
+              <div style="color: #666; font-size: 14px;">${item.name}</div>
+            </div>
+            <div class="size-options" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center;">
+              <button class="size-option" style="padding: 10px 15px; border: 1px solid #ddd; background: none; border-radius: 5px; cursor: pointer;">XS</button>
+              <button class="size-option" style="padding: 10px 15px; border: 1px solid #ddd; background: none; border-radius: 5px; cursor: pointer;">S</button>
+              <button class="size-option" style="padding: 10px 15px; border: 1px solid #ddd; background: none; border-radius: 5px; cursor: pointer;">M</button>
+              <button class="size-option" style="padding: 10px 15px; border: 1px solid #ddd; background: none; border-radius: 5px; cursor: pointer;">L</button>
+              <button class="size-option" style="padding: 10px 15px; border: 1px solid #ddd; background: none; border-radius: 5px; cursor: pointer;">XL</button>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <button class="cancel-btn" style="padding: 10px 15px; background-color: #f1f1f1; border: none; border-radius: 5px; cursor: pointer;">Cancel</button>
+              <button class="add-to-cart-btn" style="padding: 10px 15px; background-color: #4361ee; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;" disabled>Add to Cart</button>
+            </div>
+          `;
+
+            modalContainer.appendChild(modalContent);
+            document.body.appendChild(modalContainer);
+
+            // Handle size selection
+            let selectedSize = null;
+            const sizeOptions = modalContent.querySelectorAll(".size-option");
+            const addToCartBtn = modalContent.querySelector(".add-to-cart-btn");
+
+            sizeOptions.forEach((option) => {
+              option.addEventListener("click", function () {
+                // Remove selected class from all options
+                sizeOptions.forEach((opt) => {
+                  opt.style.backgroundColor = "";
+                  opt.style.borderColor = "#ddd";
+                });
+
+                // Add selected class to clicked option
+                this.style.backgroundColor = "rgba(67, 97, 238, 0.1)";
+                this.style.borderColor = "#000";
+
+                // Store selected size
+                selectedSize = this.textContent;
+
+                // Enable add to cart button
+                addToCartBtn.disabled = false;
+              });
+            });
+
+            // Handle cancel button
+            const cancelBtn = modalContent.querySelector(".cancel-btn");
+            cancelBtn.addEventListener("click", function () {
+              document.body.removeChild(modalContainer);
+            });
+
+            // Handle add to cart button
+            addToCartBtn.addEventListener("click", function () {
+              document.body.removeChild(modalContainer);
+
+              // Add message to chat
+              addAssistantMessage(
+                `Added ${item.name} (Size: ${selectedSize}) to your cart!`
+              );
+            });
+
+            // Close modal when clicking outside
+            modalContainer.addEventListener("click", function (e) {
+              if (e.target === modalContainer) {
+                document.body.removeChild(modalContainer);
+              }
+            });
+          }
+        }
+
+        // Chat functionality
+        async function sendMessage() {
+          const message = chatInput.value.trim();
+          if (message) {
+            // Add user message
+            const userMessageEl = document.createElement("div");
+            userMessageEl.className = "message user";
+            userMessageEl.textContent = message;
+            chatMessages.appendChild(userMessageEl);
+
+            // Clear input
+            chatInput.value = "";
+
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Show typing indicator
+            const typingIndicator = document.createElement("div");
+            typingIndicator.className = "message assistant typing";
+            typingIndicator.innerHTML = `
+            <div style="display: flex; gap: 4px;">
+              <div class="typing-dot" style="width: 8px; height: 8px; border-radius: 50%; background-color: #ccc; animation: typingAnimation 1s infinite 0s;"></div>
+              <div class="typing-dot" style="width: 8px; height: 8px; border-radius: 50%; background-color: #ccc; animation: typingAnimation 1s infinite 0.2s;"></div>
+              <div class="typing-dot" style="width: 8px; height: 8px; border-radius: 50%; background-color: #ccc; animation: typingAnimation 1s infinite 0.4s;"></div>
+            </div>
+          `;
+            document.head.insertAdjacentHTML(
+              "beforeend",
+              `
+            <style>
+              @keyframes typingAnimation {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-5px); }
+              }
+            </style>
+          `
+            );
+            chatMessages.appendChild(typingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Send to backend and get response
+            const chatResponse = await API.sendChatMessage(message);
+
+            // Remove typing indicator
+            chatMessages.removeChild(typingIndicator);
+
+            // Add response message
+            const assistantMessageEl = document.createElement("div");
+            assistantMessageEl.className = "message assistant";
+            assistantMessageEl.textContent =
+              chatResponse.response ||
+              "I'm sorry, I didn't understand that. Could you try again?";
+            chatMessages.appendChild(assistantMessageEl);
+
+            // For specific queries, provide product recommendations
+            if (
+              message.toLowerCase().includes("recommend") ||
+              message.toLowerCase().includes("suggest") ||
+              message.toLowerCase().includes("show me") ||
+              message.toLowerCase().includes("looking for") ||
+              message.toLowerCase().includes("find")
+            ) {
+              // Add a small delay then show recommendation
+              setTimeout(async () => {
+                // Add a follow-up message
+                addAssistantMessage(
+                  "Here's something you might like based on your style preferences:"
+                );
+
+                // Get recommendations from API or mock
+                const recsResponse = await API.getRecommendations(2);
+                if (
+                  recsResponse &&
+                  recsResponse.recommended_items &&
+                  recsResponse.recommended_items.length > 0
+                ) {
+                  // Add recommended items to chat
+                  recsResponse.recommended_items
+                    .slice(0, 2)
+                    .forEach((item, index) => {
+                      setTimeout(() => {
+                        createProductRecommendation(item);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                      }, 500 * index); // Stagger the recommendations
+                    });
+                }
+              }, 1000);
+            }
+
+            // Check keywords in message to switch tabs
+            if (
+              message.toLowerCase().includes("try") ||
+              message.toLowerCase().includes("virtual")
+            ) {
+              setTimeout(() => switchToTab("tryOn"), 1000);
+            } else if (
+              message.toLowerCase().includes("quiz") ||
+              message.toLowerCase().includes("test")
+            ) {
+              setTimeout(() => switchToTab("quiz"), 1000);
+            } else if (
+              message.toLowerCase().includes("closet") ||
+              message.toLowerCase().includes("my clothes")
+            ) {
+              setTimeout(() => switchToTab("closet"), 1000);
+            } else if (
+              message.toLowerCase().includes("trend") ||
+              message.toLowerCase().includes("popular")
+            ) {
+              setTimeout(() => switchToTab("trending"), 1000);
+            } else if (
+              message.toLowerCase().includes("social") ||
+              message.toLowerCase().includes("review")
+            ) {
+              setTimeout(() => switchToTab("social"), 1000);
+            }
+
+            // Scroll to bottom again
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+          }
+        }
+
+        // Send button click
+        sendBtn.addEventListener("click", sendMessage);
+
+        // Send on Enter key
+        chatInput.addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            sendMessage();
+          }
+        });
+
+        // Create a file input for chat image uploads
+        const chatImageInput = document.createElement("input");
+        chatImageInput.type = "file";
+        chatImageInput.accept = "image/*";
+        chatImageInput.style.display = "none";
+        document.body.appendChild(chatImageInput);
+
+        // Handle chat image uploads
+        uploadImageBtn.addEventListener("click", function () {
+          chatImageInput.click();
+        });
+
+        chatImageInput.addEventListener("change", function (e) {
+          if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+              // Create user message with image
+              const userMessageEl = document.createElement("div");
+              userMessageEl.className = "message user";
+              userMessageEl.innerHTML = `
+              <div style="margin-bottom: 8px;">I uploaded an image:</div>
+              <img src="${event.target.result}" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
+            `;
+              chatMessages.appendChild(userMessageEl);
+
+              // Show typing indicator
+              const typingIndicator = document.createElement("div");
+              typingIndicator.className = "message assistant typing";
+              typingIndicator.innerHTML = `
+              <div style="display: flex; gap: 4px;">
+                <div class="typing-dot" style="width: 8px; height: 8px; border-radius: 50%; background-color: #ccc; animation: typingAnimation 1s infinite 0s;"></div>
+                <div class="typing-dot" style="width: 8px; height: 8px; border-radius: 50%; background-color: #ccc; animation: typingAnimation 1s infinite 0.2s;"></div>
+                <div class="typing-dot" style="width: 8px; height: 8px; border-radius: 50%; background-color: #ccc; animation: typingAnimation 1s infinite 0.4s;"></div>
+              </div>
+            `;
+              chatMessages.appendChild(typingIndicator);
+
+              // Scroll to bottom
+              chatMessages.scrollTop = chatMessages.scrollHeight;
+
+              // Simulate processing delay
+              setTimeout(() => {
+                // Remove typing indicator
+                chatMessages.removeChild(typingIndicator);
+
+                // Show image options
+                const optionsEl = document.createElement("div");
+                optionsEl.className = "message assistant";
+                optionsEl.innerHTML = `
+                <div style="margin-bottom: 10px;">I received your image! What would you like to do with it?</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <button class="image-action-btn" data-action="find-similar" style="padding: 8px 12px; background-color: #4361ee; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">Find something like this</button>
+                  <button class="image-action-btn" data-action="find-match" style="padding: 8px 12px; background-color: #4361ee; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">Find something to match this</button>
+                </div>
+              `;
+                chatMessages.appendChild(optionsEl);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Setup image action buttons
+                const actionBtns =
+                  optionsEl.querySelectorAll(".image-action-btn");
+
+                actionBtns.forEach((btn) => {
+                  btn.addEventListener("click", async function () {
+                    const action = this.getAttribute("data-action");
+
+                    // Show assistant message with search intent
+                    const searchMsg =
+                      action === "find-similar"
+                        ? "I'll find similar items for you!"
+                        : "I'll find items that match well with this!";
+
+                    addAssistantMessage(searchMsg);
+
+                    // Show "searching" message with loading animation
+                    const searchingIndicator = document.createElement("div");
+                    searchingIndicator.className = "message assistant";
+                    searchingIndicator.innerHTML = `
+                    <div style="margin-bottom: 10px;">Searching our inventory...</div>
+                    <div style="width: 100%; height: 4px; background-color: #f0f0f0; border-radius: 2px; overflow: hidden;">
+                      <div class="search-progress" style="height: 100%; width: 0%; background-color: #4361ee; transition: width 2s ease;"></div>
+                    </div>
+                  `;
+                    chatMessages.appendChild(searchingIndicator);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                    // Animate progress bar
+                    setTimeout(() => {
+                      const progressBar =
+                        searchingIndicator.querySelector(".search-progress");
+                      progressBar.style.width = "100%";
+                    }, 100);
+
+                    // Simulate API delay
+                    setTimeout(async () => {
+                      // Get recommendations
+                      const recommendations = await API.getRecommendations(5);
+
+                      // Remove searching indicator
+                      chatMessages.removeChild(searchingIndicator);
+
+                      if (
+                        recommendations &&
+                        recommendations.recommended_items &&
+                        recommendations.recommended_items.length > 0
+                      ) {
+                        // Add results header
+                        addAssistantMessage(
+                          `Here are the ${
+                            action === "find-similar"
+                              ? "similar items"
+                              : "matching items"
+                          } I found:`
+                        );
+
+                        // Add recommendations with staggered delay
+                        recommendations.recommended_items.forEach(
+                          (item, index) => {
+                            setTimeout(() => {
+                              const productEl =
+                                createProductRecommendation(item);
+
+                              // Create container for the product
+                              const container = document.createElement("div");
+                              container.className = "message assistant"; // <-- ADD this extra class
+                              container.style.padding = "0";
+
+                              // Add the product to the container
+                              container.appendChild(productEl);
+
+                              // Add container to chat
+                              chatMessages.appendChild(container);
+                              chatMessages.scrollTop =
+                                chatMessages.scrollHeight;
+                            }, 500 * index);
+                          }
+                        );
+                      } else {
+                        addAssistantMessage(
+                          "I'm sorry, I couldn't find any matching items. Please try again with a different image."
+                        );
+                      }
+                    }, 2500);
+                  });
+                });
+              }, 1500);
+            };
+
+            reader.readAsDataURL(file);
+          }
+        });
+
+        // Style Quiz functionality
+        const quizOptions = document.querySelectorAll(".quiz-option");
+        const quizNextBtn = document.querySelector(".quiz-button.next");
+        const quizBackBtn = document.querySelector(".quiz-button.back");
+        const quizProgress = document.querySelector(".quiz-progress-bar");
+
+        // Track quiz state
+        const quizState = {
+          currentQuestion: 1,
+          totalQuestions: 5,
+          answers: [],
+        };
+
+        // Sample quiz questions
+        const quizQuestions = [
+          {
+            id: "q1",
+            question: "What's your preferred style?",
+            options: [
+              "Casual & Comfortable",
+              "Modern & Minimalist",
+              "Bold & Colorful",
+              "Classic & Elegant",
+              "Streetwear & Urban",
+            ],
+          },
+          {
+            id: "q2",
+            question: "Which color palette do you prefer?",
+            options: [
+              "Neutrals (Black, White, Gray)",
+              "Earth tones (Brown, Olive, Rust)",
+              "Pastels (Light Blue, Pink, Lavender)",
+              "Bold colors (Red, Yellow, Blue)",
+              "Monochrome (Shades of one color)",
+            ],
+          },
+          {
+            id: "q3",
+            question: "What occasion do you dress for most often?",
+            options: [
+              "Casual everyday",
+              "Office/Work",
+              "Formal events",
+              "Active/Sports",
+              "Going out/Nightlife",
+            ],
+          },
+          {
+            id: "q4",
+            question: "What's your budget for clothing items?",
+            options: [
+              "Budget-friendly",
+              "Mid-range",
+              "High-end",
+              "Luxury",
+              "Mix of price points",
+            ],
+          },
+          {
+            id: "q5",
+            question: "What's your favorite fashion brand or designer?",
+            options: [
+              "Zara/H&M/Uniqlo",
+              "Nike/Adidas/Athleisure brands",
+              "Designer brands",
+              "Vintage/Thrift stores",
+              "Sustainable/Ethical brands",
+            ],
+          },
+        ];
+
+        // Update quiz question
+        function updateQuizQuestion() {
+          const questionData = quizQuestions[quizState.currentQuestion - 1];
+          document.querySelector(".quiz-question h4").textContent =
+            questionData.question;
+
+          // Update options
+          const optionElements = document.querySelectorAll(".quiz-option");
+          questionData.options.forEach((option, index) => {
+            if (optionElements[index]) {
+              optionElements[index].textContent = option;
+              optionElements[index].classList.remove("selected");
+            }
+          });
+
+          // Update progress bar
+          const progressPercent =
+            (quizState.currentQuestion / quizState.totalQuestions) * 100;
+          quizProgress.style.width = `${progressPercent}%`;
+
+          // Update button states
+          quizBackBtn.disabled = quizState.currentQuestion === 1;
+          quizNextBtn.textContent =
+            quizState.currentQuestion === quizState.totalQuestions
+              ? "Submit"
+              : "Next";
+        }
+
+        // Select quiz option
+        quizOptions.forEach((option) => {
+          option.addEventListener("click", function () {
+            quizOptions.forEach((o) => o.classList.remove("selected"));
+            this.classList.add("selected");
+          });
+        });
+
+        // Quiz next button
+        quizNextBtn.addEventListener("click", async function () {
+          // Get selected answer
+          const selectedOption = document.querySelector(
+            ".quiz-option.selected"
+          );
+          if (!selectedOption) {
+            alert("Please select an option to continue");
+            return;
+          }
+
+          // Save answer
+          const currentQuestion = quizQuestions[quizState.currentQuestion - 1];
+          quizState.answers.push({
+            questionId: currentQuestion.id,
+            answerId: selectedOption.textContent,
+            questionText: currentQuestion.question,
+            answerText: selectedOption.textContent,
+          });
+
+          // Add animation to show progress
+          selectedOption.style.transition = "all 0.3s ease";
+          selectedOption.style.backgroundColor = "rgba(67, 97, 238, 0.2)";
+
+          // Move to next question or submit
+          if (quizState.currentQuestion < quizState.totalQuestions) {
+            quizState.currentQuestion++;
+
+            // Animate question transition
+            const questionEl = document.querySelector(".quiz-question");
+            const optionsEl = document.querySelector(".quiz-options");
+
+            questionEl.style.transition = "all 0.3s ease";
+            optionsEl.style.transition = "all 0.3s ease";
+
+            questionEl.style.opacity = "0";
+            optionsEl.style.opacity = "0";
+            questionEl.style.transform = "translateX(-20px)";
+            optionsEl.style.transform = "translateX(-20px)";
+
+            setTimeout(() => {
+              updateQuizQuestion();
+
+              // Reset and animate in
+              questionEl.style.transform = "translateX(20px)";
+              optionsEl.style.transform = "translateX(20px)";
+
+              setTimeout(() => {
+                questionEl.style.opacity = "1";
+                optionsEl.style.opacity = "1";
+                questionEl.style.transform = "translateX(0)";
+                optionsEl.style.transform = "translateX(0)";
+              }, 50);
+            }, 300);
+          } else {
+            // Submit quiz
+            quizNextBtn.disabled = true;
+            quizNextBtn.textContent = "Processing...";
+
+            // Submit to API
+            const result = await API.submitStyleQuiz(quizState.answers);
+
+            // Save quiz results to user store
+            userStore.getState().setStyleQuizResults(quizState.answers);
+
+            // Create a style profile summary based on answers
+            const styleProfile = {
+              primaryStyle: quizState.answers[0].answerText,
+              colorPreference: quizState.answers[1].answerText,
+              mainOccasion: quizState.answers[2].answerText,
+              budget: quizState.answers[3].answerText,
+              favoriteRetailers: quizState.answers[4].answerText,
+              lastUpdated: new Date().toISOString(),
+            };
+
+            // Store the profile
+            localStorage.setItem(
+              "stylist_style_profile",
+              JSON.stringify(styleProfile)
+            );
+
+            // Switch to trending tab and show updated recommendations
+            switchToTab("trending");
+
+            // Refresh recommendations based on quiz results
+            const newRecommendations = await API.getRecommendations();
+            updateTrendingItems(newRecommendations);
+
+            // Add messages about quiz completion
+            addAssistantMessage(
+              "Thanks for completing the style quiz! I now have a better understanding of your preferences."
+            );
+            addAssistantMessage(
+              `Based on your style profile (${styleProfile.primaryStyle} with ${styleProfile.colorPreference}), I've updated your recommendations!`
+            );
+
+            // Reset quiz for next time
+            quizState.currentQuestion = 1;
+            quizState.answers = [];
+            quizNextBtn.disabled = false;
+            updateQuizQuestion();
+          }
+        });
+
+        // Quiz back button
+        quizBackBtn.addEventListener("click", function () {
+          if (quizState.currentQuestion > 1) {
+            quizState.currentQuestion--;
+            quizState.answers.pop(); // Remove the last answer
+            updateQuizQuestion();
+          }
+        });
+
+        // Initialize quiz
+        updateQuizQuestion();
+
+        // Virtual Try-On functionality
+        const tryOnUploadBtn = document.querySelector(
+          ".tryon-button:nth-child(1)"
+        );
+        const tryOnProcessBtn = document.querySelector(
+          ".tryon-button:nth-child(2)"
+        );
+        const tryOnSaveBtn = document.querySelector(
+          ".tryon-button:nth-child(3)"
+        );
+        const tryOnCanvas = document.querySelector(".tryon-canvas");
+        const tryOnItems = document.querySelectorAll(".tryon-item");
+
+        // Try-on state
+        const tryOnState = {
+          userImage: null,
+          selectedItem: "Shirt 1",
+          processing: false,
+          result: null,
+        };
+
+        // Create file input for uploading
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "image/*";
+        fileInput.capture = "camera"; // Enable camera capture
+        fileInput.style.display = "none";
+        document.body.appendChild(fileInput);
+
+        // Upload button with camera option
+        tryOnUploadBtn.addEventListener("click", function () {
+          // Show options modal
+          if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            const choice = confirm(
+              "Would you like to use your camera? Click OK to use camera, or Cancel to select from your photos."
+            );
+            if (choice) {
+              // Start camera
+              startCamera();
+            } else {
+              // Open file picker
+              fileInput.click();
+            }
+          } else {
+            // No camera support, use file picker
+            fileInput.click();
+          }
+        });
+
+        // Camera handling
+        let cameraStream = null;
+
+        // Function to start camera
+        function startCamera() {
+          // Create camera elements if not exists
+          if (!document.getElementById("camera-container")) {
+            // Create camera container
+            const cameraContainer = document.createElement("div");
+            cameraContainer.id = "camera-container";
+            cameraContainer.style.position = "fixed";
+            cameraContainer.style.top = "0";
+            cameraContainer.style.left = "0";
+            cameraContainer.style.width = "100%";
+            cameraContainer.style.height = "100%";
+            cameraContainer.style.backgroundColor = "rgba(0,0,0,0.9)";
+            cameraContainer.style.zIndex = "10001";
+            cameraContainer.style.display = "flex";
+            cameraContainer.style.flexDirection = "column";
+            cameraContainer.style.alignItems = "center";
+            cameraContainer.style.justifyContent = "center";
+
+            // Create video element
+            const video = document.createElement("video");
+            video.id = "camera-video";
+            video.style.maxWidth = "100%";
+            video.style.maxHeight = "80%";
+            video.style.backgroundColor = "#000";
+            video.autoplay = true;
+            cameraContainer.appendChild(video);
+
+            // Create button container
+            const buttonContainer = document.createElement("div");
+            buttonContainer.style.marginTop = "20px";
+            buttonContainer.style.display = "flex";
+            buttonContainer.style.gap = "20px";
+
+            // Create capture button
+            const captureBtn = document.createElement("button");
+            captureBtn.textContent = "Take Photo";
+            captureBtn.style.padding = "10px 20px";
+            captureBtn.style.backgroundColor = "#000";
+            captureBtn.style.color = "white";
+            captureBtn.style.border = "none";
+            captureBtn.style.borderRadius = "5px";
+            captureBtn.style.cursor = "pointer";
+            captureBtn.onclick = capturePhoto;
+            buttonContainer.appendChild(captureBtn);
+
+            // Create cancel button
+            const cancelBtn = document.createElement("button");
+            cancelBtn.textContent = "Cancel";
+            cancelBtn.style.padding = "10px 20px";
+            cancelBtn.style.backgroundColor = "#f44336";
+            cancelBtn.style.color = "white";
+            cancelBtn.style.border = "none";
+            cancelBtn.style.borderRadius = "5px";
+            cancelBtn.style.cursor = "pointer";
+            cancelBtn.onclick = stopCamera;
+            buttonContainer.appendChild(cancelBtn);
+
+            cameraContainer.appendChild(buttonContainer);
+            document.body.appendChild(cameraContainer);
+          } else {
+            document.getElementById("camera-container").style.display = "flex";
+          }
+
+          // Access camera
+          navigator.mediaDevices
+            .getUserMedia({
+              video: { facingMode: "environment" },
+              audio: false,
+            })
+            .then(function (stream) {
+              const video = document.getElementById("camera-video");
+              video.srcObject = stream;
+              cameraStream = stream;
+            })
+            .catch(function (error) {
+              console.error("Camera error:", error);
+              alert(
+                "Could not access camera. Please check permissions or use file upload instead."
+              );
+              stopCamera();
+              fileInput.click();
+            });
+        }
+
+        // Function to stop camera
+        function stopCamera() {
+          if (cameraStream) {
+            cameraStream.getTracks().forEach((track) => track.stop());
+            cameraStream = null;
+          }
+
+          const container = document.getElementById("camera-container");
+          if (container) {
+            container.style.display = "none";
+          }
+        }
+
+        // Function to capture photo from camera
+        function capturePhoto() {
+          const video = document.getElementById("camera-video");
+
+          // Create canvas to capture frame
+          const canvas = document.createElement("canvas");
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const context = canvas.getContext("2d");
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          // Convert to data URL
+          const dataUrl = canvas.toDataURL("image/jpeg");
+
+          // Use the captured image
+          tryOnState.userImage = dataUrl;
+
+          // Update canvas with user image
+          tryOnCanvas.innerHTML = "";
+          const img = document.createElement("img");
+          img.src = dataUrl;
+          img.style.maxHeight = "100%";
+          img.style.maxWidth = "100%";
+          tryOnCanvas.appendChild(img);
+
+          // Enable process button
+          tryOnProcessBtn.disabled = false;
+
+          // Stop camera
+          stopCamera();
+
+          // Add message in chat
+          switchToTab("tryOn");
+          addAssistantMessage(
+            'Great! Now select a clothing item and click "Try It On" to see how it looks on you.'
+          );
+        }
+
+        // File input change
+        fileInput.addEventListener("change", function (e) {
+          if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+              // Save user image
+              tryOnState.userImage = event.target.result;
+
+              // Update canvas with user image silhouette
+              tryOnCanvas.innerHTML = "";
+              const img = document.createElement("img");
+              img.src = event.target.result;
+              img.style.maxHeight = "100%";
+              img.style.maxWidth = "100%";
+              tryOnCanvas.appendChild(img);
+
+              // Enable process button
+              tryOnProcessBtn.disabled = false;
+
+              // Add message in chat
+              switchToTab("tryOn");
+              addAssistantMessage(
+                'Great! Now select a clothing item and click "Try It On" to see how it looks on you.'
+              );
+            };
+
+            reader.readAsDataURL(file);
+          }
+        });
+
+        // Select try-on item
+        tryOnItems.forEach((item) => {
+          item.addEventListener("click", function () {
+            tryOnItems.forEach((i) => i.classList.remove("selected"));
+            this.classList.add("selected");
+            tryOnState.selectedItem = this.textContent;
+          });
+        });
+
+        // Process try-on
+        tryOnProcessBtn.addEventListener("click", async function () {
+          if (!tryOnState.userImage) {
+            addAssistantMessage("Please upload your photo first.");
+            return;
+          }
+
+          // Set processing state
+          tryOnState.processing = true;
+          tryOnProcessBtn.disabled = true;
+          tryOnProcessBtn.textContent = "Processing...";
+          tryOnCanvas.innerHTML =
+            '<div style="text-align: center; padding: 20px;">Processing your virtual try-on...</div>';
+
+          try {
+            // Call API
+            const result = await API.processVirtualTryOn(
+              tryOnState.userImage,
+              tryOnState.selectedItem
+            );
+
+            // Update UI with result
+            tryOnState.result = result;
+            tryOnCanvas.innerHTML = `<div style="position: relative; width: 100%; height: 100%;">
+            <img src="${tryOnState.userImage}" style="max-height: 100%; max-width: 100%;" />
+            <div style="position: absolute; top: 0; left: 0; width: 100%; text-align: center; background: rgba(67, 97, 238, 0.8); color: white; padding: 5px;">
+              Virtual Try-On Result: ${tryOnState.selectedItem}
+            </div>
+          </div>`;
+
+            // Enable save button
+            tryOnSaveBtn.disabled = false;
+
+            // Add message in chat
+            addAssistantMessage(
+              `Here's how ${tryOnState.selectedItem} looks on you! What do you think?`
+            );
+          } catch (error) {
+            console.error("Error processing try-on:", error);
+            tryOnCanvas.innerHTML =
+              '<div style="text-align: center; padding: 20px; color: red;">Error processing try-on. Please try again.</div>';
+          } finally {
+            tryOnState.processing = false;
+            tryOnProcessBtn.disabled = false;
+            tryOnProcessBtn.textContent = "Try It On";
+          }
+        });
+
+        // Save try-on result
+        tryOnSaveBtn.addEventListener("click", function () {
+          if (!tryOnState.result) {
+            return;
+          }
+
+          // In a real app, this would save to user's account
+          addAssistantMessage(
+            "I've saved your virtual try-on! You can find it in your saved images."
+          );
+
+          // Show confirmation
+          alert("Virtual try-on saved!");
+        });
+
+        // Closet functionality
+        const closetUploadBtn = document.querySelector(".closet-upload-button");
+
+        // Create file input for closet upload
+        const closetFileInput = document.createElement("input");
+        closetFileInput.type = "file";
+        closetFileInput.accept = "image/*";
+        closetFileInput.capture = "camera"; // Enable camera capture
+        closetFileInput.style.display = "none";
+        document.body.appendChild(closetFileInput);
+
+        // Closet upload button
+        closetUploadBtn.addEventListener("click", function () {
+          // Show options modal
+          if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            const choice = confirm(
+              "Would you like to use your camera? Click OK to use camera, or Cancel to select from your photos."
+            );
+            if (choice) {
+              // Start closet camera
+              startClosetCamera();
+            } else {
+              // Open file picker
+              closetFileInput.click();
+            }
+          } else {
+            // No camera support, use file picker
+            closetFileInput.click();
+          }
+        });
+
+        // Function to start closet camera
+        function startClosetCamera() {
+          // Create camera elements if not exists
+          if (!document.getElementById("closet-camera-container")) {
+            // Create camera container
+            const cameraContainer = document.createElement("div");
+            cameraContainer.id = "closet-camera-container";
+            cameraContainer.style.position = "fixed";
+            cameraContainer.style.top = "0";
+            cameraContainer.style.left = "0";
+            cameraContainer.style.width = "100%";
+            cameraContainer.style.height = "100%";
+            cameraContainer.style.backgroundColor = "rgba(0,0,0,0.9)";
+            cameraContainer.style.zIndex = "10001";
+            cameraContainer.style.display = "flex";
+            cameraContainer.style.flexDirection = "column";
+            cameraContainer.style.alignItems = "center";
+            cameraContainer.style.justifyContent = "center";
+
+            // Create video element
+            const video = document.createElement("video");
+            video.id = "closet-camera-video";
+            video.style.maxWidth = "100%";
+            video.style.maxHeight = "80%";
+            video.style.backgroundColor = "#000";
+            video.autoplay = true;
+            cameraContainer.appendChild(video);
+
+            // Create button container
+            const buttonContainer = document.createElement("div");
+            buttonContainer.style.marginTop = "20px";
+            buttonContainer.style.display = "flex";
+            buttonContainer.style.gap = "20px";
+
+            // Create capture button
+            const captureBtn = document.createElement("button");
+            captureBtn.textContent = "Take Photo";
+            captureBtn.style.padding = "10px 20px";
+            captureBtn.style.backgroundColor = "#000";
+            captureBtn.style.color = "white";
+            captureBtn.style.border = "none";
+            captureBtn.style.borderRadius = "5px";
+            captureBtn.style.cursor = "pointer";
+            captureBtn.onclick = captureClosetPhoto;
+            buttonContainer.appendChild(captureBtn);
+
+            // Create cancel button
+            const cancelBtn = document.createElement("button");
+            cancelBtn.textContent = "Cancel";
+            cancelBtn.style.padding = "10px 20px";
+            cancelBtn.style.backgroundColor = "#f44336";
+            cancelBtn.style.color = "white";
+            cancelBtn.style.border = "none";
+            cancelBtn.style.borderRadius = "5px";
+            cancelBtn.style.cursor = "pointer";
+            cancelBtn.onclick = stopClosetCamera;
+            buttonContainer.appendChild(cancelBtn);
+
+            cameraContainer.appendChild(buttonContainer);
+            document.body.appendChild(cameraContainer);
+          } else {
+            document.getElementById("closet-camera-container").style.display =
+              "flex";
+          }
+
+          // Access camera
+          navigator.mediaDevices
+            .getUserMedia({
+              video: { facingMode: "environment" },
+              audio: false,
+            })
+            .then(function (stream) {
+              const video = document.getElementById("closet-camera-video");
+              video.srcObject = stream;
+              cameraStream = stream; // Reuse the same stream variable
+            })
+            .catch(function (error) {
+              console.error("Camera error:", error);
+              alert(
+                "Could not access camera. Please check permissions or use file upload instead."
+              );
+              stopClosetCamera();
+              closetFileInput.click();
+            });
+        }
+
+        // Function to stop closet camera
+        function stopClosetCamera() {
+          if (cameraStream) {
+            cameraStream.getTracks().forEach((track) => track.stop());
+            cameraStream = null;
+          }
+
+          const container = document.getElementById("closet-camera-container");
+          if (container) {
+            container.style.display = "none";
+          }
+        }
+
+        // Function to capture closet photo from camera
+        function captureClosetPhoto() {
+          const video = document.getElementById("closet-camera-video");
+
+          // Create canvas to capture frame
+          const canvas = document.createElement("canvas");
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const context = canvas.getContext("2d");
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          // Convert to data URL
+          const dataUrl = canvas.toDataURL("image/jpeg");
+
+          // Stop camera
+          stopClosetCamera();
+
+          // Add to closet
+          processClosetImage(dataUrl);
+        }
+
+        // Process closet image (used by both file upload and camera)
+        async function processClosetImage(imageSource) {
+          // Extract filename or create one
+          let itemName;
+          let imageObject;
+
+          if (typeof imageSource === "string") {
+            // From camera - it's a data URL
+            itemName = "Camera Photo " + new Date().toLocaleTimeString();
+            // Convert data URL to blob
+            const response = await fetch(imageSource);
+            const blob = await response.blob();
+            imageObject = new File([blob], itemName + ".jpg", {
+              type: "image/jpeg",
+            });
+          } else {
+            // From file input - it's a File object
+            const file = imageSource;
+            itemName = file.name.split(".")[0];
+            imageObject = file;
+          }
+
+          // Create new item object
+          const newItem = {
+            name: itemName,
+            category: "Uploaded Item",
+            subcategory: "Custom",
+            description: "User uploaded item",
+            image: imageObject,
+          };
+
+          try {
+            // Add loading indicator
+            const closetGrid = document.querySelector(".closet-grid");
+            const loadingElement = document.createElement("div");
+            loadingElement.className = "closet-item";
+            loadingElement.innerHTML = `
+            <div class="closet-item-image" style="display: flex; justify-content: center; align-items: center;">
+              Loading...
+            </div>
+          `;
+            closetGrid.insertBefore(loadingElement, closetGrid.firstChild);
+
+            // Call API
+            const result = await API.addItemToCloset(newItem);
+
+            // Remove loading indicator
+            closetGrid.removeChild(loadingElement);
+
+            // Add new item to grid
+            const itemElement = document.createElement("div");
+            itemElement.className = "closet-item";
+
+            // Display the image if it's a dataURL
+            const imageDisplay =
+              typeof imageSource === "string"
+                ? `<img src="${imageSource}" style="width: 100%; height: 100%; object-fit: cover;">`
+                : newItem.name;
+
+            itemElement.innerHTML = `
+            <div class="closet-item-image">${imageDisplay}</div>
+            <div class="closet-item-info">
+              <div class="closet-item-name">${newItem.name}</div>
+              <div class="closet-item-category">${newItem.category} / ${newItem.subcategory}</div>
+            </div>
+          `;
+            closetGrid.insertBefore(itemElement, closetGrid.firstChild);
+
+            // Add message in chat
+            addAssistantMessage(
+              `I've added ${newItem.name} to your closet! You can now use it to create outfits.`
+            );
+          } catch (error) {
+            console.error("Error adding item to closet:", error);
+            alert("Error adding item to closet. Please try again.");
+          }
+        }
+
+        // File input change for closet
+        closetFileInput.addEventListener("change", async function (e) {
+          if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            processClosetImage(file);
+          }
+        });
+
+        // Visual cues for buttons
+        const allButtons = document.querySelectorAll("button");
+        allButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            this.style.opacity = "0.8";
+            setTimeout(() => {
+              this.style.opacity = "1";
+            }, 200);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

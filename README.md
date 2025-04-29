@@ -1,132 +1,137 @@
-# The Stylist – AI-Powered Fashion Assistant
+# The Stylist - Fashion Recommendation Widget
 
-_This project has two audiences: (1) internal developers building The Stylist platform, and (2) external retailers embedding the chat widget. Both sets of instructions are included here._
+The Stylist is an intelligent fashion recommendation widget that can be embedded into e-commerce websites or used as a browser extension. It provides personalized clothing recommendations, virtual try-on features, and style assistance powered by AI.
 
----
+## Features
 
-## 🧠 Internal Developer Overview
+- 👕 **Smart Closet**: Scan and digitize your physical wardrobe
+- 🎯 **Personalized Recommendations**: Get clothing suggestions based on your style
+- 👗 **Virtual Try-On**: See how items look on your body before purchasing
+- 🧠 **AI Style Assistant**: Chat with an AI stylist for fashion advice
+- 🔄 **Omnichannel Experience**: Consistent experience across web, mobile, and extension
+- 🛍️ **Multi-Retailer Support**: Connect with various e-commerce platforms
 
-The Stylist is a full-stack AI-powered personal styling platform that provides highly personalized fashion recommendations to users based on:
+## Quick Start
 
-- Closet items they already own (uploaded manually)
-- Their responses to a 20-question Style Quiz
-- Likes and dislikes of outfits
-- Celebrities or influencers they follow
-- Live inventory data from partnered retailers
-
-### 🎯 Core Features
-
-- AI-powered outfit suggestions from closet, quiz, and preferences
-- Chat interface powered by Claude Sonnet 3.5
-- Real-time retailer API inventory syncing
-- Background-removed virtual try-ons (Remove.bg + TensorFlow.js)
-- Custom quiz and social-proof celebrity matching logic
-- Dockerized backend + frontend with deployable infra
-
-### 🗂 Project Structure
-
-- `/api`: API routes for recommendations, retailer configuration, and inventory
-- `/integrations`: Retailer API clients and cache implementation
-- `/models`: Core data models for clothing, users, and recommendations
-- `/services`: Business logic for recommendations and style analysis
-- `/src`: React frontend with components, hooks, and stores
-- `/public`: Static assets and TensorFlow.js models
-
-### 🛠 Developer Setup
+The fastest way to run The Stylist application is using our run script:
 
 ```bash
-# Install frontend dependencies
-npm install
+# Make the script executable if it's not already
+chmod +x dist/run_app.sh
 
-# Install backend dependencies
-pip install -r requirements.txt
-
-# Set up environment variables
-cp stillremaining.txt .env
-# Edit .env with your API keys
+# Run the application
+./dist/run_app.sh
 ```
 
-To run locally:
+This will start both the backend and frontend servers. Then open:
+- Frontend: http://localhost:3001
+- Backend API: http://localhost:8000/api/v1
+
+Alternatively, you can manually start each component:
+
+1. Start the backend server:
+   ```bash
+   python -m uvicorn main:app --reload
+   ```
+2. Run the pre-built frontend:
+   ```bash
+   cd dist
+   python -m http.server 3001
+   ```
+3. Visit http://localhost:3001 in your browser
+
+For full setup instructions, see [LAUNCH_INSTRUCTIONS.md](LAUNCH_INSTRUCTIONS.md).
+
+## Technology Stack
+
+### Frontend
+- React with TypeScript
+- SCSS for styling
+- TensorFlow.js for on-device machine learning
+- Zustand for state management
+
+### Backend
+- Python with FastAPI
+- SQLAlchemy for database models
+- Redis for caching (with memory cache fallback)
+- JWT for authentication
+
+### Integrations
+- Shopify API integration
+- WooCommerce API integration
+- Generic REST API for other retailers
+- Remove.bg API for image background removal (optional)
+- Anthropic Claude API for style assistant (optional)
+
+## Architecture
+
+The Stylist consists of several modules:
+
+- **Chat Widget**: Core UI component for interacting with the style assistant
+- **Virtual Try-On**: Canvas-based garment visualization on user photos
+- **My Closet**: Digital wardrobe management system
+- **Lookbook**: Collection of saved outfits and recommendations
+- **Retailer API**: Flexible integration layer for e-commerce platforms
+- **Recommendation Engine**: AI-based clothing suggestion system
+
+## Documentation
+
+- [LAUNCH_INSTRUCTIONS.md](LAUNCH_INSTRUCTIONS.md) - Setup and deployment guide
+- [STILL_MISSING.md](STILL_MISSING.md) - Missing components and configurations
+- [WIDGET_ARCHITECTURE_REPORT.md](WIDGET_ARCHITECTURE_REPORT.md) - Detailed architecture overview
+- [RETAILER_INTEGRATION_REPORT.md](RETAILER_INTEGRATION_REPORT.md) - Retailer API integration details
+- [RECOMMENDATION_ENGINE_REPORT.md](RECOMMENDATION_ENGINE_REPORT.md) - Recommendation system documentation
+
+## Development
+
+To start development:
+
+1. Set up your environment as described in [LAUNCH_INSTRUCTIONS.md](LAUNCH_INSTRUCTIONS.md)
+2. Run `npm install` to install frontend dependencies
+3. Run `npm start` to start the development server
+4. Run backend server with `python -m uvicorn stylist.main:app --reload`
+
+## Testing
+
+- Frontend tests: `npm test`
+- Backend tests: `pytest tests/`
+- E2E tests: `npm run cypress:open`
+
+## Deployment
+
+### Web Widget
+
+Build the widget for embedding on websites:
 
 ```bash
-# Frontend
-npm start
-
-# Backend
-uvicorn main:app --reload
+npm run build
 ```
 
-Docker-based deployment:
+The output will be in the `dist` directory, with `stylist-widget.js` and `stylist-widget.css` for embedding.
+
+### Browser Extension
+
+Build as a browser extension:
 
 ```bash
-# Build and run with Docker
+npm run build:extension
+```
+
+Load the unpacked extension from the `dist` directory.
+
+### Docker
+
+Deploy using Docker:
+
+```bash
 docker build -t thestylist/widget .
-docker run -p 80:80 thestylist/widget
+docker run -p 80:80 -p 8000:8000 --env-file .env thestylist/widget
 ```
 
-### 🧪 Testing
-
-```bash
-# Frontend tests
-npm test
-
-# Backend tests
-pytest tests/
-
-# E2E tests
-npm run cypress:open
-```
-
----
-
-## 💬 Chat Widget – External Retailer Guide
-
-### Overview
-
-This is the frontend implementation for The Stylist project, providing an embeddable chat widget that retailers can add to their websites. The widget provides AI-powered fashion recommendations based on user preferences.
-
-### Features
-
-- Responsive chat interface
-- Real-time product recommendations
-- Complete outfit suggestions
-- Style quiz for preference gathering
-- User feedback collection
-- Virtual try-on with background removal
-- Easy integration for retailers
-
-### Installation
-
-#### Using NPM
-
-```bash
-npm install stylist-widget
-```
-
-#### Using CDN
-
-```html
-<script src="https://cdn.thestylist.ai/stylist-widget.js"></script>
-<link rel="stylesheet" href="https://cdn.thestylist.ai/stylist-widget.css">
-```
-
-### Basic Usage
-
-Add the following code to your website:
-
-```html
-<script>
-  // Initialize The Stylist widget
-  window.StylistWidget.init({
-    apiKey: 'YOUR_API_KEY',
-    retailerId: 'YOUR_RETAILER_ID'
-  });
-</script>
-```
-
-### Configuration Options
+## JavaScript API for Embedding
 
 ```javascript
+// Initialize The Stylist widget
 StylistWidget.init({
   apiKey: 'YOUR_API_KEY',        // Required
   retailerId: 'YOUR_RETAILER_ID', // Required
@@ -135,91 +140,19 @@ StylistWidget.init({
   primaryColor: '#4361ee',        // Optional - Primary color
   greeting: 'Hi there! I'm your AI style assistant.' // Optional - Custom greeting
 });
-```
 
-### JavaScript API
+// Control methods
+StylistWidget.open();  // Open the widget
+StylistWidget.close(); // Close the widget
+StylistWidget.openStyleQuiz(); // Open the style quiz
+StylistWidget.openTryOn(); // Open virtual try-on
 
-```javascript
-// Open the widget
-StylistWidget.open();
-
-// Close the widget
-StylistWidget.close();
-
-// Check if the widget is open
-const isOpen = StylistWidget.isOpen();
-
-// Add an event listener
+// Event listeners
 StylistWidget.on('recommendation', function(items) {
   console.log('Recommended items:', items);
 });
-
-// Trigger the style quiz
-StylistWidget.openStyleQuiz();
-
-// Open the virtual try-on feature
-StylistWidget.openTryOn();
 ```
 
-### Local Dev (for Devs Only)
-
-```bash
-npm install
-npm start
-npm run build
-```
-
----
-
-## 📋 Environment Setup
-
-All required environment variables are documented in `stillremaining.txt`. Copy this file to `.env` and fill in the values:
-
-```bash
-cp stillremaining.txt .env
-# Edit .env with your API keys and configuration
-```
-
-Key environment variables:
-
-```
-REMOVE_BG_API_KEY=               # Required for background removal
-ANTHROPIC_API_KEY=               # Required for Claude integration
-STYLIST_API_KEY=                 # API authentication
-```
-
-The TensorFlow.js model for background removal needs to be downloaded separately. See instructions in `/public/models/segmentation-model/README.md`.
-
-### ✅ At Completion
-
-When all setup is finished, you can run the following to verify the setup:
-
-```bash
-# Frontend verification
-npm run verify
-
-# Backend verification
-python -m stylist.verify
-
-# If everything is set up correctly, you'll see:
-PROJECT IS READY FOR TESTING
-```
-
----
-
-## 🚀 Deployment
-
-The project includes Docker and GitHub Actions configurations for CI/CD:
-
-1. The GitHub workflow in `.github/workflows/ci-cd.yml` runs tests and builds the Docker image
-2. The Docker image is pushed to Docker Hub and deployed to AWS Lambda
-3. You need to configure the following secrets in your GitHub repository:
-   - `DOCKER_USERNAME`
-   - `DOCKER_PASSWORD`
-   - `AWS_ACCESS_KEY_ID`
-   - `AWS_SECRET_ACCESS_KEY`
-   - `ECR_REGISTRY`
-
-## 🪪 License
+## License
 
 MIT

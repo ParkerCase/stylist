@@ -10,6 +10,7 @@ interface ChatState {
   isMinimized: boolean;
   isLoading: boolean;
   error: string | null;
+  currentView: 'chat' | 'lookbook';
   
   // Actions
   addMessage: (message: Omit<ChatMessage, 'id' | 'timestamp'>) => string;
@@ -21,14 +22,16 @@ interface ChatState {
   toggleMinimize: () => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
+  setCurrentView: (view: 'chat' | 'lookbook') => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],
-  isOpen: false,
+  isOpen: true, // Set to true by default to show the widget
   isMinimized: false,
   isLoading: false,
   error: null,
+  currentView: 'chat',
   
   addMessage: (message) => {
     const id = uuidv4();
@@ -93,5 +96,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
   
   setError: (error) => {
     set({ error });
+  },
+  
+  setCurrentView: (view) => {
+    set({ currentView: view });
   }
 }));

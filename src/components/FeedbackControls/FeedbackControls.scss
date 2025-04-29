@@ -1,30 +1,62 @@
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
 
 .stylist-feedback-controls {
-  @include flex-center;
+  @include mixins.flex-center;
+  
+  &--thumbs-up {
+    margin: variables.$spacing-md 0;
+    justify-content: flex-start;
+  }
   
   &__button {
-    @include flex-center;
+    @include mixins.flex-center;
     width: 32px;
     height: 32px;
-    border-radius: $border-radius-round;
+    border-radius: variables.$border-radius-round;
     background-color: transparent;
-    color: $text-secondary;
-    border: 1px solid $border-color;
-    margin: 0 $spacing-xs;
-    transition: all $transition-normal ease;
+    color: variables.$text-secondary;
+    border: 1px solid variables.$border-color;
+    margin: 0 variables.$spacing-xs;
+    transition: all variables.$transition-normal ease;
     
-    &:hover {
-      background-color: $surface-color;
-      border-color: $text-primary;
-      color: $text-primary;
+    &:hover:not(:disabled) {
+      background-color: variables.$surface-color;
+      border-color: variables.$text-primary;
+      color: variables.$text-primary;
     }
     
     &--active {
-      background-color: rgba($primary-color, 0.1);
-      color: $primary-color;
-      border-color: $primary-color;
+      background-color: rgba(variables.$primary-color, 0.1);
+      color: variables.$primary-color;
+      border-color: variables.$primary-color;
     }
+    
+    &:disabled {
+      opacity: 0.7;
+      cursor: default;
+    }
+    
+    // Styling for the thumbs up button with text
+    .stylist-feedback-controls--thumbs-up & {
+      width: auto;
+      padding: 0 variables.$spacing-md;
+    }
+  }
+  
+  &__button-text {
+    margin-left: variables.$spacing-sm;
+    font-size: variables.$font-size-sm;
+  }
+  
+  // Animation for feedback
+  @keyframes feedback-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+  
+  &__button--active {
+    animation: feedback-pulse 0.3s ease-in-out;
   }
 }

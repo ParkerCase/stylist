@@ -1,19 +1,19 @@
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
 
 .stylist-item-card {
-  @include card;
+  @include mixins.card;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: transform $transition-normal ease, box-shadow $transition-normal ease;
-  border: 1px solid $border-color;
+  transition: transform variables.$transition-normal ease, box-shadow variables.$transition-normal ease;
+  border: 1px solid variables.$border-color;
   height: 100%;
   position: relative;
   
   &:hover {
     transform: translateY(-4px);
-    box-shadow: $shadow-lg;
+    box-shadow: variables.$shadow-lg;
   }
   
   &--animate {
@@ -23,7 +23,7 @@
   &__image-container {
     position: relative;
     aspect-ratio: 3/4;
-    background-color: $surface-color;
+    background-color: variables.$surface-color;
     overflow: hidden;
     cursor: pointer;
   }
@@ -32,7 +32,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform $transition-normal ease;
+    transition: transform variables.$transition-normal ease;
     
     &:hover {
       transform: scale(1.05);
@@ -40,12 +40,12 @@
   }
   
   &__image-placeholder {
-    @include flex-center;
+    @include mixins.flex-center;
     width: 100%;
     height: 100%;
-    background-color: $surface-color;
-    color: $text-tertiary;
-    font-size: $font-size-sm;
+    background-color: variables.$surface-color;
+    color: variables.$text-tertiary;
+    font-size: variables.$font-size-sm;
   }
   
   &__feedback-text {
@@ -55,34 +55,35 @@
     right: 0;
     bottom: 0;
     z-index: 5;
-    @include flex-center;
-    color: $text-inverse;
-    font-weight: $font-weight-medium;
-    font-size: $font-size-md;
+    @include mixins.flex-center;
+    color: variables.$text-inverse;
+    font-weight: variables.$font-weight-medium;
+    font-size: variables.$font-size-md;
     text-align: center;
     animation: fadeIn 0.2s ease;
   }
   
   &__discount {
     position: absolute;
-    top: $spacing-sm;
-    right: $spacing-sm;
-    background-color: $secondary-color;
-    color: $text-inverse;
+    top: variables.$spacing-sm;
+    right: variables.$spacing-sm;
+    background-color: variables.$secondary-color;
+    color: variables.$text-inverse;
     padding: 4px 8px;
-    border-radius: $border-radius-sm;
-    font-size: $font-size-xs;
-    font-weight: $font-weight-bold;
+    border-radius: variables.$border-radius-sm;
+    font-size: variables.$font-size-xs;
+    font-weight: variables.$font-weight-bold;
   }
   
   &__try-on-overlay {
     position: absolute;
-    bottom: $spacing-sm;
+    bottom: variables.$spacing-sm;
     left: 50%;
     transform: translateX(-50%);
     opacity: 0;
-    transition: opacity $transition-normal ease;
+    transition: opacity variables.$transition-normal ease;
     pointer-events: none;
+    z-index: 5;
     
     .stylist-item-card:hover & {
       opacity: 1;
@@ -90,8 +91,40 @@
     }
   }
   
+  &__try-on-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: variables.$spacing-xs;
+    padding: variables.$spacing-xs variables.$spacing-sm;
+    border-radius: variables.$border-radius-md;
+    background-color: variables.$primary-color;
+    color: variables.$text-inverse;
+    font-weight: variables.$font-weight-medium;
+    font-size: variables.$font-size-sm;
+    box-shadow: variables.$shadow-md;
+    border: none;
+    cursor: pointer;
+    transition: all variables.$transition-normal ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: variables.$shadow-lg;
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+  
+  &__try-on-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
   &__content {
-    padding: $spacing-sm;
+    padding: variables.$spacing-sm;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -99,84 +132,131 @@
   }
   
   &__brand {
-    font-size: $font-size-xs;
-    color: $text-secondary;
+    font-size: variables.$font-size-xs;
+    color: variables.$text-secondary;
     margin-bottom: 2px;
-    @include text-truncate;
+    @include mixins.text-truncate;
   }
   
   &__name {
-    font-size: $font-size-sm;
-    font-weight: $font-weight-medium;
-    color: $text-primary;
-    margin-bottom: $spacing-xs;
-    @include text-truncate-multiline(2);
+    font-size: variables.$font-size-sm;
+    font-weight: variables.$font-weight-medium;
+    color: variables.$text-primary;
+    margin-bottom: variables.$spacing-xs;
+    @include mixins.text-truncate-multiline(2);
   }
   
   &__price {
-    font-size: $font-size-sm;
-    color: $text-primary;
-    margin-bottom: $spacing-xs;
+    font-size: variables.$font-size-sm;
+    color: variables.$text-primary;
+    margin-bottom: variables.$spacing-xs;
     
     &--sale {
-      font-weight: $font-weight-bold;
-      color: $secondary-color;
-      margin-right: $spacing-xs;
+      font-weight: variables.$font-weight-bold;
+      color: variables.$secondary-color;
+      margin-right: variables.$spacing-xs;
     }
     
     &--original {
       text-decoration: line-through;
-      color: $text-tertiary;
-      font-size: $font-size-xs;
+      color: variables.$text-tertiary;
+      font-size: variables.$font-size-xs;
     }
   }
   
   &__match-reasons {
-    padding: 0 $spacing-sm $spacing-sm;
-    border-top: 1px solid $border-color;
+    padding: 0 variables.$spacing-sm variables.$spacing-sm;
+    border-top: 1px solid variables.$border-color;
   }
   
   &__match-score {
-    font-size: $font-size-sm;
-    font-weight: $font-weight-bold;
-    color: $primary-color;
-    margin: $spacing-xs 0;
+    font-size: variables.$font-size-sm;
+    font-weight: variables.$font-weight-bold;
+    color: variables.$primary-color;
+    margin: variables.$spacing-xs 0;
   }
   
   &__reason-list {
     margin: 0;
-    padding-left: $spacing-md;
-    font-size: $font-size-xs;
+    padding-left: variables.$spacing-md;
+    font-size: variables.$font-size-xs;
   }
   
   &__reason-item {
     margin-bottom: 2px;
-    color: $text-secondary;
+    color: variables.$text-secondary;
   }
   
   &__actions {
-    padding: $spacing-sm;
-    border-top: 1px solid $border-color;
-    @include flex-between;
+    padding: variables.$spacing-sm;
+    border-top: 1px solid variables.$border-color;
+    @include mixins.flex-between;
   }
   
   &__wishlist-btn,
-  &__cart-btn {
-    @include flex-center;
+  &__cart-btn,
+  &__favorite-btn,
+  &__remove-btn {
+    @include mixins.flex-center;
     width: 32px;
     height: 32px;
-    border-radius: $border-radius-round;
-    background-color: $surface-color;
-    color: $text-secondary;
-    transition: all $transition-normal ease;
+    border-radius: variables.$border-radius-round;
+    background-color: variables.$surface-color;
+    color: variables.$text-secondary;
+    transition: all variables.$transition-normal ease;
     
     &:hover {
-      background-color: $primary-color;
-      color: $text-inverse;
+      background-color: variables.$primary-color;
+      color: variables.$text-inverse;
     }
     
     &:active {
       transform: scale(1.1);
+    }
+  }
+  
+  &__favorite-btn {
+    &--active {
+      background-color: variables.$secondary-color;
+      color: variables.$text-inverse;
+      
+      &:hover {
+        background-color: variables.$secondary-color-dark;
+      }
+    }
+  }
+  
+  &__remove-btn {
+    &:hover {
+      background-color: variables.$error-color;
+      color: variables.$text-inverse;
+    }
+  }
+  
+  &__try-on-btn {
+    display: flex;
+    align-items: center;
+    gap: variables.$spacing-xs;
+    padding: variables.$spacing-xs variables.$spacing-sm;
+    border-radius: variables.$border-radius-md;
+    background-color: variables.$primary-color;
+    color: variables.$text-inverse;
+    font-size: variables.$font-size-xs;
+    font-weight: variables.$font-weight-medium;
+    border: none;
+    cursor: pointer;
+    transition: all variables.$transition-normal ease;
+    
+    &:hover {
+      opacity: 0.9;
+    }
+    
+    &:active {
+      transform: scale(0.98);
+    }
+    
+    svg {
+      margin-right: 2px;
     }
   }
 }
@@ -185,14 +265,19 @@
 @keyframes item-pulse {
   0% {
     transform: scale(1);
-    box-shadow: $shadow-sm;
+    box-shadow: variables.$shadow-sm;
   }
   50% {
     transform: scale(1.03);
-    box-shadow: $shadow-lg;
+    box-shadow: variables.$shadow-lg;
   }
   100% {
     transform: scale(1);
-    box-shadow: $shadow-sm;
+    box-shadow: variables.$shadow-sm;
   }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

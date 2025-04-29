@@ -1,0 +1,294 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.stylist-my-closet {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 1rem;
+  background-color: $light-bg-color;
+  border-radius: $card-border-radius;
+  
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+      color: $primary-text-color;
+    }
+  }
+  
+  &__add-btn {
+    @include button-primary;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    
+    &::before {
+      content: '+';
+      margin-right: 0.5rem;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+  }
+  
+  &__categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid $border-color;
+  }
+  
+  &__category-btn {
+    background: none;
+    border: 1px solid $border-color;
+    border-radius: 20px;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.9rem;
+    color: $secondary-text-color;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: rgba($primary-color, 0.05);
+      border-color: $primary-color;
+    }
+    
+    &.active {
+      background-color: $primary-color;
+      border-color: $primary-color;
+      color: white;
+    }
+  }
+  
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  
+  &__item {
+    display: flex;
+    flex-direction: column;
+    border-radius: $card-border-radius;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background-color: white;
+    box-shadow: $card-box-shadow;
+    
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: $card-hover-box-shadow;
+    }
+  }
+  
+  &__item-details {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  &__item-category {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: $primary-text-color;
+    text-transform: capitalize;
+  }
+  
+  &__item-color {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.25rem;
+    color: $secondary-text-color;
+    text-transform: capitalize;
+  }
+  
+  &__color-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  &__item-brand {
+    margin-bottom: 0.25rem;
+    color: $secondary-text-color;
+    font-weight: 500;
+  }
+  
+  &__item-size {
+    color: $tertiary-text-color;
+    font-size: 0.8rem;
+  }
+  
+  &__add-to-outfit-btn {
+    width: 100%;
+    padding: 0.5rem;
+    background-color: $secondary-color;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: darken($secondary-color, 5%);
+    }
+  }
+  
+  &__empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    background-color: white;
+    border-radius: $card-border-radius;
+    border: 1px dashed $border-color;
+    
+    p {
+      font-size: 1.1rem;
+      color: $secondary-text-color;
+      margin-bottom: 1.5rem;
+    }
+  }
+  
+  &__add-first-btn {
+    @include button-primary;
+    padding: 0.75rem 1.5rem;
+  }
+  
+  &__uploader {
+    background-color: white;
+    border-radius: $card-border-radius;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      color: $primary-text-color;
+    }
+  }
+  
+  &__new-item-form {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+    
+    @media (max-width: $breakpoint-md) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  &__preview {
+    background-color: $light-bg-color;
+    border-radius: $card-border-radius;
+    overflow: hidden;
+    aspect-ratio: 3/4;
+    max-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+  }
+  
+  &__form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  &__form-group {
+    display: flex;
+    flex-direction: column;
+    
+    label {
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      color: $secondary-text-color;
+    }
+    
+    input, select {
+      padding: 0.75rem;
+      border: 1px solid $border-color;
+      border-radius: $input-border-radius;
+      font-size: 1rem;
+      
+      &:focus {
+        outline: none;
+        border-color: $primary-color;
+      }
+    }
+  }
+  
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  &__tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: rgba($primary-color, 0.1);
+    color: $primary-color;
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  &__tag-remove {
+    background: none;
+    border: none;
+    color: $primary-color;
+    font-size: 1.2rem;
+    margin-left: 0.25rem;
+    cursor: pointer;
+    padding: 0 0.25rem;
+    
+    &:hover {
+      color: darken($primary-color, 10%);
+    }
+  }
+  
+  &__form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  &__cancel-btn {
+    @include button-secondary;
+    padding: 0.75rem 1.5rem;
+  }
+  
+  &__save-btn {
+    @include button-primary;
+    padding: 0.75rem 1.5rem;
+    
+    &:disabled {
+      background-color: $tertiary-text-color;
+      cursor: not-allowed;
+    }
+  }
+}

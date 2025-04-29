@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Widget Demo</title>
+  <style>
+    /* Basic styling for the chat widget */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    .stylist-chat-widget {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 350px;
+      height: 500px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .stylist-header {
+      background-color: #4361ee;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stylist-content {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background-color: #f7f7f7;
+    }
+    .message {
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      max-width: 80%;
+    }
+    .message.assistant {
+      background-color: #e0e0e0;
+      align-self: flex-start;
+    }
+    .message.user {
+      background-color: #4361ee;
+      color: white;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+    .stylist-input {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #e0e0e0;
+    }
+    .stylist-input input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 20px;
+      margin-right: 10px;
+    }
+    .stylist-input button {
+      background-color: #4361ee;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 15px;
+      cursor: pointer;
+    }
+    .message-container {
+      display: flex;
+      flex-direction: column;
+    }
+    .demo-container {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    button.open-button {
+      background-color: #4361ee;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <h1>Simple Stylist Widget Demo</h1>
+    <p>Click the button below to open the stylist chat widget:</p>
+    <button class="open-button" id="openWidget">Open Stylist Chat</button>
+  </div>
+
+  <!-- Chat Widget - Initially hidden -->
+  <div id="stylistWidget" class="stylist-chat-widget" style="display: none;">
+    <div class="stylist-header">
+      <div>The Stylist</div>
+      <div style="cursor: pointer;" id="closeWidget">✕</div>
+    </div>
+    <div class="stylist-content">
+      <div class="message-container" id="messageContainer">
+        <div class="message assistant">
+          Hi there! I'm your AI style assistant. How can I help you today?
+        </div>
+      </div>
+    </div>
+    <div class="stylist-input">
+      <input type="text" id="messageInput" placeholder="Type your message...">
+      <button id="sendMessage">Send</button>
+    </div>
+  </div>
+
+  <script>
+    // Simple widget functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const widget = document.getElementById('stylistWidget');
+      const openBtn = document.getElementById('openWidget');
+      const closeBtn = document.getElementById('closeWidget');
+      const messageInput = document.getElementById('messageInput');
+      const sendBtn = document.getElementById('sendMessage');
+      const messageContainer = document.getElementById('messageContainer');
+
+      // Auto-open the widget
+      setTimeout(() => {
+        widget.style.display = 'flex';
+      }, 1000);
+
+      // Open widget button
+      openBtn.addEventListener('click', function() {
+        widget.style.display = 'flex';
+      });
+
+      // Close widget button
+      closeBtn.addEventListener('click', function() {
+        widget.style.display = 'none';
+      });
+
+      // Send message function
+      function sendMessage() {
+        const message = messageInput.value.trim();
+        if (message) {
+          // Add user message
+          const userMessageEl = document.createElement('div');
+          userMessageEl.className = 'message user';
+          userMessageEl.textContent = message;
+          messageContainer.appendChild(userMessageEl);
+          
+          // Clear input
+          messageInput.value = '';
+          
+          // Scroll to bottom
+          messageContainer.scrollTop = messageContainer.scrollHeight;
+          
+          // Simulate assistant response
+          setTimeout(() => {
+            const assistantMessageEl = document.createElement('div');
+            assistantMessageEl.className = 'message assistant';
+            
+            // Simple responses based on user message
+            let response = "I'm sorry, I'm not sure how to help with that. Could you try asking about fashion or style advice?";
+            
+            if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
+              response = "Hello! How can I help with your fashion needs today?";
+            } else if (message.toLowerCase().includes('style')) {
+              response = "I'd be happy to give you style advice! What kind of look are you going for?";
+            } else if (message.toLowerCase().includes('outfit') || message.toLowerCase().includes('wear')) {
+              response = "I can help you put together a great outfit! What occasion are you dressing for?";
+            } else if (message.toLowerCase().includes('color')) {
+              response = "Colors are so important in fashion! What's your skin tone or hair color? That helps me recommend colors that would suit you.";
+            } else if (message.toLowerCase().includes('recommend')) {
+              response = "I'd recommend checking out some classic pieces that never go out of style, like a well-fitted white shirt, good jeans, and a versatile blazer.";
+            }
+            
+            assistantMessageEl.textContent = response;
+            messageContainer.appendChild(assistantMessageEl);
+            
+            // Scroll to bottom again
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+          }, 1000);
+        }
+      }
+
+      // Send button click
+      sendBtn.addEventListener('click', sendMessage);
+      
+      // Send on Enter key
+      messageInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          sendMessage();
+        }
+      });
+    });
+  </script>
+</body>
+</html>

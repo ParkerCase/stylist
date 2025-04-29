@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stylist Standalone Widget</title>
+  <style>
+    /* Base styling */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, 
+                   Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f7f7f7;
+    }
+    
+    .demo-container {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    button.open-button {
+      background-color: #4361ee;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    
+    /* Widget styling */
+    .stylist-widget {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 380px;
+      height: 600px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 9999;
+    }
+    
+    .widget-header {
+      background-color: #4361ee;
+      color: white;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .widget-title {
+      font-weight: bold;
+      font-size: 16px;
+    }
+    
+    .widget-controls {
+      display: flex;
+      gap: 15px;
+    }
+    
+    .control-button {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    .control-button:hover {
+      opacity: 1;
+    }
+    
+    .widget-tabs {
+      display: flex;
+      background-color: #f0f2f5;
+      border-bottom: 1px solid #e1e4e8;
+    }
+    
+    .widget-tab {
+      padding: 12px 15px;
+      cursor: pointer;
+      font-size: 14px;
+      text-align: center;
+      flex: 1;
+      color: #4c5667;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+    
+    .widget-tab.active {
+      border-color: #4361ee;
+      color: #4361ee;
+      font-weight: bold;
+      background-color: white;
+    }
+    
+    .widget-tab:hover:not(.active) {
+      background-color: #e8eaed;
+    }
+    
+    .widget-content {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .tab-content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      overflow-y: auto;
+      padding: 15px;
+      box-sizing: border-box;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Chat Tab Styling */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 0;
+    }
+    
+    .message {
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border-radius: 18px;
+      max-width: 80%;
+      position: relative;
+      line-height: 1.4;
+    }
+    
+    .message.assistant {
+      background-color: #f1f3f4;
+      align-self: flex-start;
+      margin-right: auto;
+      border-bottom-left-radius: 4px;
+    }
+    
+    .message.user {
+      background-color: #4361ee;
+      color: white;
+      align-self: flex-end;
+      margin-left: auto;
+      border-bottom-right-radius: 4px;
+    }
+    
+    .chat-input {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #e0e0e0;
+      background: white;
+    }
+    
+    .chat-input input {
+      flex: 1;
+      padding: 12px 15px;
+      border: 1px solid #e0e0e0;
+      border-radius: 20px;
+      margin-right: 10px;
+      font-size: 14px;
+    }
+    
+    .chat-input button {
+      background-color: #4361ee;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    /* Trending Tab Styling */
+    .trending-container h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    
+    .trending-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+    
+    .trending-item {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      background: white;
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+    
+    .trending-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .trending-image {
+      width: 100%;
+      height: 130px;
+      background-color: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #777;
+      position: relative;
+    }
+    
+    .trending-image::after {
+      content: "👀";
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 16px;
+    }
+    
+    .trending-info {
+      padding: 10px;
+    }
+    
+    .trending-name {
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    
+    .trending-brand {
+      color: #777;
+      font-size: 12px;
+    }
+    
+    .trending-price {
+      color: #e63946;
+      font-weight: bold;
+      margin-top: 4px;
+    }
+
+    /* Feedback Button Styles */
+    .trending-feedback {
+      display: flex;
+      margin-top: 8px;
+      gap: 10px;
+    }
+
+    .feedback-button {
+      background-color: transparent;
+      border: 1px solid #e0e0e0;
+      border-radius: 16px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .feedback-button:hover {
+      background-color: #f5f5f5;
+      transform: translateY(-1px);
+    }
+
+    .like-button.active {
+      background-color: #e3f2fd;
+      border-color: #4361ee;
+      color: #4361ee;
+    }
+
+    .dislike-button.active {
+      background-color: #ffebee;
+      border-color: #f44336;
+      color: #f44336;
+    }
+
+    .thumbs-up-button {
+      background-color: #f5f5f5;
+      margin-top: 8px;
+      border-color: #d0d0d0;
+      width: auto;
+      color: #555;
+    }
+
+    .thumbs-up-button.active {
+      background-color: #e8f5e9;
+      border-color: #4caf50;
+      color: #4caf50;
+    }
+
+    .message-feedback {
+      margin-top: 8px;
+    }
+
+    /* Animation for feedback */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .feedback-button.active {
+      animation: pulse 0.3s ease-in-out;
+    }
+
+    /* Feedback toast */
+    .feedback-toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #4361ee;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 6px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      z-index: 10000;
+      font-size: 14px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .feedback-toast.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <h1>Stylist Widget with Feedback System</h1>
+    <p>Click the button below to open the complete stylist widget with feedback functionality:</p>
+    <button class="open-button" id="openWidgetBtn">Open Stylist Widget</button>
+  </div>
+  
+  <!-- Feedback toast notification -->
+  <div class="feedback-toast" id="feedbackToast"></div>
+
+  <!-- Full Stylist Widget -->
+  <div class="stylist-widget" id="stylistWidget" style="display: none;">
+    <!-- Widget Header -->
+    <div class="widget-header">
+      <div class="widget-title">The Stylist</div>
+      <div class="widget-controls">
+        <button class="control-button" id="minimizeWidgetBtn">—</button>
+        <button class="control-button" id="closeWidgetBtn">✕</button>
+      </div>
+    </div>
+    
+    <!-- Widget Tabs -->
+    <div class="widget-tabs">
+      <div class="widget-tab active" data-tab="chat">Chat</div>
+      <div class="widget-tab" data-tab="trending">Trending</div>
+    </div>
+    
+    <!-- Widget Content Area -->
+    <div class="widget-content">
+      <!-- Chat Tab -->
+      <div class="tab-content active" id="chatTab">
+        <div class="chat-container">
+          <div class="chat-messages" id="chatMessages">
+            <div class="message assistant" data-message-id="msg-1">
+              Hi there! I'm your AI style assistant. How can I help you today?
+              <div class="message-feedback">
+                <button class="feedback-button thumbs-up-button" data-action="thumbsUp">👍 This was helpful</button>
+              </div>
+            </div>
+            <div class="message assistant" data-message-id="msg-2">
+              I can help you with:
+              • Finding clothes that match your style
+              • Creating complete outfits
+              • Virtual try-ons
+              • Style advice and tips
+              <div class="message-feedback">
+                <button class="feedback-button thumbs-up-button" data-action="thumbsUp">👍 This was helpful</button>
+              </div>
+            </div>
+          </div>
+          <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Type your message...">
+            <button id="sendMessageBtn">Send</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Trending Tab -->
+      <div class="tab-content" id="trendingTab">
+        <div class="trending-container">
+          <h3>Trending Items</h3>
+          <div class="trending-grid">
+            <div class="trending-item" data-item-id="trending-item-1">
+              <div class="trending-image">Oversized Sweater</div>
+              <div class="trending-info">
+                <div class="trending-name">Oversized Sweater</div>
+                <div class="trending-brand">Brand: Cozy Wear</div>
+                <div class="trending-price">$49.99</div>
+                <div class="trending-feedback">
+                  <button class="feedback-button like-button" data-action="like">👍</button>
+                  <button class="feedback-button dislike-button" data-action="dislike">👎</button>
+                </div>
+              </div>
+            </div>
+            <div class="trending-item" data-item-id="trending-item-2">
+              <div class="trending-image">Cargo Pants</div>
+              <div class="trending-info">
+                <div class="trending-name">Cargo Pants</div>
+                <div class="trending-brand">Brand: UrbanStyle</div>
+                <div class="trending-price">$59.99</div>
+                <div class="trending-feedback">
+                  <button class="feedback-button like-button" data-action="like">👍</button>
+                  <button class="feedback-button dislike-button" data-action="dislike">👎</button>
+                </div>
+              </div>
+            </div>
+            <div class="trending-item" data-item-id="trending-item-3">
+              <div class="trending-image">Platform Boots</div>
+              <div class="trending-info">
+                <div class="trending-name">Platform Boots</div>
+                <div class="trending-brand">Brand: FootFashion</div>
+                <div class="trending-price">$89.99</div>
+                <div class="trending-feedback">
+                  <button class="feedback-button like-button" data-action="like">👍</button>
+                  <button class="feedback-button dislike-button" data-action="dislike">👎</button>
+                </div>
+              </div>
+            </div>
+            <div class="trending-item" data-item-id="trending-item-4">
+              <div class="trending-image">Crossbody Bag</div>
+              <div class="trending-info">
+                <div class="trending-name">Crossbody Bag</div>
+                <div class="trending-brand">Brand: Accessorize</div>
+                <div class="trending-price">$39.99</div>
+                <div class="trending-feedback">
+                  <button class="feedback-button like-button" data-action="like">👍</button>
+                  <button class="feedback-button dislike-button" data-action="dislike">👎</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Get widget elements
+      const widget = document.getElementById('stylistWidget');
+      const openBtn = document.getElementById('openWidgetBtn');
+      const closeBtn = document.getElementById('closeWidgetBtn');
+      const minimizeBtn = document.getElementById('minimizeWidgetBtn');
+      const tabs = document.querySelectorAll('.widget-tab');
+      const tabContents = document.querySelectorAll('.tab-content');
+      const chatInput = document.getElementById('chatInput');
+      const sendBtn = document.getElementById('sendMessageBtn');
+      const chatMessages = document.getElementById('chatMessages');
+      
+      // Auto-open the widget
+      setTimeout(() => {
+        widget.style.display = 'flex';
+        console.log('Auto-opening widget');
+      }, 1000);
+      
+      // Open widget button
+      openBtn.addEventListener('click', function() {
+        widget.style.display = 'flex';
+      });
+      
+      // Close widget button
+      closeBtn.addEventListener('click', function() {
+        widget.style.display = 'none';
+      });
+      
+      // Minimize widget button (we'll just close it for this demo)
+      minimizeBtn.addEventListener('click', function() {
+        widget.style.display = 'none';
+      });
+      
+      // Tab switching
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Remove active class from all tabs
+          tabs.forEach(t => t.classList.remove('active'));
+          tabContents.forEach(c => c.classList.remove('active'));
+          
+          // Add active class to clicked tab
+          this.classList.add('active');
+          
+          // Activate corresponding content
+          const tabName = this.getAttribute('data-tab');
+          document.getElementById(`${tabName}Tab`).classList.add('active');
+        });
+      });
+      
+      // Chat functionality
+      function sendMessage() {
+        const message = chatInput.value.trim();
+        if (message) {
+          // Add user message
+          const userMessageEl = document.createElement('div');
+          userMessageEl.className = 'message user';
+          userMessageEl.textContent = message;
+          chatMessages.appendChild(userMessageEl);
+          
+          // Clear input
+          chatInput.value = '';
+          
+          // Scroll to bottom
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+          
+          // Simulate assistant response
+          setTimeout(() => {
+            const assistantMessageEl = document.createElement('div');
+            assistantMessageEl.className = 'message assistant';
+            assistantMessageEl.setAttribute('data-message-id', `msg-${Date.now()}`);
+            
+            // Simple responses based on user message
+            let response = "I'm sorry, I'm not sure how to help with that. Could you try asking about fashion or style advice?";
+            
+            if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
+              response = "Hello! How can I help with your fashion needs today?";
+            } else if (message.toLowerCase().includes('style')) {
+              response = "I'd be happy to give you style advice! What kind of look are you going for?";
+            } else if (message.toLowerCase().includes('outfit') || message.toLowerCase().includes('wear')) {
+              response = "I can help you put together a great outfit! What occasion are you dressing for?";
+            } else if (message.toLowerCase().includes('color')) {
+              response = "Colors are so important in fashion! What's your skin tone or hair color? That helps me recommend colors that would suit you.";
+            } else if (message.toLowerCase().includes('recommend')) {
+              response = "I'd recommend checking out some classic pieces that never go out of style, like a well-fitted white shirt, good jeans, and a versatile blazer.";
+            } else if (message.toLowerCase().includes('trend') || message.toLowerCase().includes('popular')) {
+              response = "Let me show you what's trending right now in fashion!";
+              setTimeout(() => {
+                // Switch to trending tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                document.querySelector('[data-tab="trending"]').classList.add('active');
+                document.getElementById('trendingTab').classList.add('active');
+              }, 1000);
+            }
+            
+            assistantMessageEl.textContent = response;
+            
+            // Add feedback button
+            const feedbackDiv = document.createElement('div');
+            feedbackDiv.className = 'message-feedback';
+            feedbackDiv.innerHTML = `<button class="feedback-button thumbs-up-button" data-action="thumbsUp">👍 This was helpful</button>`;
+            assistantMessageEl.appendChild(feedbackDiv);
+            
+            // Add event listener to the new button
+            const button = feedbackDiv.querySelector('.thumbs-up-button');
+            button.addEventListener('click', function() {
+              const messageId = assistantMessageEl.getAttribute('data-message-id');
+              handleMessageFeedback(messageId);
+            });
+            
+            chatMessages.appendChild(assistantMessageEl);
+            
+            // Scroll to bottom again
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+          }, 1000);
+        }
+      }
+      
+      // Send button click
+      sendBtn.addEventListener('click', sendMessage);
+      
+      // Send on Enter key
+      chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          sendMessage();
+        }
+      });
+      
+      // Feedback System Implementation
+      // ------------------------------
+      
+      // Load saved feedback from localStorage
+      const FEEDBACK_STORAGE_KEY = 'stylist-feedback-data';
+      let userFeedback = {
+        likedItems: new Set(),
+        dislikedItems: new Set(),
+        helpfulMessages: new Set()
+      };
+      
+      // Load feedback data from localStorage
+      function loadFeedbackData() {
+        try {
+          const storedData = localStorage.getItem(FEEDBACK_STORAGE_KEY);
+          if (storedData) {
+            const parsedData = JSON.parse(storedData);
+            userFeedback.likedItems = new Set(parsedData.likedItems || []);
+            userFeedback.dislikedItems = new Set(parsedData.dislikedItems || []);
+            userFeedback.helpfulMessages = new Set(parsedData.helpfulMessages || []);
+          }
+        } catch (e) {
+          console.error('Error loading feedback data:', e);
+        }
+      }
+      
+      // Save feedback data to localStorage
+      function saveFeedbackData() {
+        try {
+          const dataToSave = {
+            likedItems: Array.from(userFeedback.likedItems),
+            dislikedItems: Array.from(userFeedback.dislikedItems),
+            helpfulMessages: Array.from(userFeedback.helpfulMessages)
+          };
+          localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(dataToSave));
+        } catch (e) {
+          console.error('Error saving feedback data:', e);
+        }
+      }
+      
+      // Show feedback toast message
+      function showToast(message, color = '#4361ee') {
+        const toast = document.getElementById('feedbackToast');
+        toast.textContent = message;
+        toast.style.backgroundColor = color;
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2000);
+      }
+      
+      // Handle item like/dislike
+      function handleItemFeedback(itemId, action) {
+        if (action === 'like') {
+          // Toggle like state
+          if (userFeedback.likedItems.has(itemId)) {
+            userFeedback.likedItems.delete(itemId);
+            showToast('Feedback removed');
+          } else {
+            userFeedback.likedItems.add(itemId);
+            userFeedback.dislikedItems.delete(itemId); // Remove from disliked if present
+            showToast('Added to your liked items', '#4caf50');
+          }
+        } else if (action === 'dislike') {
+          // Toggle dislike state
+          if (userFeedback.dislikedItems.has(itemId)) {
+            userFeedback.dislikedItems.delete(itemId);
+            showToast('Feedback removed');
+          } else {
+            userFeedback.dislikedItems.add(itemId);
+            userFeedback.likedItems.delete(itemId); // Remove from liked if present
+            showToast('Noted - not your style', '#f44336');
+          }
+        }
+        
+        // Update button states
+        updateFeedbackButtons();
+        
+        // Save to localStorage
+        saveFeedbackData();
+      }
+      
+      // Handle assistant message thumbs up
+      function handleMessageFeedback(messageId) {
+        if (userFeedback.helpfulMessages.has(messageId)) {
+          userFeedback.helpfulMessages.delete(messageId);
+          showToast('Feedback removed');
+        } else {
+          userFeedback.helpfulMessages.add(messageId);
+          showToast('Thanks for your feedback!', '#4caf50');
+        }
+        
+        // Update button states
+        updateFeedbackButtons();
+        
+        // Save to localStorage
+        saveFeedbackData();
+      }
+      
+      // Update the visual state of all feedback buttons
+      function updateFeedbackButtons() {
+        // Update item like/dislike buttons
+        document.querySelectorAll('.trending-item').forEach(item => {
+          const itemId = item.getAttribute('data-item-id');
+          if (!itemId) return;
+          
+          const likeBtn = item.querySelector('.like-button');
+          const dislikeBtn = item.querySelector('.dislike-button');
+          
+          if (likeBtn) {
+            if (userFeedback.likedItems.has(itemId)) {
+              likeBtn.classList.add('active');
+            } else {
+              likeBtn.classList.remove('active');
+            }
+          }
+          
+          if (dislikeBtn) {
+            if (userFeedback.dislikedItems.has(itemId)) {
+              dislikeBtn.classList.add('active');
+            } else {
+              dislikeBtn.classList.remove('active');
+            }
+          }
+        });
+        
+        // Update message thumbs up buttons
+        document.querySelectorAll('.message.assistant').forEach(message => {
+          const messageId = message.getAttribute('data-message-id');
+          if (!messageId) return;
+          
+          const thumbsUpBtn = message.querySelector('.thumbs-up-button');
+          if (thumbsUpBtn) {
+            if (userFeedback.helpfulMessages.has(messageId)) {
+              thumbsUpBtn.classList.add('active');
+              thumbsUpBtn.textContent = '👍 Thanks for the feedback!';
+            } else {
+              thumbsUpBtn.classList.remove('active');
+              thumbsUpBtn.textContent = '👍 This was helpful';
+            }
+          }
+        });
+      }
+      
+      // Add event listeners for feedback buttons
+      function initFeedbackSystem() {
+        // First load any existing feedback data
+        loadFeedbackData();
+        
+        // Add listeners to like buttons
+        document.querySelectorAll('.like-button').forEach(button => {
+          button.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent item click
+            const itemId = this.closest('.trending-item').getAttribute('data-item-id');
+            handleItemFeedback(itemId, 'like');
+          });
+        });
+        
+        // Add listeners to dislike buttons
+        document.querySelectorAll('.dislike-button').forEach(button => {
+          button.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent item click
+            const itemId = this.closest('.trending-item').getAttribute('data-item-id');
+            handleItemFeedback(itemId, 'dislike');
+          });
+        });
+        
+        // Add listeners to message thumbs up buttons
+        document.querySelectorAll('.thumbs-up-button').forEach(button => {
+          button.addEventListener('click', function(e) {
+            e.stopPropagation(); // Prevent message click
+            const messageId = this.closest('.message').getAttribute('data-message-id');
+            handleMessageFeedback(messageId);
+          });
+        });
+        
+        // Update all button states initially
+        updateFeedbackButtons();
+      }
+      
+      // Initialize the feedback system
+      initFeedbackSystem();
+    });
+  </script>
+</body>
+</html>

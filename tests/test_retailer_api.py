@@ -9,6 +9,7 @@ import os
 import time
 import logging
 from datetime import datetime
+import pytest
 
 from stylist.integrations.retailer_api import (
     RetailerAPI,
@@ -23,6 +24,7 @@ from stylist.models.clothing import ClothingItem, RetailerInventory
 logging.basicConfig(level=logging.ERROR)
 
 
+@pytest.mark.timeout(30)  # Set a 30 second timeout for all API tests
 class TestRetailerAPI(unittest.TestCase):
     """Test cases for the RetailerAPI integration."""
 

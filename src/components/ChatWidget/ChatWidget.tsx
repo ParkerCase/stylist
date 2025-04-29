@@ -9,6 +9,7 @@ import TryOnModal from '@/components/TryOnModal';
 import StyleQuizModal from '@/components/StyleQuiz/StyleQuizModal';
 import Lookbook from '@/components/Lookbook';
 import { useChatStore, useUserStore, useRecommendationStore } from '@/store/index';
+import { useFeedbackStore } from '@/store/feedbackStore';
 import { MessageSender, MessageType, StyleQuizAnswer, Recommendation, ChatMessage } from '@/types/index';
 import { createStylistApi } from '@/api/index';
 import { ChatService } from '@/services/chatService';
@@ -35,7 +36,6 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
   const [initialized, setInitialized] = useState(false);
   const [chatService, setChatService] = useState<ChatService | null>(null);
   const [showStyleQuiz, setShowStyleQuiz] = useState(false);
-  const [currentView, setCurrentView] = useState<'chat' | 'lookbook'>('chat');
   
   // Get state and actions from stores
   const {
@@ -43,10 +43,12 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
     isOpen,
     isMinimized,
     isLoading,
+    currentView,
     addTextMessage,
     addMessage,
     setLoading,
-    setError
+    setError,
+    setCurrentView
   } = useChatStore();
   
   const {
@@ -66,6 +68,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
     addToCart,
     saveOutfit
   } = useRecommendationStore();
+  
+  // Use our feedback store for user feedback
+  const { addMessageThumbsUp } = useFeedbackStore();
   
   // Create API client
   const api = createStylistApi({
@@ -186,11 +191,39 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
   
   // Initialize user and send greeting
   useEffect(() => {
-    if (!initialized && isOpen) {
+    if (!initialized) {
       initializeUser();
       setInitialized(true);
     }
-  }, [isOpen, initialized, initializeUser]);
+  }, [initialized, initializeUser]);
+  
+  // Check for global flags
+  useEffect(() => {
+    // Check if style quiz should be shown
+    if ((window as any).__StylistShowStyleQuiz) {
+      setShowStyleQuiz(true);
+      (window as any).__StylistShowStyleQuiz = false;
+    }
+    
+    // Check if virtual try-on should be shown
+    if ((window as any).__StylistShowVirtualTryOn) {
+      // Open the try-on modal
+      if (recommendedItems.length > 0) {
+        // Auto-select the first item for try-on
+        const item = recommendedItems[0];
+        try {
+          // Open try-on modal with the first item
+          addTextMessage(
+            `Let's see how ${item.name} looks on you!`,
+            'assistant'
+          );
+        } catch (error) {
+          console.error('Error opening virtual try-on:', error);
+        }
+      }
+      (window as any).__StylistShowVirtualTryOn = false;
+    }
+  }, []);
   
   // Initialize chat service when user is loaded
   useEffect(() => {
@@ -312,6 +345,10 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
         'Let\'s find out more about your style preferences! Please answer a few quick questions.',
         'assistant'
       );
+      // Track quiz start event
+      if (user) {
+        trackEvent(AnalyticsEventType.STYLE_QUIZ_START, user.userId);
+      }
       setShowStyleQuiz(true);
       setLoading(false);
       return;
@@ -472,6 +509,36 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
     }
   };
   
+  // Handle assistant message feedback (thumbs up)
+  const handleMessageFeedback = async (messageId: string, helpful: boolean) => {
+    if (!user || !helpful) return; // We only handle "helpful" feedback for now
+    
+    try {
+      // Add to feedback store
+      addMessageThumbsUp(messageId);
+      
+      // Track the event
+      trackEvent(
+        AnalyticsEventType.MESSAGE_THUMBS_UP,
+        user.userId,
+        { messageId }
+      );
+      
+      // You could also send this feedback to the backend if needed
+      // await api.recommendation.addMessageFeedback({
+      //   userId: user.userId,
+      //   messageId,
+      //   helpful,
+      //   timestamp: new Date()
+      // });
+      
+      // No response needed as the thumbs up component will show its own feedback
+    } catch (error) {
+      console.error('Error saving message feedback:', error);
+      // Silently fail - local storage will still have the feedback
+    }
+  };
+  
   // Handle adding item to wishlist
   const handleAddToWishlist = (item: Recommendation.RecommendationItem) => {
     if (!user) return;
@@ -564,8 +631,38 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
     try {
       setLoading(true);
       
+      // Check if all questions have been answered
+      const TOTAL_QUESTIONS = 25; // We have 25 questions in our quiz
+      if (answers.length < TOTAL_QUESTIONS) {
+        // There are unanswered questions
+        const answeredQuestionIds = answers.map(a => a.questionId);
+        const unansweredQuestions = Array.from({ length: TOTAL_QUESTIONS }, (_, i) => `q${i + 1}`)
+          .filter(qId => !answeredQuestionIds.includes(qId));
+        
+        // Show warning but allow submission
+        console.warn(`Some questions are unanswered: ${unansweredQuestions.join(', ')}`);
+        
+        // We'll proceed anyway, but log the warning
+        trackEvent(AnalyticsEventType.STYLE_QUIZ_PARTIAL, user.userId, { 
+          unansweredCount: unansweredQuestions.length 
+        });
+      }
+      
+      // Clear any saved progress from local storage
+      try {
+        localStorage.removeItem('stylist_quiz_progress_style-quiz-1');
+      } catch (e) {
+        console.error('Error clearing quiz progress:', e);
+      }
+      
       // Submit quiz answers to API
-      await api.user.submitStyleQuiz(user.userId, answers);
+      try {
+        await api.user.submitStyleQuiz(user.userId, answers);
+      } catch (error) {
+        console.error('Error submitting style quiz:', error);
+        // Show error but don't return yet - we have fallback behavior
+        setError('There was an issue saving your style preferences, but we can still provide recommendations.');
+      }
       
       // Close quiz modal
       setShowStyleQuiz(false);
@@ -577,11 +674,19 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
       );
       
       // Get recommendations based on updated profile
-      const recommendations = await api.recommendation.getRecommendations({
-        userId: user.userId,
-        limit: 4,
-        includeOutfits: true
-      });
+      let recommendations;
+      try {
+        recommendations = await api.recommendation.getRecommendations({
+          userId: user.userId,
+          limit: 4,
+          includeOutfits: true
+        });
+      } catch (error) {
+        console.error('Error fetching recommendations:', error);
+        setError('Sorry, there was an issue getting your personalized recommendations.');
+        setLoading(false);
+        return;
+      }
       
       // Add recommendation message
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -626,7 +731,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
       setRecommendedItems(convertedItems);
       
       // Add outfit if available
-      if (recommendations.outfits.length > 0) {
+      if (recommendations.outfits && recommendations.outfits.length > 0) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         addTextMessage(
           'I\'ve also created a complete outfit based on your style:',
@@ -700,8 +805,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
         'You can see all your recommendations in your lookbook. Would you like to view it now?',
         'assistant'
       );
-    } catch {
-      // Error logging handled properly
+    } catch (error) {
+      console.error('Unexpected error processing quiz:', error);
       setError('Failed to process the style quiz. Please try again later.');
       
       // Close quiz modal
@@ -727,6 +832,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
   
   // Handle switching views
   const handleSwitchView = (view: 'chat' | 'lookbook') => {
+    // Use the store's setCurrentView instead of local state
     setCurrentView(view);
     
     if (view === 'lookbook') {
@@ -762,6 +868,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
                 messages={messages}
                 onItemFeedback={handleItemFeedback}
                 onOutfitFeedback={handleOutfitFeedback}
+                onMessageFeedback={handleMessageFeedback}
                 onAddToWishlist={handleAddToWishlist}
                 onAddToCart={handleAddToCart}
                 isLoading={isLoading}

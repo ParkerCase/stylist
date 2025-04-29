@@ -1,6 +1,6 @@
 // src/components/Cart/Cart.scss
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
 
 .stylist-cart {
   @include card;

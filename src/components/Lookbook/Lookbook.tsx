@@ -6,16 +6,21 @@ import ItemCard from '@/components/ItemCard';
 import OutfitDisplay from '@/components/OutfitDisplay';
 import { Recommendation } from '@/types/index';
 import { useChatStore } from '@/store/index';
+import TryOnModal from '@/components/TryOnModal';
+import { GarmentType } from '@/types/tryOn';
+import { startTryOn, openTryOnModal } from '@/integration/integrateTryOn';
 
 interface LookbookProps {
   items: Recommendation.RecommendationItem[];
   outfits: Recommendation.Outfit[];
   savedOutfits: Recommendation.SavedOutfit[];
+  tryOnResults?: Recommendation.SavedOutfit[];
   onItemFeedback?: (itemId: string, liked: boolean) => void;
   onOutfitFeedback?: (outfitId: string, liked: boolean) => void;
   onAddToWishlist?: (item: Recommendation.RecommendationItem) => void;
   onAddToCart?: (item: Recommendation.RecommendationItem, quantity?: number, size?: string, color?: string) => void;
   onSaveOutfit?: (outfit: Recommendation.Outfit) => void;
+  onSaveTryOnResult?: (result: { id: string, imageUrl: string, name: string }) => void;
   primaryColor?: string;
 }
 
@@ -23,15 +28,25 @@ const Lookbook: React.FC<LookbookProps> = ({
   items,
   outfits,
   savedOutfits,
+  tryOnResults = [],
   onItemFeedback,
   onOutfitFeedback,
   onAddToWishlist,
   onAddToCart,
   onSaveOutfit,
+  onSaveTryOnResult,
   primaryColor
 }) => {
   const { addTextMessage } = useChatStore();
-  const [activeTab, setActiveTab] = useState<'items' | 'outfits' | 'saved'>('items');
+  const [activeTab, setActiveTab] = useState<'items' | 'outfits' | 'saved' | 'try-on'>('items');
+  const [isTryOnModalOpen, setIsTryOnModalOpen] = useState(false);
+  const [selectedTryOnItem, setSelectedTryOnItem] = useState<Recommendation.RecommendationItem | null>(null);
+  
+  // Combine saved outfits and try-on results
+  const allSavedItems = [...savedOutfits];
+  
+  // Filter try-on results
+  const tryOnItems = tryOnResults || [];
 
   const handleSaveOutfit = (outfitId: string) => {
     if (onSaveOutfit) {
@@ -53,6 +68,52 @@ const Lookbook: React.FC<LookbookProps> = ({
       'assistant'
     );
   };
+  
+  const handleTryOn = (item: Recommendation.RecommendationItem) => {
+    // Store selected item
+    setSelectedTryOnItem(item);
+    
+    // Map item category to GarmentType
+    let garmentType = GarmentType.TOP;
+    if (item.category.toLowerCase().includes('dress')) {
+      garmentType = GarmentType.DRESS;
+    } else if (item.category.toLowerCase().includes('bottom') || 
+               item.category.toLowerCase().includes('pant') || 
+               item.category.toLowerCase().includes('short') || 
+               item.category.toLowerCase().includes('skirt')) {
+      garmentType = GarmentType.BOTTOM;
+    } else if (item.category.toLowerCase().includes('jacket') || 
+               item.category.toLowerCase().includes('coat')) {
+      garmentType = GarmentType.OUTERWEAR;
+    } else if (item.category.toLowerCase().includes('shoes')) {
+      garmentType = GarmentType.SHOES;
+    } else if (item.category.toLowerCase().includes('accessory')) {
+      garmentType = GarmentType.ACCESSORY;
+    }
+    
+    // Start try-on with the item's image
+    const imageUrl = item.imageUrls?.[0] || '';
+    if (imageUrl) {
+      startTryOn(imageUrl, garmentType);
+      openTryOnModal();
+    }
+  };
+  
+  const handleSaveTryOnResult = (resultUrl: string) => {
+    if (onSaveTryOnResult && selectedTryOnItem) {
+      const tryOnResult = {
+        id: `tryon-${Date.now()}`,
+        imageUrl: resultUrl,
+        name: `Try-on: ${selectedTryOnItem.name}`
+      };
+      
+      onSaveTryOnResult(tryOnResult);
+      setActiveTab('try-on');
+      
+      // Reset selected item
+      setSelectedTryOnItem(null);
+    }
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -70,6 +131,7 @@ const Lookbook: React.FC<LookbookProps> = ({
                   showDetails={true}
                   primaryColor={primaryColor}
                   onClick={() => handleItemClick(item)}
+                  onTryOn={() => handleTryOn(item)}
                 />
               ))
             ) : (
@@ -129,12 +191,50 @@ const Lookbook: React.FC<LookbookProps> = ({
       case 'saved':
         return (
           <div className="stylist-lookbook__saved">
-            {savedOutfits.length > 0 ? (
-              <p>Your saved outfits will appear here.</p>
+            {allSavedItems.length > 0 ? (
+              <div className="stylist-lookbook__saved-items">
+                {allSavedItems.map(item => (
+                  <div key={item.id} className="stylist-lookbook__saved-item">
+                    <div className="stylist-lookbook__saved-image">
+                      <img src={item.imageUrl} alt={item.name} />
+                    </div>
+                    <div className="stylist-lookbook__saved-details">
+                      <h4>{item.name}</h4>
+                      <p>{new Date(item.createdAt).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="stylist-lookbook__empty">
                 <p>No saved outfits yet.</p>
                 <p>Save outfits you like to access them later!</p>
+              </div>
+            )}
+          </div>
+        );
+        
+      case 'try-on':
+        return (
+          <div className="stylist-lookbook__try-on">
+            {tryOnItems.length > 0 ? (
+              <div className="stylist-lookbook__try-on-items">
+                {tryOnItems.map(item => (
+                  <div key={item.id} className="stylist-lookbook__try-on-item">
+                    <div className="stylist-lookbook__try-on-image">
+                      <img src={item.imageUrl} alt={item.name} />
+                    </div>
+                    <div className="stylist-lookbook__try-on-details">
+                      <h4>{item.name}</h4>
+                      <p>{new Date(item.createdAt).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="stylist-lookbook__empty">
+                <p>No try-on results yet.</p>
+                <p>Use the try-on feature on items to see them here!</p>
               </div>
             )}
           </div>
@@ -153,23 +253,30 @@ const Lookbook: React.FC<LookbookProps> = ({
           <button
             className={`stylist-lookbook__tab ${activeTab === 'items' ? 'stylist-lookbook__tab--active' : ''}`}
             onClick={() => setActiveTab('items')}
-            style={activeTab === 'items' ? { borderBottomColor: primaryColor } : undefined}
+            style={activeTab === 'items' && primaryColor ? { borderBottomColor: primaryColor } : undefined}
           >
             Items ({items.length})
           </button>
           <button
             className={`stylist-lookbook__tab ${activeTab === 'outfits' ? 'stylist-lookbook__tab--active' : ''}`}
             onClick={() => setActiveTab('outfits')}
-            style={activeTab === 'outfits' ? { borderBottomColor: primaryColor } : undefined}
+            style={activeTab === 'outfits' && primaryColor ? { borderBottomColor: primaryColor } : undefined}
           >
             Outfits ({outfits.length})
           </button>
           <button
             className={`stylist-lookbook__tab ${activeTab === 'saved' ? 'stylist-lookbook__tab--active' : ''}`}
             onClick={() => setActiveTab('saved')}
-            style={activeTab === 'saved' ? { borderBottomColor: primaryColor } : undefined}
+            style={activeTab === 'saved' && primaryColor ? { borderBottomColor: primaryColor } : undefined}
           >
-            Saved ({savedOutfits.length})
+            Saved ({allSavedItems.length})
+          </button>
+          <button
+            className={`stylist-lookbook__tab ${activeTab === 'try-on' ? 'stylist-lookbook__tab--active' : ''}`}
+            onClick={() => setActiveTab('try-on')}
+            style={activeTab === 'try-on' && primaryColor ? { borderBottomColor: primaryColor } : undefined}
+          >
+            Try-On ({tryOnItems.length})
           </button>
         </div>
       </div>
@@ -177,6 +284,11 @@ const Lookbook: React.FC<LookbookProps> = ({
       <div className="stylist-lookbook__content">
         {renderTabContent()}
       </div>
+      
+      {/* Try-On Modal is now handled via integrateTryOn.ts with global state */}
+      <TryOnModal 
+        onSave={handleSaveTryOnResult}
+      />
     </div>
   );
 };

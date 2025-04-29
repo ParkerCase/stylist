@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stylist Lookbook Test</title>
+  <link href="stylist-widget.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, 
+                   Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      padding: 20px;
+      background-color: #f7f7f7;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .demo-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .control-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #f0f0f0;
+      border-radius: 8px;
+    }
+    .debug-panel {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      height: 300px;
+      overflow-y: auto;
+    }
+    .debug-panel h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+    .log-entry {
+      margin-bottom: 5px;
+      padding: 5px;
+      border-bottom: 1px solid #eee;
+      font-family: monospace;
+    }
+    .log-entry.info {
+      color: #0066cc;
+    }
+    .log-entry.error {
+      color: #cc0000;
+    }
+    .log-entry.success {
+      color: #00aa00;
+    }
+    button {
+      background-color: #4361ee;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #3a56d4;
+    }
+    button.switch-view {
+      background-color: #fd7e14;
+    }
+    button.switch-view:hover {
+      background-color: #e67410;
+    }
+    button.debug {
+      background-color: #6c757d;
+    }
+    button.debug:hover {
+      background-color: #5a6268;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Stylist Lookbook Simple Test</h1>
+    <p>This page tests the Lookbook view with a minimal setup.</p>
+  </header>
+  
+  <div class="demo-container">
+    <div class="control-panel">
+      <button id="open-stylist">Open Stylist Widget</button>
+      <button id="toggle-chat" class="switch-view">Toggle Chat/Lookbook</button>
+      <button id="add-items" class="debug">Add Mock Items</button>
+    </div>
+    
+    <div class="debug-panel" id="debug-panel">
+      <h3>Debug Log</h3>
+      <div id="debug-log"></div>
+    </div>
+  </div>
+
+  <!-- Container for the widget -->
+  <div id="stylist-widget-container"></div>
+
+  <!-- Base widget script -->
+  <script src="stylist-widget.js"></script>
+  
+  <script>
+    // Debug utilities
+    const debugLog = document.getElementById('debug-log');
+    
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.classList.add('log-entry', type);
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      debugLog.appendChild(entry);
+      debugLog.scrollTop = debugLog.scrollHeight;
+    }
+    
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      log('Page loaded. Setting up test...');
+      
+      // Configure the widget
+      window.__StylistWidgetConfig = {
+        apiKey: 'demo-key',
+        retailerId: 'demo-retailer',
+        position: 'bottom-right',
+        primaryColor: '#4361ee'
+      };
+      
+      log('Widget configuration set', 'success');
+    });
+    
+    // Simple handler to open the widget
+    document.getElementById('open-stylist').addEventListener('click', function() {
+      try {
+        // First check if we can toggle through the store
+        if (window.__STYLIST_STORE__ && window.__STYLIST_STORE__.chat) {
+          const chatStore = window.__STYLIST_STORE__.chat;
+          chatStore.toggleOpen();
+          log('Opened widget via store API', 'success');
+        } 
+        // Fall back to direct DOM inspection and manipulation
+        else {
+          log('Store not available, attempting direct DOM manipulation', 'info');
+          
+          const widget = document.querySelector('.stylist-chat-widget');
+          if (widget) {
+            // Widget exists but might be hidden
+            widget.style.display = 'flex';
+            log('Made widget visible through DOM', 'success');
+          } else {
+            log('Widget not found in DOM', 'error');
+          }
+        }
+      } catch (error) {
+        log('Error opening widget: ' + error.message, 'error');
+      }
+    });
+    
+    // Toggle between chat and lookbook views
+    document.getElementById('toggle-chat').addEventListener('click', function() {
+      try {
+        if (window.__STYLIST_STORE__ && window.__STYLIST_STORE__.chat) {
+          const chatStore = window.__STYLIST_STORE__.chat;
+          
+          // Check current view if available
+          const currentView = chatStore.currentView || 'chat';
+          const newView = currentView === 'chat' ? 'lookbook' : 'chat';
+          
+          // Toggle the view if setCurrentView is available
+          if (typeof chatStore.setCurrentView === 'function') {
+            chatStore.setCurrentView(newView);
+            log(`Switched to ${newView} view via store API`, 'success');
+          } else {
+            log('setCurrentView function not available in store', 'error');
+            toggleViewViaDOM();
+          }
+        } else {
+          log('Store not available, attempting direct DOM manipulation', 'info');
+          toggleViewViaDOM();
+        }
+      } catch (error) {
+        log('Error toggling view: ' + error.message, 'error');
+      }
+    });
+    
+    // Direct DOM manipulation to toggle views
+    function toggleViewViaDOM() {
+      const widget = document.querySelector('.stylist-chat-widget');
+      if (widget) {
+        const switchButton = widget.querySelector('.stylist-chat-header__button--switch');
+        if (switchButton) {
+          switchButton.click();
+          log('Clicked switch view button in DOM', 'success');
+        } else {
+          log('Switch view button not found in DOM', 'error');
+        }
+      } else {
+        log('Widget not found in DOM', 'error');
+      }
+    }
+    
+    // Add mock items to the widget
+    document.getElementById('add-items').addEventListener('click', function() {
+      try {
+        if (window.__STYLIST_STORE__ && window.__STYLIST_STORE__.recommendations) {
+          const recStore = window.__STYLIST_STORE__.recommendations;
+          
+          // Create sample mock items
+          const mockItems = [
+            { 
+              id: 'mock1', 
+              name: 'Premium Denim Jeans', 
+              brand: 'DenimCo', 
+              category: 'pants',
+              price: 89.99, 
+              imageUrls: ['https://via.placeholder.com/150'],
+              retailerId: 'demo',
+              inStock: true,
+              matchScore: 0.95,
+              matchReasons: ['Based on your style profile'],
+              url: '#',
+              colors: [],
+              sizes: []
+            },
+            { 
+              id: 'mock2', 
+              name: 'Cotton T-Shirt', 
+              brand: 'Basics', 
+              category: 'tops',
+              price: 29.99, 
+              imageUrls: ['https://via.placeholder.com/150'],
+              retailerId: 'demo',
+              inStock: true,
+              matchScore: 0.92,
+              matchReasons: ['Matches your preferences'],
+              url: '#',
+              colors: [],
+              sizes: []
+            },
+            { 
+              id: 'mock3', 
+              name: 'Leather Boots', 
+              brand: 'Footwear', 
+              category: 'shoes',
+              price: 149.99, 
+              imageUrls: ['https://via.placeholder.com/150'],
+              retailerId: 'demo',
+              inStock: true,
+              matchScore: 0.88,
+              matchReasons: ['Complements your style'],
+              url: '#',
+              colors: [],
+              sizes: []
+            }
+          ];
+          
+          // Create sample outfit
+          const mockOutfit = {
+            id: 'outfit1',
+            name: 'Casual Weekend Look',
+            occasion: 'casual',
+            matchScore: 0.93,
+            matchReasons: ['Perfect for weekends'],
+            items: mockItems
+          };
+          
+          // Add items to store if methods are available
+          if (typeof recStore.setRecommendedItems === 'function') {
+            recStore.setRecommendedItems(mockItems);
+            log('Added mock items to recommendation store', 'success');
+          } else {
+            log('setRecommendedItems function not available', 'error');
+          }
+          
+          if (typeof recStore.setRecommendedOutfits === 'function') {
+            recStore.setRecommendedOutfits([mockOutfit]);
+            log('Added mock outfit to recommendation store', 'success');
+          } else {
+            log('setRecommendedOutfits function not available', 'error');
+          }
+          
+          // Switch to lookbook view to see the items
+          if (window.__STYLIST_STORE__.chat && typeof window.__STYLIST_STORE__.chat.setCurrentView === 'function') {
+            window.__STYLIST_STORE__.chat.setCurrentView('lookbook');
+            log('Switched to lookbook view to display items', 'success');
+          }
+        } else {
+          log('Recommendation store not available', 'error');
+        }
+      } catch (error) {
+        log('Error adding mock items: ' + error.message, 'error');
+      }
+    });
+  </script>
+</body>
+</html>

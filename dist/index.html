@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Stylist Widget Demo</title><style>body {
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Stylist Widget Demo</title><link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png"><style>body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, 
                    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
       padding: 20px;
@@ -67,9 +67,37 @@
     }
     button.stylist-button:hover {
       background-color: #3a56d4;
-    }</style><script defer="defer" src="stylist-widget.js"></script><link href="stylist-widget.css" rel="stylesheet"></head><body><header><h1>The Stylist Widget Demo</h1><p>This page demonstrates how The Stylist widget integrates with an e-commerce website.</p></header><div class="demo-container"><div><h2>Fashion Collection</h2><p>Click the button below to get personalized fashion recommendations:</p><button class="stylist-button" id="open-stylist">Get Style Recommendations</button></div><div class="store-mock"><div class="product-card"><div class="product-image">Product Image</div><div class="product-title">Classic White T-Shirt</div><div class="product-brand">Brand: Essentials</div><div class="product-price">$24.99</div></div><div class="product-card"><div class="product-image">Product Image</div><div class="product-title">Slim Fit Jeans</div><div class="product-brand">Brand: DenimCo</div><div class="product-price">$59.99</div></div><div class="product-card"><div class="product-image">Product Image</div><div class="product-title">Casual Sneakers</div><div class="product-brand">Brand: UrbanStep</div><div class="product-price">$79.99</div></div><div class="product-card"><div class="product-image">Product Image</div><div class="product-title">Oversized Hoodie</div><div class="product-brand">Brand: Comfort+</div><div class="product-price">$49.99</div></div></div></div><script>// Initialize the widget when the Open button is clicked
-    document.getElementById('open-stylist').addEventListener('click', function() {
-      if (window.StylistWidget && window.StylistWidget.open) {
-        window.StylistWidget.open();
-      }
+    }</style><script defer="defer" src="stylist-widget.js"></script><link href="stylist-widget.css" rel="stylesheet"><script defer="defer" src="stylist-widget.js"></script><link href="stylist-widget.css" rel="stylesheet"></head><body><header><h1>The Stylist Widget Demo</h1><p>This page demonstrates how The Stylist widget integrates with an e-commerce website.</p></header><div class="demo-container"><div><h2>Fashion Collection</h2><p>Click the button below to get personalized fashion recommendations:</p><button class="stylist-button" id="open-stylist">Get Style Recommendations</button></div><div class="store-mock"><div class="product-card"><div class="product-image">Product Image</div><div class="product-title">Classic White T-Shirt</div><div class="product-brand">Brand: Essentials</div><div class="product-price">$24.99</div></div><div class="product-card"><div class="product-image">Product Image</div><div class="product-title">Slim Fit Jeans</div><div class="product-brand">Brand: DenimCo</div><div class="product-price">$59.99</div></div><div class="product-card"><div class="product-image">Product Image</div><div class="product-title">Casual Sneakers</div><div class="product-brand">Brand: UrbanStep</div><div class="product-price">$79.99</div></div><div class="product-card"><div class="product-image">Product Image</div><div class="product-title">Oversized Hoodie</div><div class="product-brand">Brand: Comfort+</div><div class="product-price">$49.99</div></div></div></div><script>// Initialize and auto-open the widget with configuration
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded, preparing to initialize Stylist Widget');
+      
+      // Small delay to ensure the widget script is fully loaded
+      setTimeout(function() {
+        if (window.StylistWidget && window.StylistWidget.init) {
+          console.log('Initializing Stylist Widget');
+          // Initialize with demo key - this should match what the backend expects
+          window.StylistWidget.init({
+            apiKey: 'demo_key',
+            retailerId: 'demo_retailer'
+          });
+          
+          // Auto-open the widget after initialization
+          if (window.StylistWidget.open) {
+            console.log('Auto-opening Stylist Widget');
+            window.StylistWidget.open();
+          }
+        } else {
+          console.error('StylistWidget not available. Check if the script loaded correctly.');
+        }
+      }, 1000);
+
+      // Open button event listener
+      document.getElementById('open-stylist').addEventListener('click', function() {
+        console.log('Open button clicked');
+        if (window.StylistWidget && window.StylistWidget.open) {
+          window.StylistWidget.open();
+        } else {
+          console.error('StylistWidget not available when button was clicked.');
+        }
+      });
     });</script></body></html>

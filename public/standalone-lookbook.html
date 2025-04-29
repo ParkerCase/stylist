@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stylist Lookbook Standalone Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --primary-color-light: #6c8aff;
+      --primary-color-dark: #2e4ad4;
+      --text-primary: #333333;
+      --text-secondary: #666666;
+      --text-tertiary: #999999;
+      --text-inverse: #ffffff;
+      --background-color: #ffffff;
+      --surface-color: #f8f9fa;
+      --border-color: #e0e0e0;
+      --error-color: #e74c3c;
+      --success-color: #2ecc71;
+      --warning-color: #f39c12;
+      
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      
+      --border-radius-xs: 4px;
+      --border-radius-sm: 6px;
+      --border-radius-md: 8px;
+      --border-radius-lg: 12px;
+      --border-radius-round: 50%;
+      
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+      --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+      
+      --transition-fast: 0.15s;
+      --transition-normal: 0.25s;
+      --transition-slow: 0.5s;
+      
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      --font-size-xs: 0.75rem;
+      --font-size-sm: 0.875rem;
+      --font-size-md: 1rem;
+      --font-size-lg: 1.125rem;
+      --font-size-xl: 1.25rem;
+      
+      --font-weight-regular: 400;
+      --font-weight-medium: 500;
+      --font-weight-bold: 600;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: var(--font-family);
+      background-color: #f5f5f5;
+      color: var(--text-primary);
+      line-height: 1.5;
+      padding: 20px;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .lookbook {
+      background-color: var(--background-color);
+      border-radius: var(--border-radius-md);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    .lookbook__tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 var(--spacing-md);
+    }
+    
+    .lookbook__tab {
+      padding: var(--spacing-md);
+      font-weight: var(--font-weight-medium);
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all var(--transition-normal) ease;
+    }
+    
+    .lookbook__tab--active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+    
+    .lookbook__content {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--spacing-md);
+    }
+    
+    .lookbook__section {
+      margin-bottom: var(--spacing-xl);
+    }
+    
+    .lookbook__section-title {
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-bold);
+      margin-bottom: var(--spacing-md);
+      color: var(--text-primary);
+    }
+    
+    .lookbook__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--spacing-md);
+    }
+    
+    .lookbook__outfit-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: var(--spacing-lg);
+    }
+    
+    .item-card {
+      background-color: var(--background-color);
+      border-radius: var(--border-radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      transition: transform var(--transition-normal) ease, box-shadow var(--transition-normal) ease;
+      cursor: pointer;
+      position: relative;
+    }
+    
+    .item-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .item-card__image {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      background-color: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-tertiary);
+    }
+    
+    .item-card__content {
+      padding: var(--spacing-md);
+    }
+    
+    .item-card__name {
+      font-weight: var(--font-weight-medium);
+      margin-bottom: var(--spacing-xs);
+      font-size: var(--font-size-sm);
+      color: var(--text-primary);
+    }
+    
+    .item-card__brand {
+      font-size: var(--font-size-xs);
+      color: var(--text-tertiary);
+      margin-bottom: var(--spacing-xs);
+    }
+    
+    .item-card__price {
+      font-weight: var(--font-weight-bold);
+      color: var(--primary-color);
+      font-size: var(--font-size-sm);
+    }
+    
+    .item-card__actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: var(--spacing-sm);
+    }
+    
+    .item-card__button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: var(--spacing-xs);
+      border-radius: var(--border-radius-round);
+      transition: all var(--transition-normal) ease;
+    }
+    
+    .item-card__button:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      color: var(--primary-color);
+    }
+    
+    .outfit-card {
+      background-color: var(--background-color);
+      border-radius: var(--border-radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      transition: transform var(--transition-normal) ease, box-shadow var(--transition-normal) ease;
+      cursor: pointer;
+    }
+    
+    .outfit-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .outfit-card__image {
+      width: 100%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      background-color: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-tertiary);
+      position: relative;
+    }
+    
+    .outfit-card__items {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: var(--spacing-sm);
+      display: flex;
+      justify-content: center;
+      gap: var(--spacing-xs);
+    }
+    
+    .outfit-card__item-thumb {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--border-radius-round);
+      background-color: #f0f0f0;
+      border: 2px solid white;
+    }
+    
+    .outfit-card__content {
+      padding: var(--spacing-md);
+    }
+    
+    .outfit-card__name {
+      font-weight: var(--font-weight-medium);
+      margin-bottom: var(--spacing-xs);
+      font-size: var(--font-size-md);
+      color: var(--text-primary);
+    }
+    
+    .outfit-card__occasion {
+      font-size: var(--font-size-xs);
+      color: var(--text-tertiary);
+      text-transform: capitalize;
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .outfit-card__actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: var(--spacing-sm);
+    }
+    
+    .outfit-card__button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: var(--spacing-xs);
+      border-radius: var(--border-radius-round);
+      transition: all var(--transition-normal) ease;
+    }
+    
+    .outfit-card__button:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      color: var(--primary-color);
+    }
+    
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-xl);
+      text-align: center;
+      color: var(--text-tertiary);
+    }
+    
+    .empty-state__icon {
+      font-size: 48px;
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .empty-state__text {
+      font-size: var(--font-size-md);
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .empty-state__button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--border-radius-md);
+      font-weight: var(--font-weight-medium);
+      cursor: pointer;
+      transition: background-color var(--transition-normal) ease;
+    }
+    
+    .empty-state__button:hover {
+      background-color: var(--primary-color-dark);
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .lookbook__grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      }
+      
+      .lookbook__outfit-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Stylist Lookbook Standalone Demo</h1>
+    <p>A standalone demo of the Lookbook component without requiring the full widget implementation</p>
+  </header>
+  
+  <div class="container">
+    <div class="lookbook">
+      <div class="lookbook__tabs">
+        <div class="lookbook__tab lookbook__tab--active" data-tab="recommended">Recommended Items</div>
+        <div class="lookbook__tab" data-tab="outfits">Outfits</div>
+        <div class="lookbook__tab" data-tab="saved">Saved</div>
+      </div>
+      
+      <div class="lookbook__content">
+        <!-- Recommended Items Tab -->
+        <div class="lookbook__section" id="recommended-tab">
+          <h2 class="lookbook__section-title">Recommended Items</h2>
+          <div class="lookbook__grid" id="recommended-items">
+            <!-- Items will be added dynamically -->
+          </div>
+        </div>
+        
+        <!-- Outfits Tab (initially hidden) -->
+        <div class="lookbook__section" id="outfits-tab" style="display: none;">
+          <h2 class="lookbook__section-title">Recommended Outfits</h2>
+          <div class="lookbook__outfit-grid" id="recommended-outfits">
+            <!-- Outfits will be added dynamically -->
+          </div>
+        </div>
+        
+        <!-- Saved Tab (initially hidden) -->
+        <div class="lookbook__section" id="saved-tab" style="display: none;">
+          <h2 class="lookbook__section-title">Your Saved Items</h2>
+          <div class="empty-state">
+            <div class="empty-state__icon">📁</div>
+            <div class="empty-state__text">You haven't saved any items yet.</div>
+            <button class="empty-state__button">Browse Recommendations</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Sample data for items and outfits
+    const mockItems = [
+      { 
+        id: 'item1', 
+        name: 'Premium Denim Jeans', 
+        brand: 'DenimCo', 
+        category: 'Pants',
+        price: 89.99, 
+        imageUrl: 'https://via.placeholder.com/300?text=Jeans'
+      },
+      { 
+        id: 'item2', 
+        name: 'Cotton T-Shirt', 
+        brand: 'Basics', 
+        category: 'Tops',
+        price: 29.99, 
+        imageUrl: 'https://via.placeholder.com/300?text=T-Shirt'
+      },
+      { 
+        id: 'item3', 
+        name: 'Leather Boots', 
+        brand: 'Footwear', 
+        category: 'Shoes',
+        price: 149.99, 
+        imageUrl: 'https://via.placeholder.com/300?text=Boots'
+      },
+      { 
+        id: 'item4', 
+        name: 'Casual Hoodie', 
+        brand: 'UrbanStyle', 
+        category: 'Tops',
+        price: 59.99, 
+        imageUrl: 'https://via.placeholder.com/300?text=Hoodie'
+      },
+      { 
+        id: 'item5', 
+        name: 'Wool Coat', 
+        brand: 'WinterWear', 
+        category: 'Outerwear',
+        price: 199.99, 
+        imageUrl: 'https://via.placeholder.com/300?text=Coat'
+      },
+      { 
+        id: 'item6', 
+        name: 'Classic Watch', 
+        brand: 'Timepieces', 
+        category: 'Accessories',
+        price: 129.99, 
+        imageUrl: 'https://via.placeholder.com/300?text=Watch'
+      }
+    ];
+    
+    const mockOutfits = [
+      {
+        id: 'outfit1',
+        name: 'Casual Weekend Look',
+        occasion: 'casual',
+        items: [mockItems[0], mockItems[1], mockItems[2]],
+        imageUrl: 'https://via.placeholder.com/400x500?text=Casual+Outfit'
+      },
+      {
+        id: 'outfit2',
+        name: 'Office Style',
+        occasion: 'work',
+        items: [mockItems[4], mockItems[5]],
+        imageUrl: 'https://via.placeholder.com/400x500?text=Work+Outfit'
+      },
+      {
+        id: 'outfit3',
+        name: 'Relaxed Evening',
+        occasion: 'evening',
+        items: [mockItems[3], mockItems[0]],
+        imageUrl: 'https://via.placeholder.com/400x500?text=Evening+Outfit'
+      }
+    ];
+    
+    // Function to render an item card
+    function renderItemCard(item) {
+      return `
+        <div class="item-card" data-id="${item.id}">
+          <div class="item-card__image">
+            <img src="${item.imageUrl}" alt="${item.name}" onerror="this.onerror=null; this.innerHTML='No Image';">
+          </div>
+          <div class="item-card__content">
+            <div class="item-card__name">${item.name}</div>
+            <div class="item-card__brand">${item.brand}</div>
+            <div class="item-card__price">$${item.price.toFixed(2)}</div>
+            <div class="item-card__actions">
+              <button class="item-card__button like-button" title="Like">👍</button>
+              <button class="item-card__button wishlist-button" title="Add to Wishlist">❤️</button>
+              <button class="item-card__button cart-button" title="Add to Cart">🛒</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Function to render an outfit card
+    function renderOutfitCard(outfit) {
+      // Generate item thumbnails
+      const thumbsHtml = outfit.items.map(item => 
+        `<div class="outfit-card__item-thumb" style="background-image: url('${item.imageUrl}');"></div>`
+      ).join('');
+      
+      return `
+        <div class="outfit-card" data-id="${outfit.id}">
+          <div class="outfit-card__image" style="background-image: url('${outfit.imageUrl}');">
+            <div class="outfit-card__items">
+              ${thumbsHtml}
+            </div>
+          </div>
+          <div class="outfit-card__content">
+            <div class="outfit-card__name">${outfit.name}</div>
+            <div class="outfit-card__occasion">${outfit.occasion}</div>
+            <div class="outfit-card__actions">
+              <button class="outfit-card__button like-button" title="Like">👍</button>
+              <button class="outfit-card__button save-button" title="Save Outfit">💾</button>
+              <button class="outfit-card__button" title="View Details">👁️</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Populate the items grid
+    document.addEventListener('DOMContentLoaded', function() {
+      const itemsContainer = document.getElementById('recommended-items');
+      const outfitsContainer = document.getElementById('recommended-outfits');
+      
+      // Render items
+      itemsContainer.innerHTML = mockItems.map(item => renderItemCard(item)).join('');
+      
+      // Render outfits
+      outfitsContainer.innerHTML = mockOutfits.map(outfit => renderOutfitCard(outfit)).join('');
+      
+      // Setup tab switching
+      const tabs = document.querySelectorAll('.lookbook__tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Remove active class from all tabs
+          tabs.forEach(t => t.classList.remove('lookbook__tab--active'));
+          
+          // Add active class to clicked tab
+          this.classList.add('lookbook__tab--active');
+          
+          // Hide all tab content
+          document.getElementById('recommended-tab').style.display = 'none';
+          document.getElementById('outfits-tab').style.display = 'none';
+          document.getElementById('saved-tab').style.display = 'none';
+          
+          // Show selected tab content
+          const tabName = this.getAttribute('data-tab');
+          document.getElementById(`${tabName}-tab`).style.display = 'block';
+        });
+      });
+      
+      // Add event listeners for item buttons
+      document.querySelectorAll('.item-card__button').forEach(button => {
+        button.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const itemId = this.closest('.item-card').getAttribute('data-id');
+          const item = mockItems.find(item => item.id === itemId);
+          
+          if (this.classList.contains('like-button')) {
+            alert(`Liked ${item.name}`);
+          } else if (this.classList.contains('wishlist-button')) {
+            alert(`Added ${item.name} to wishlist`);
+          } else if (this.classList.contains('cart-button')) {
+            alert(`Added ${item.name} to cart`);
+          }
+        });
+      });
+      
+      // Add event listeners for outfit buttons
+      document.querySelectorAll('.outfit-card__button').forEach(button => {
+        button.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const outfitId = this.closest('.outfit-card').getAttribute('data-id');
+          const outfit = mockOutfits.find(outfit => outfit.id === outfitId);
+          
+          if (this.classList.contains('like-button')) {
+            alert(`Liked "${outfit.name}" outfit`);
+          } else if (this.classList.contains('save-button')) {
+            alert(`Saved "${outfit.name}" outfit`);
+          } else {
+            alert(`Viewing details for "${outfit.name}" outfit`);
+          }
+        });
+      });
+      
+      // Handle empty state button
+      document.querySelector('.empty-state__button').addEventListener('click', function() {
+        // Switch to recommended tab
+        tabs[0].click();
+      });
+    });
+  </script>
+</body>
+</html>

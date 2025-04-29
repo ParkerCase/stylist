@@ -3,9 +3,10 @@
 import { createApiClient, ApiClient } from './apiClient';
 import { UserApi } from './userApi';
 import { RecommendationApi } from './recommendationApi';
+import { FeedbackApi } from './feedbackApi';
 
 // Default API configuration
-const DEFAULT_API_URL = 'http://localhost:8000';
+const DEFAULT_API_URL = 'http://localhost:8000/api';
 const DEFAULT_TIMEOUT = 15000;
 
 // API client configuration interface
@@ -29,10 +30,11 @@ export const createStylistApi = (config: StylistApiConfig) => {
   
   return {
     user: new UserApi(apiClient),
-    recommendation: new RecommendationApi(apiClient)
+    recommendation: new RecommendationApi(apiClient),
+    feedback: new FeedbackApi(apiClient)
   };
 };
 
 // Export types
 export type { ApiClient };
-export { UserApi, RecommendationApi };
+export { UserApi, RecommendationApi, FeedbackApi };

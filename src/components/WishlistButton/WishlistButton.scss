@@ -1,22 +1,22 @@
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
 
 .stylist-wishlist-button {
-  @include flex-center;
-  padding: $spacing-xs $spacing-sm;
-  background-color: $primary-color;
-  color: $text-inverse;
-  border-radius: $border-radius-md;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  transition: all $transition-normal ease;
+  @include mixins.flex-center;
+  padding: variables.$spacing-xs variables.$spacing-sm;
+  background-color: variables.$primary-color;
+  color: variables.$text-inverse;
+  border-radius: variables.$border-radius-md;
+  font-size: variables.$font-size-sm;
+  font-weight: variables.$font-weight-medium;
+  transition: all variables.$transition-normal ease;
   
   &:hover {
-    background-color: $primary-color-dark;
+    background-color: variables.$primary-color-dark;
   }
   
   &--saved {
-    background-color: $success-color;
+    background-color: variables.$success-color;
     
     &:hover {
       opacity: 0.9; /* Use opacity instead of darken for CSS variables */
@@ -24,11 +24,11 @@
   }
   
   &__icon {
-    margin-right: $spacing-xs;
+    margin-right: variables.$spacing-xs;
     display: flex;
   }
   
   &__label {
-    @include text-truncate;
+    @include mixins.text-truncate;
   }
 }

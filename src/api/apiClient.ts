@@ -7,14 +7,19 @@ interface ApiClientConfig {
   timeout?: number;
   headers?: Record<string, string>;
   maxRetries?: number;
+  getAuthHeader?: () => Record<string, string>;
 }
 
 export class ApiClient {
   private client: AxiosInstance;
   private maxRetries: number;
+  private getAuthHeader?: () => Record<string, string>;
 
   constructor(config: ApiClientConfig) {
     this.maxRetries = config.maxRetries || 3;
+    
+    // Store the auth header getter function if provided
+    this.getAuthHeader = config.getAuthHeader;
     
     // Create basic axios config
     const axiosConfig: AxiosRequestConfig = {
@@ -52,17 +57,13 @@ export class ApiClient {
           // First cast to unknown, then to AxiosRequestHeaders to ensure type safety
           logConfig.headers = { ...logConfig.headers, 'X-API-Key': '[REDACTED]' } as unknown as AxiosRequestHeaders;
         }
-        // Only log in non-production environments
-        if (process.env.NODE_ENV !== 'production') {
-          console.debug('API Request:', logConfig);
-        }
+        // Always log requests in development mode
+        console.debug('API Request:', logConfig);
         return config;
       },
       (error) => {
-        // Only log in non-production environments
-        if (process.env.NODE_ENV !== 'production') {
-          console.error('API Request Error:', error);
-        }
+        // Always log errors in development mode
+        console.error('API Request Error:', error);
         return Promise.reject(error);
       }
     );
@@ -70,28 +71,24 @@ export class ApiClient {
     // Add response interceptor for logging
     this.client.interceptors.response.use(
       (response) => {
-        // Only log in non-production environments
-        if (process.env.NODE_ENV !== 'production') {
-          console.debug('API Response:', {
-            status: response.status,
-            statusText: response.statusText,
-            data: response.data,
-          });
-        }
+        // Always log in development mode
+        console.debug('API Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          data: response.data,
+        });
         return response;
       },
       (error) => {
-        // Only log in non-production environments
-        if (process.env.NODE_ENV !== 'production') {
-          console.error('API Response Error:', {
+        // Always log errors
+        console.error('API Response Error:', {
           message: error.message,
           response: error.response ? {
             status: error.response.status,
             statusText: error.response.statusText,
             data: error.response.data,
           } : null,
-          });
-        }
+        });
         return Promise.reject(error);
       }
     );
@@ -122,21 +119,30 @@ export class ApiClient {
     let retries = 0;
     let lastError: Error | null = null;
 
+    // Add authentication headers if available
+    let requestConfig = { ...config };
+    if (this.getAuthHeader) {
+      requestConfig.headers = {
+        ...requestConfig.headers,
+        ...this.getAuthHeader()
+      };
+    }
+
     while (retries <= this.maxRetries) {
       try {
         let response: AxiosResponse<T>;
         switch (method) {
           case 'get':
-            response = await this.client.get<T>(url, config);
+            response = await this.client.get<T>(url, requestConfig);
             break;
           case 'post':
-            response = await this.client.post<T>(url, data, config);
+            response = await this.client.post<T>(url, data, requestConfig);
             break;
           case 'put':
-            response = await this.client.put<T>(url, data, config);
+            response = await this.client.put<T>(url, data, requestConfig);
             break;
           case 'delete':
-            response = await this.client.delete<T>(url, config);
+            response = await this.client.delete<T>(url, requestConfig);
             break;
         }
         return response.data;
@@ -147,10 +153,8 @@ export class ApiClient {
           retries++;
           // Wait with exponential backoff
           const delay = Math.pow(2, retries) * 1000;
-          // Only log in non-production environments
-          if (process.env.NODE_ENV !== 'production') {
-            console.log(`Retrying request (${retries}/${this.maxRetries}) after ${delay}ms`);
-          }
+          // Always log retry attempts
+          console.log(`Retrying request (${retries}/${this.maxRetries}) after ${delay}ms`);
           await new Promise(resolve => setTimeout(resolve, delay));
         } else {
           break;

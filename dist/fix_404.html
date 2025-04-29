@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading Full Widget...</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f5f7fa;
+    }
+    .container {
+      text-align: center;
+      max-width: 500px;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #4361ee;
+    }
+    .spinner {
+      margin: 20px auto;
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(67, 97, 238, 0.2);
+      border-top-color: #4361ee;
+      border-radius: 50%;
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    button {
+      background-color: #4361ee;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Stylist Widget</h1>
+    <p>The application is loading...</p>
+    <div class="spinner"></div>
+    <div id="status">Connecting to backend...</div>
+    <button id="viewButton" onclick="loadWidget()">Open Full Widget</button>
+  </div>
+
+  <script>
+    // Function to load the full widget 
+    function loadWidget() {
+      // Redirect to the full-widget.html file
+      window.location.href = "./full-widget.html";
+    }
+
+    // Check connection to the backend
+    fetch('http://localhost:8000/api/v1/health', { 
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        document.getElementById('status').textContent = 'Connected to backend successfully!';
+        document.getElementById('status').style.color = 'green';
+      } else {
+        throw new Error('Backend connection failed');
+      }
+    })
+    .catch(error => {
+      console.error('Backend error:', error);
+      document.getElementById('status').textContent = 'Using mock data (offline mode)';
+      document.getElementById('status').style.color = 'orange';
+    });
+  </script>
+</body>
+</html>

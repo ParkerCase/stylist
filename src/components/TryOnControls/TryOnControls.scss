@@ -1,24 +1,24 @@
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
 
 .stylist-try-on-controls {
   display: flex;
   flex-direction: column;
   width: 320px;
-  background-color: $surface-color;
-  border-left: 1px solid $border-color;
+  background-color: variables.$surface-color;
+  border-left: 1px solid variables.$border-color;
   overflow-y: auto;
-  @include scrollbar-custom;
+  @include mixins.scrollbar-custom;
   
-  @include responsive('xs') {
+  @include mixins.responsive('xs') {
     width: 100%;
     height: 300px;
     border-left: none;
-    border-top: 1px solid $border-color;
+    border-top: 1px solid variables.$border-color;
   }
   
   &__section {
-    border-bottom: 1px solid $border-color;
+    border-bottom: 1px solid variables.$border-color;
     
     &:last-child {
       border-bottom: none;
@@ -26,63 +26,63 @@
   }
   
   &__section-header {
-    @include flex-between;
-    padding: $spacing-md;
+    @include mixins.flex-between;
+    padding: variables.$spacing-md;
     cursor: pointer;
-    transition: background-color $transition-normal ease;
+    transition: background-color variables.$transition-normal ease;
     
     &:hover {
-      background-color: rgba($primary-color, 0.05);
+      background-color: rgba(variables.$primary-color, 0.05);
     }
   }
   
   &__section-title {
-    font-size: $font-size-md;
-    font-weight: $font-weight-bold;
-    color: $text-primary;
+    font-size: variables.$font-size-md;
+    font-weight: variables.$font-weight-bold;
+    color: variables.$text-primary;
     margin: 0;
   }
   
   &__section-toggle {
-    font-size: $font-size-lg;
-    color: $text-secondary;
-    font-weight: $font-weight-bold;
+    font-size: variables.$font-size-lg;
+    color: variables.$text-secondary;
+    font-weight: variables.$font-weight-bold;
   }
   
   &__section-content {
-    padding: $spacing-md;
+    padding: variables.$spacing-md;
     padding-top: 0;
   }
   
   &__empty {
-    font-size: $font-size-sm;
-    color: $text-tertiary;
+    font-size: variables.$font-size-sm;
+    color: variables.$text-tertiary;
     text-align: center;
-    padding: $spacing-md 0;
+    padding: variables.$spacing-md 0;
   }
   
   &__garment-list {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: $spacing-sm;
-    margin-bottom: $spacing-md;
+    gap: variables.$spacing-sm;
+    margin-bottom: variables.$spacing-md;
   }
   
   &__garment-thumbnail {
     position: relative;
-    border: 2px solid $border-color;
-    border-radius: $border-radius-sm;
+    border: 2px solid variables.$border-color;
+    border-radius: variables.$border-radius-sm;
     overflow: hidden;
     cursor: pointer;
-    transition: all $transition-normal ease;
+    transition: all variables.$transition-normal ease;
     
     &:hover {
-      border-color: $text-secondary;
+      border-color: variables.$text-secondary;
     }
     
     &--active {
-      border-color: $primary-color;
-      box-shadow: 0 0 0 2px rgba($primary-color, 0.2);
+      border-color: variables.$primary-color;
+      box-shadow: 0 0 0 2px rgba(variables.$primary-color, 0.2);
     }
   }
   
@@ -91,7 +91,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: $background-color;
+    background-color: variables.$background-color;
     
     img {
       max-width: 100%;
@@ -101,30 +101,30 @@
   }
   
   &__garment-type {
-    padding: $spacing-xs;
-    font-size: $font-size-xs;
-    color: $text-secondary;
+    padding: variables.$spacing-xs;
+    font-size: variables.$font-size-xs;
+    color: variables.$text-secondary;
     text-align: center;
     text-transform: capitalize;
-    background-color: $surface-color;
-    border-top: 1px solid $border-color;
+    background-color: variables.$surface-color;
+    border-top: 1px solid variables.$border-color;
   }
   
   &__garment-remove {
     position: absolute;
-    top: $spacing-xs;
-    right: $spacing-xs;
+    top: variables.$spacing-xs;
+    right: variables.$spacing-xs;
     width: 22px;
     height: 22px;
-    border-radius: $border-radius-round;
-    background-color: rgba($error-color, 0.8);
-    color: $text-inverse;
-    @include flex-center;
+    border-radius: variables.$border-radius-round;
+    background-color: rgba(variables.$error-color, 0.8);
+    color: variables.$text-inverse;
+    @include mixins.flex-center;
     opacity: 0;
-    transition: opacity $transition-normal ease;
+    transition: opacity variables.$transition-normal ease;
     
     &:hover {
-      background-color: $error-color;
+      background-color: variables.$error-color;
     }
     
     .stylist-try-on-controls__garment-thumbnail:hover & {
@@ -133,46 +133,46 @@
   }
   
   &__add-garment {
-    margin-top: $spacing-md;
+    margin-top: variables.$spacing-md;
   }
   
   &__label {
     display: block;
-    font-size: $font-size-sm;
-    color: $text-secondary;
-    margin-bottom: $spacing-xs;
+    font-size: variables.$font-size-sm;
+    color: variables.$text-secondary;
+    margin-bottom: variables.$spacing-xs;
   }
   
   &__button-group {
     display: flex;
     flex-wrap: wrap;
-    gap: $spacing-xs;
+    gap: variables.$spacing-xs;
   }
   
   &__button {
-    padding: $spacing-xs $spacing-sm;
-    background-color: $background-color;
-    border: 1px solid $border-color;
-    border-radius: $border-radius-sm;
-    font-size: $font-size-sm;
-    color: $text-primary;
+    padding: variables.$spacing-xs variables.$spacing-sm;
+    background-color: variables.$background-color;
+    border: 1px solid variables.$border-color;
+    border-radius: variables.$border-radius-sm;
+    font-size: variables.$font-size-sm;
+    color: variables.$text-primary;
     cursor: pointer;
-    transition: all $transition-normal ease;
+    transition: all variables.$transition-normal ease;
     
     &:hover {
-      background-color: $surface-color;
-      border-color: $text-secondary;
+      background-color: variables.$surface-color;
+      border-color: variables.$text-secondary;
     }
     
     &--active {
-      background-color: rgba($primary-color, 0.1);
-      border-color: $primary-color;
-      color: $primary-color;
+      background-color: rgba(variables.$primary-color, 0.1);
+      border-color: variables.$primary-color;
+      color: variables.$primary-color;
     }
     
     &--full-width {
       width: 100%;
-      padding: $spacing-sm;
+      padding: variables.$spacing-sm;
     }
     
     &:disabled {
@@ -184,11 +184,11 @@
   &__garment-controls {
     display: flex;
     flex-direction: column;
-    gap: $spacing-md;
+    gap: variables.$spacing-md;
   }
   
   &__control-group {
-    margin-bottom: $spacing-sm;
+    margin-bottom: variables.$spacing-sm;
     
     &:last-child {
       margin-bottom: 0;
@@ -199,16 +199,16 @@
     width: 100%;
     appearance: none;
     height: 4px;
-    background-color: $border-color;
+    background-color: variables.$border-color;
     border-radius: 2px;
     outline: none;
-    margin: $spacing-xs 0;
+    margin: variables.$spacing-xs 0;
     
     &::-webkit-slider-thumb {
       appearance: none;
       width: 16px;
       height: 16px;
-      background-color: $primary-color;
+      background-color: variables.$primary-color;
       border-radius: 50%;
       cursor: pointer;
     }
@@ -216,7 +216,7 @@
     &::-moz-range-thumb {
       width: 16px;
       height: 16px;
-      background-color: $primary-color;
+      background-color: variables.$primary-color;
       border-radius: 50%;
       cursor: pointer;
       border: none;
@@ -228,8 +228,8 @@
   }
   
   &__value {
-    font-size: $font-size-xs;
-    color: $text-tertiary;
+    font-size: variables.$font-size-xs;
+    color: variables.$text-tertiary;
     text-align: right;
   }
 }

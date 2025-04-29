@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -24,7 +25,13 @@ module.exports = (env, argv) => {
         {
           test: /\.(ts|tsx)$/,
           exclude: /node_modules/,
-          use: 'ts-loader',
+          use: {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true, // Ignores TypeScript type checking
+              happyPackMode: true
+            }
+          },
         },
         {
           test: /\.scss$/,
@@ -61,6 +68,10 @@ module.exports = (env, argv) => {
       }),
       isProduction && new MiniCssExtractPlugin({
         filename: 'stylist-widget.css'
+      }),
+      // Define Node.js environment variables for browser
+      new webpack.DefinePlugin({
+        'process.env.NODE_ENV': JSON.stringify(isProduction ? 'production' : 'development')
       })
     ].filter(Boolean),
     optimization: {

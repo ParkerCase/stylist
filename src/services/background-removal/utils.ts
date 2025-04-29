@@ -2,7 +2,11 @@
 
 import { BackgroundRemovalMethod, BackgroundRemovalResult } from '@/types/tryOn';
 import { removeBackgroundApi } from './removeBackgroundApi';
-import { removeBackgroundTensorflow } from './tfBackgroundRemoval';
+import { 
+  removeBackgroundTensorflow, 
+  isTensorflowSupported as isTfSupported,
+  preloadBodyPixModel as preloadModel
+} from './tfBackgroundRemoval';
 
 interface RemoveBackgroundOptions {
   method: BackgroundRemovalMethod;
@@ -122,18 +126,9 @@ const fileToDataUrl = (file: File): Promise<string> => {
 /**
  * Check if the browser supports the WebGL backend for TensorFlow.js
  */
-export const isTensorflowSupported = async (): Promise<boolean> => {
-  try {
-    // Try to import TensorFlow.js dynamically
-    const tf = await import('@tensorflow/tfjs');
-    await tf.ready();
-    
-    // Check if WebGL is available
-    const isWebGLAvailable = tf.getBackend() === 'webgl' || await tf.setBackend('webgl');
-    
-    return isWebGLAvailable;
-  } catch (error) {
-    console.error('TensorFlow.js support check failed:', error);
-    return false;
-  }
-};
+export const isTensorflowSupported = isTfSupported;
+
+/**
+ * Preload the BodyPix model to reduce initial latency
+ */
+export const preloadBodyPixModel = preloadModel;

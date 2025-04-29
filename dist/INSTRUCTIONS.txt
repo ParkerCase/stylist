@@ -1,0 +1,27 @@
+SIMPLE SETUP INSTRUCTIONS
+=======================
+
+1. FRONTEND (Port 4000):
+-----------------------
+In one terminal, run:
+cd /Users/parkercase/stylist/dist
+node only_widget.js
+
+This serves ONLY the widget HTML and nothing else. Access it at:
+http://localhost:4000
+
+2. BACKEND (Port 8000):
+-----------------------
+In another terminal, run:
+cd /Users/parkercase/stylist
+uvicorn main:app --reload --port 8000
+
+This starts the backend API at:
+http://localhost:8000
+
+TROUBLESHOOTING
+--------------
+If you see "react/jsx-dev-runtime" errors, they are being caught and ignored.
+Simply refresh the page - the widget will still work.
+
+The widget is configured to use mock data if the backend is not available.

@@ -7,13 +7,16 @@ import TryOnControls from '@/components/TryOnControls';
 import ImageUploader from '@/components/ImageUploader';
 import { useTryOn } from '@/hooks/useTryOn';
 import { GarmentType, ProcessingStatus } from '@/types/tryOn';
+import { Recommendation } from '@/types';
+import { preloadBodyPixModel } from '@/services/background-removal/utils';
 
 interface VirtualTryOnProps {
   onClose?: () => void;
   onSave?: (resultUrl: string) => void;
+  onAddToLookbook?: (result: Recommendation.SavedOutfit) => void;
 }
 
-const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave }) => {
+const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave, onAddToLookbook }) => {
   const {
     currentOutfit,
     userImage,
@@ -25,20 +28,31 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave }) => {
     addGarment,
     removeGarment,
     updateGarmentProperties,
-    /* clearUserImage, */
+    clearUserImage,
     saveTryOnResult,
     closeTryOnModal
   } = useTryOn();
   
   const [activeGarmentId, setActiveGarmentId] = useState<string | null>(null);
   const [showUploader, setShowUploader] = useState(!userImage);
+  const [savingToLookbook, setSavingToLookbook] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  
+  // Preload the BodyPix model on component mount
+  useEffect(() => {
+    preloadBodyPixModel();
+  }, []);
   
   // Focus on the active garment when it changes
   useEffect(() => {
     if (activeGarmentId && currentOutfit) {
       const garment = currentOutfit.garments.find(g => g.id === activeGarmentId);
       if (garment) {
-        // Could implement scrolling or highlighting here
+        // Highlight the active garment in the controls
+        const garmentElement = document.getElementById(`garment-${activeGarmentId}`);
+        if (garmentElement) {
+          garmentElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
       }
     }
   }, [activeGarmentId, currentOutfit]);
@@ -61,13 +75,48 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave }) => {
     await addGarment(file, type);
   };
   
-  // Handle save
-  const handleSave = async () => {
-    if (canvasRef) {
+  // Handle save to lookbook
+  const handleSaveToLookbook = async () => {
+    if (!canvasRef || !currentOutfit) return;
+    
+    try {
+      setSavingToLookbook(true);
       const result = await saveTryOnResult();
-      if (result && onSave) {
-        onSave(result.resultImageUrl);
+      
+      if (result) {
+        // Call onSave if provided
+        if (onSave) {
+          onSave(result.resultImageUrl);
+        }
+        
+        if (onAddToLookbook) {
+          // Convert try-on result to saved outfit format
+          const savedOutfit: Recommendation.SavedOutfit = {
+            userId: 'current_user', // Should be updated with actual user ID
+            outfitId: result.id,
+            name: `Try-On Result ${new Date().toLocaleDateString()}`,
+            items: currentOutfit.garments.map(g => g.id),
+            savedAt: new Date(),
+          };
+          
+          onAddToLookbook(savedOutfit);
+        }
+        
+        setSaveSuccess(true);
+        
+        // Close modal after successful save with a delay
+        setTimeout(() => {
+          if (onClose) {
+            onClose();
+          } else {
+            closeTryOnModal();
+          }
+        }, 1500);
       }
+    } catch (err) {
+      console.error('Error saving to lookbook:', err);
+    } finally {
+      setSavingToLookbook(false);
     }
   };
   
@@ -78,6 +127,14 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave }) => {
     } else {
       closeTryOnModal();
     }
+  };
+  
+  // Reset function to start over
+  const handleReset = () => {
+    clearUserImage();
+    setShowUploader(true);
+    setActiveGarmentId(null);
+    setSaveSuccess(false);
   };
   
   return (
@@ -97,7 +154,11 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave }) => {
       
       <div className="stylist-virtual-try-on__content">
         {showUploader ? (
-          <ImageUploader onUpload={handleImageUpload} />
+          <ImageUploader 
+            onUpload={handleImageUpload} 
+            title="Upload or Take a Photo"
+            description="Upload a photo or use your webcam to try on clothes"
+          />
         ) : (
           <div className="stylist-virtual-try-on__canvas-container">
             <TryOnCanvas
@@ -105,6 +166,7 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave }) => {
               userImage={userImage}
               setCanvasRef={setCanvasRef}
               onGarmentSelect={setActiveGarmentId}
+              showBodyGuide={!userImage}
             />
             
             {userImage?.processingStatus === ProcessingStatus.REMOVING_BACKGROUND && (
@@ -119,7 +181,7 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave }) => {
                 <p>{error}</p>
                 <button
                   className="stylist-virtual-try-on__retry-btn"
-                  onClick={() => setShowUploader(true)}
+                  onClick={handleReset}
                 >
                   Try Again
                 </button>
@@ -136,26 +198,46 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave }) => {
             onGarmentRemove={removeGarment}
             onGarmentUpdate={updateGarmentProperties}
             onGarmentAdd={handleGarmentUpload}
-            onChangePhoto={() => setShowUploader(true)}
+            onChangePhoto={handleReset}
             disabled={isLoading}
           />
         )}
       </div>
+      
+      {saveSuccess && (
+        <div className="stylist-virtual-try-on__success">
+          <div className="stylist-virtual-try-on__success-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
+            </svg>
+          </div>
+          <p className="stylist-virtual-try-on__success-message">
+            Saved to your Lookbook!
+          </p>
+        </div>
+      )}
       
       <div className="stylist-virtual-try-on__footer">
         <button
           className="stylist-virtual-try-on__secondary-btn"
           onClick={handleClose}
         >
-          Cancel
+          Close
         </button>
         
         <button
           className="stylist-virtual-try-on__primary-btn"
-          onClick={handleSave}
-          disabled={isLoading || !userImage || userImage.processingStatus !== ProcessingStatus.COMPLETED}
+          onClick={handleSaveToLookbook}
+          disabled={
+            isLoading || 
+            !userImage || 
+            userImage.processingStatus !== ProcessingStatus.COMPLETED ||
+            !currentOutfit?.garments.length ||
+            savingToLookbook ||
+            saveSuccess
+          }
         >
-          Save Look
+          {savingToLookbook ? 'Saving...' : (saveSuccess ? 'Saved!' : 'Save to Lookbook')}
         </button>
       </div>
     </div>

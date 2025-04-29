@@ -72,6 +72,12 @@ export const isLocalStorageAvailable = (): boolean => {
     return userId;
   };
   
+  // Set user ID in localStorage
+  export const setUserId = (userId: string): void => {
+    if (!isLocalStorageAvailable()) return;
+    localStorage.setItem('stylist_user_id', userId);
+  };
+  
   // Clear all Stylist-related localStorage items
   export const clearStylistStorage = (): void => {
     if (!isLocalStorageAvailable()) return;

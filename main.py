@@ -5,7 +5,7 @@ Main entry point for The Stylist backend application.
 import os
 import logging
 from typing import Dict, Any
-from fastapi import FastAPI, HTTPException, Request, Depends, Header
+from fastapi import FastAPI, HTTPException, Request, Depends, Header, UploadFile, File, Body, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
@@ -29,7 +29,28 @@ from api.retailer_routes import (
     test_retailer_connection,
     clear_retailer_cache,
 )
-from api.inventory_routes import get_inventory, search_inventory, get_item
+from api.inventory_routes import get_inventory, search_items as search_inventory, get_item
+from api.user_routes import (
+    register_user,
+    login_user,
+    request_password_reset,
+    reset_password,
+    get_user_profile,
+    update_user_profile,
+    social_auth_stub,
+    verify_token,
+)
+from api.closet_routes import (
+    add_closet_item,
+    detect_clothing,
+    get_closet_items,
+    remove_closet_item,
+    update_closet_item,
+    toggle_favorite_item,
+    save_outfit as save_closet_outfit,
+    get_saved_outfits,
+    delete_saved_outfit,
+)
 
 # Import config
 from config import API_KEY, DEBUG, API_VERSION
@@ -74,6 +95,22 @@ async def verify_api_key(x_api_key: str = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid API key")
     return x_api_key
 
+# JWT Token validation
+async def verify_auth_token(authorization: str = Header(None)):
+    """Verify JWT authentication token from Authorization header.
+    
+    Format: 'Bearer {token}'
+    """
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Authorization header missing")
+    
+    parts = authorization.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+    
+    token = parts[1]
+    return verify_token(token)
+
 # Error handling
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception):
@@ -116,16 +153,89 @@ async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "version": "1.0.0"}
 
+# WebSocket chat endpoint
+@app.websocket("/ws/chat/{user_id}")
+async def websocket_chat_endpoint(websocket: WebSocket, user_id: str):
+    """WebSocket endpoint for real-time chat with the stylist assistant."""
+    # Accept connection
+    await websocket.accept()
+    try:
+        # Keep connection open and handle messages
+        while True:
+            # Receive message from client
+            data = await websocket.receive_json()
+            # Process message (would normally involve AI processing)
+            response = {
+                "type": "message",
+                "sender": "assistant",
+                "text": f"Echo: {data.get('text', 'No message provided')}"
+            }
+            # Send response
+            await websocket.send_json(response)
+    except WebSocketDisconnect:
+        # Handle client disconnect
+        logger.info(f"WebSocket connection closed for user {user_id}")
+    except Exception as e:
+        # Handle other errors
+        logger.error(f"WebSocket error: {str(e)}")
+        try:
+            await websocket.send_json({"type": "error", "message": "An error occurred"})
+        except:
+            pass
+
 # API routes
-# User routes
+
+# Authentication routes - no API key required for these
+@app.post(f"/api/{API_VERSION}/auth/register")
+async def api_register_user(registration_data: Dict[str, Any] = Body(...)):
+    """Register a new user."""
+    return await register_user(registration_data)
+
+@app.post(f"/api/{API_VERSION}/auth/login")
+async def api_login_user(login_data: Dict[str, Any] = Body(...)):
+    """Log in a user."""
+    return await login_user(login_data)
+
+@app.post(f"/api/{API_VERSION}/auth/password-reset-request")
+async def api_request_password_reset(reset_data: Dict[str, Any] = Body(...)):
+    """Request a password reset."""
+    return await request_password_reset(reset_data)
+
+@app.post(f"/api/{API_VERSION}/auth/password-reset")
+async def api_reset_password(reset_data: Dict[str, Any] = Body(...)):
+    """Reset a password."""
+    return await reset_password(reset_data)
+
+@app.post(f"/api/{API_VERSION}/auth/social/{{provider}}")
+async def api_social_auth(provider: str, auth_data: Dict[str, Any] = Body(...)):
+    """Authenticate with a social provider (stub)."""
+    return await social_auth_stub(provider, auth_data)
+
+# User routes - requires JWT token
+@app.get(f"/api/{API_VERSION}/users/me")
+async def api_get_current_user(payload: Dict[str, Any] = Depends(verify_auth_token)):
+    """Get the current user's profile."""
+    user_id = payload["sub"]
+    return await get_user_profile(user_id)
+
+@app.put(f"/api/{API_VERSION}/users/me")
+async def api_update_current_user(
+    payload: Dict[str, Any] = Depends(verify_auth_token),
+    profile_data: Dict[str, Any] = Body(...)
+):
+    """Update the current user's profile."""
+    user_id = payload["sub"]
+    return await update_user_profile(user_id, profile_data)
+
+# Legacy user routes - uses API key for compatibility
 @app.post(f"/api/{API_VERSION}/users", dependencies=[Depends(verify_api_key)])
 async def api_create_user(user_data: Dict[str, Any]):
-    """Create a new user profile."""
+    """Create a new user profile (legacy)."""
     return create_user(user_data)
 
 @app.put(f"/api/{API_VERSION}/users/{{user_id}}", dependencies=[Depends(verify_api_key)])
 async def api_update_user(user_id: str, user_data: Dict[str, Any]):
-    """Update an existing user profile."""
+    """Update an existing user profile (legacy)."""
     return update_user(user_id, user_data)
 
 # Recommendation routes
@@ -144,6 +254,52 @@ async def api_save_outfit(user_id: str, outfit_data: Dict[str, Any]):
     """Save an outfit to the user's saved outfits."""
     outfit_items = outfit_data.get("items", [])
     return save_outfit(user_id, outfit_items)
+
+# Closet routes
+@app.post(f"/api/{API_VERSION}/users/{{user_id}}/closet", dependencies=[Depends(verify_api_key)])
+async def api_add_closet_item(user_id: str, item_data: Dict[str, Any]):
+    """Add an item to the user's closet."""
+    return await add_closet_item(user_id, item_data)
+
+@app.post(f"/api/{API_VERSION}/users/{{user_id}}/closet/detect", dependencies=[Depends(verify_api_key)])
+async def api_detect_clothing(user_id: str, file: UploadFile = File(...)):
+    """Detect clothing attributes from an uploaded image."""
+    return await detect_clothing(user_id, file)
+
+@app.get(f"/api/{API_VERSION}/users/{{user_id}}/closet", dependencies=[Depends(verify_api_key)])
+async def api_get_closet_items(user_id: str):
+    """Get all items in the user's closet."""
+    return await get_closet_items(user_id)
+
+@app.delete(f"/api/{API_VERSION}/users/{{user_id}}/closet/{{item_id}}", dependencies=[Depends(verify_api_key)])
+async def api_remove_closet_item(user_id: str, item_id: str):
+    """Remove an item from the user's closet."""
+    return await remove_closet_item(user_id, item_id)
+
+@app.put(f"/api/{API_VERSION}/users/{{user_id}}/closet/{{item_id}}", dependencies=[Depends(verify_api_key)])
+async def api_update_closet_item(user_id: str, item_id: str, item_data: Dict[str, Any]):
+    """Update a closet item."""
+    return await update_closet_item(user_id, item_id, item_data)
+
+@app.put(f"/api/{API_VERSION}/users/{{user_id}}/closet/{{item_id}}/favorite", dependencies=[Depends(verify_api_key)])
+async def api_toggle_favorite_item(user_id: str, item_id: str, favorite_data: Dict[str, bool]):
+    """Toggle the favorite status of a closet item."""
+    return await toggle_favorite_item(user_id, item_id, favorite_data)
+
+@app.post(f"/api/{API_VERSION}/users/{{user_id}}/closet/outfits", dependencies=[Depends(verify_api_key)])
+async def api_save_closet_outfit(user_id: str, outfit_data: Dict[str, Any]):
+    """Save an outfit composed of closet items."""
+    return await save_closet_outfit(user_id, outfit_data)
+
+@app.get(f"/api/{API_VERSION}/users/{{user_id}}/closet/outfits", dependencies=[Depends(verify_api_key)])
+async def api_get_saved_outfits(user_id: str):
+    """Get all saved outfits for a user."""
+    return await get_saved_outfits(user_id)
+
+@app.delete(f"/api/{API_VERSION}/users/{{user_id}}/closet/outfits/{{outfit_id}}", dependencies=[Depends(verify_api_key)])
+async def api_delete_saved_outfit(user_id: str, outfit_id: int):
+    """Delete a saved outfit."""
+    return await delete_saved_outfit(user_id, outfit_id)
 
 # Retailer routes
 @app.get(f"/api/{API_VERSION}/retailers", dependencies=[Depends(verify_api_key)])
@@ -196,6 +352,62 @@ async def api_search_inventory(retailer_id: str, query: str, limit: int = 20):
 async def api_get_item(retailer_id: str, item_id: str):
     """Get a specific item from a retailer."""
     return get_item(retailer_id, item_id)
+
+# WebSocket connection for real-time chat
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """WebSocket connection for real-time chat functionality."""
+    await websocket.accept()
+    try:
+        while True:
+            # Receive message from client
+            data = await websocket.receive_text()
+            
+            # Parse the JSON data
+            try:
+                message_data = json.loads(data)
+                user_id = message_data.get("userId", "anonymous")
+                message = message_data.get("message", "")
+                
+                # If user doesn't exist in our system, create a new profile
+                if user_id not in mock_users:
+                    mock_users[user_id] = UserProfile(
+                        user_id=user_id,
+                        created_at=datetime.now(),
+                        updated_at=datetime.now()
+                    )
+                
+                user = mock_users[user_id]
+                
+                # Generate response from style analysis service
+                response = style_analysis_service.answer_style_question(message, user)
+                
+                # Send response back to client
+                await websocket.send_text(json.dumps({
+                    "type": "message",
+                    "response": response,
+                    "timestamp": datetime.now().isoformat()
+                }))
+                
+            except json.JSONDecodeError:
+                # If not valid JSON, send error
+                await websocket.send_text(json.dumps({
+                    "type": "error",
+                    "message": "Invalid message format, expected JSON"
+                }))
+            
+    except WebSocketDisconnect:
+        logger.info("WebSocket client disconnected")
+    except Exception as e:
+        logger.error(f"WebSocket error: {str(e)}")
+        try:
+            await websocket.send_text(json.dumps({
+                "type": "error",
+                "message": "Server error occurred"
+            }))
+        except:
+            # Client might already be disconnected
+            pass
 
 # Serve static files
 app.mount("/static", StaticFiles(directory="static"), name="static")

@@ -58,3 +58,48 @@ export type Outfit = RecommendationTypes.Outfit;
 
 // Re-export from retailer.ts
 export * from './retailer';
+
+// Define shared widget API interface
+export interface StylistWidgetConfig {
+  apiKey: string;
+  retailerId: string;
+  apiUrl?: string;
+  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  primaryColor?: string;
+  greeting?: string;
+}
+
+// Define shared widget API interface
+export interface StylistWidgetAPI {
+  init: (config: StylistWidgetConfig) => void;
+  open: () => void;
+  close: () => void;
+  minimize: () => void;
+  switchView: (view: 'chat' | 'lookbook') => void;
+  openStyleQuiz: () => void;
+  openVirtualTryOn: () => void;
+  __debug?: {
+    addMockItems: () => void;
+  };
+}
+
+// Define window interface extensions for TypeScript global namespace
+export interface StylistWindowExtensions {
+  __StylistWidgetConfig?: StylistWidgetConfig;
+  StylistWidget: StylistWidgetAPI;
+  __STYLIST_STORE__?: {
+    chat: {
+      toggleOpen: () => void;
+      toggleMinimize: () => void;
+      setCurrentView: (view: 'chat' | 'lookbook') => void;
+      currentView?: 'chat' | 'lookbook';
+      isOpen: boolean;
+    };
+    recommendations: {
+      setRecommendedItems: (items: RecommendationItem[]) => void;
+      setRecommendedOutfits: (outfits: Outfit[]) => void;
+      recommendedItems?: RecommendationItem[];
+      recommendedOutfits?: Outfit[];
+    };
+  };
+}

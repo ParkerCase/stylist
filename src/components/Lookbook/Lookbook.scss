@@ -1,96 +1,106 @@
 // Lookbook styling
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
 
 .stylist-lookbook {
-  @include flex-column;
+  @include mixins.flex-column;
   width: 100%;
   height: 100%;
-  background-color: $background-color;
-  border-radius: $border-radius-md;
-  animation: fadeIn $transition-normal ease forwards;
+  background-color: variables.$background-color;
+  border-radius: variables.$border-radius-md;
+  animation: fadeIn variables.$transition-normal ease forwards;
 
   &__header {
-    @include flex-column;
-    padding: $spacing-md;
-    border-bottom: 1px solid $border-color;
+    @include mixins.flex-column;
+    padding: variables.$spacing-md;
+    border-bottom: 1px solid variables.$border-color;
   }
 
   &__title {
-    font-size: $font-size-lg;
-    font-weight: $font-weight-bold;
-    margin-bottom: $spacing-sm;
-    color: $text-primary;
+    font-size: variables.$font-size-lg;
+    font-weight: variables.$font-weight-bold;
+    margin-bottom: variables.$spacing-sm;
+    color: variables.$text-primary;
   }
 
   &__tabs {
-    @include flex-row;
+    @include mixins.flex-row;
     width: 100%;
-    margin-top: $spacing-sm;
+    margin-top: variables.$spacing-sm;
   }
 
   &__tab {
     flex: 1;
-    padding: $spacing-sm;
+    padding: variables.$spacing-sm;
     text-align: center;
-    font-size: $font-size-sm;
-    font-weight: $font-weight-medium;
-    color: $text-secondary;
+    font-size: variables.$font-size-sm;
+    font-weight: variables.$font-weight-medium;
+    color: variables.$text-secondary;
     cursor: pointer;
     background: transparent;
     border: none;
     border-bottom: 2px solid transparent;
-    transition: all $transition-normal ease;
+    transition: all variables.$transition-normal ease;
 
     &:hover {
-      color: $text-primary;
+      color: variables.$text-primary;
     }
 
     &--active {
-      color: $primary-color;
-      border-bottom-color: $primary-color;
-      font-weight: $font-weight-bold;
+      color: variables.$primary-color;
+      border-bottom-color: variables.$primary-color;
+      font-weight: variables.$font-weight-bold;
     }
   }
 
   &__content {
     flex: 1;
     overflow-y: auto;
-    padding: $spacing-md;
-    @include scrollbar-custom;
+    padding: variables.$spacing-md;
+    @include mixins.scrollbar-custom;
   }
 
   &__items {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: $spacing-md;
+    gap: variables.$spacing-md;
 
-    @include responsive('xs') {
+    @include mixins.responsive('xs') {
       grid-template-columns: 1fr;
     }
   }
 
   &__outfits, &__saved {
-    @include flex-column;
-    gap: $spacing-lg;
+    @include mixins.flex-column;
+    gap: variables.$spacing-lg;
   }
 
   &__empty {
-    @include flex-column;
+    @include mixins.flex-column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: $spacing-xl 0;
-    color: $text-tertiary;
+    padding: variables.$spacing-xl 0;
+    color: variables.$text-tertiary;
     height: 200px;
 
     p:first-child {
-      font-weight: $font-weight-medium;
-      margin-bottom: $spacing-sm;
+      font-weight: variables.$font-weight-medium;
+      margin-bottom: variables.$spacing-sm;
     }
 
     p:last-child {
-      font-size: $font-size-sm;
+      font-size: variables.$font-size-sm;
+    }
+  }
+
+  // Keyframes for fadeIn animation
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
 }

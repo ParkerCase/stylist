@@ -23,7 +23,7 @@ def parse_style_quiz_answers(quiz_data: Dict[str, Any]) -> StyleQuizResults:
     Returns:
         StyleQuizResults object with parsed quiz data
     """
-    from stylist.config import StyleCategory, ColorPalette, FitPreference, OccasionType
+    from config import StyleCategory, ColorPalette, FitPreference, OccasionType
 
     quiz_results = StyleQuizResults()
 

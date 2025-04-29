@@ -12,6 +12,7 @@ interface ChatBodyProps {
   messages: ChatMessage[];
   onItemFeedback?: (itemId: string, liked: boolean) => void;
   onOutfitFeedback?: (outfitId: string, liked: boolean) => void;
+  onMessageFeedback?: (messageId: string, helpful: boolean) => void;
   onQuizSubmit?: (answers: StyleQuizAnswer[]) => void;
   isLoading?: boolean;
   primaryColor?: string;
@@ -24,6 +25,7 @@ const ChatBody: React.FC<ChatBodyProps> = ({
   messages,
   onItemFeedback,
   onOutfitFeedback,
+  onMessageFeedback,
   onQuizSubmit,
   isLoading = false,
   primaryColor
@@ -51,6 +53,7 @@ const ChatBody: React.FC<ChatBodyProps> = ({
             key={message.id}
             message={message}
             primaryColor={primaryColor}
+            onFeedback={onMessageFeedback}
           />
         );
         

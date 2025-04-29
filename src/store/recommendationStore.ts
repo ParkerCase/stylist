@@ -1,44 +1,45 @@
 // Recommendation state management
 
 import { create } from 'zustand';
-import {
-  RecommendationItem,
-  Outfit,
-  SavedOutfit,
-  WishlistItem,
-  CartItem
-} from '../types/index';
+import { Recommendation, WishlistItem, CartItem } from '../types/index';
 
 interface RecommendationState {
-  recommendedItems: RecommendationItem[];
-  recommendedOutfits: Outfit[];
-  savedOutfits: SavedOutfit[];
+  recommendedItems: Recommendation.RecommendationItem[];
+  recommendedOutfits: Recommendation.Outfit[];
+  savedOutfits: Recommendation.SavedOutfit[];
   wishlistItems: WishlistItem[];
   cartItems: CartItem[];
   viewedItems: string[];
   context: string | null;
-  isLoading: boolean;
+  loading: boolean;
   error: string | null;
   
   // Actions
-  setRecommendedItems: (items: RecommendationItem[]) => void;
-  setRecommendedOutfits: (outfits: Outfit[]) => void;
-  setSavedOutfits: (outfits: SavedOutfit[]) => void;
+  setRecommendedItems: (items: Recommendation.RecommendationItem[]) => void;
+  setRecommendedOutfits: (outfits: Recommendation.Outfit[]) => void;
+  setSavedOutfits: (outfits: Recommendation.SavedOutfit[]) => void;
+  addRecommendedItem: (item: Recommendation.RecommendationItem) => void;
+  addRecommendedOutfit: (outfit: Recommendation.Outfit) => void;
   addToWishlist: (item: WishlistItem) => void;
   removeFromWishlist: (itemId: string) => void;
   addToCart: (item: CartItem) => void;
   removeFromCart: (itemId: string) => void;
   updateCartItemQuantity: (itemId: string, quantity: number) => void;
   addViewedItem: (itemId: string) => void;
-  saveOutfit: (outfit: SavedOutfit) => void;
+  saveOutfit: (outfit: Recommendation.SavedOutfit) => void;
   removeSavedOutfit: (outfitId: string) => void;
   setContext: (context: string | null) => void;
   clearRecommendations: () => void;
-  setLoading: (isLoading: boolean) => void;
+  setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  getItemsByCategory: (category: string) => Recommendation.RecommendationItem[];
+  getItemsSortedByMatchScore: () => Recommendation.RecommendationItem[];
+  getOutfitById: (id: string) => Recommendation.Outfit | undefined;
+  getItemById: (id: string) => Recommendation.RecommendationItem | undefined;
+  updateItem: (id: string, updates: Partial<Recommendation.RecommendationItem>) => void;
 }
 
-const useRecommendationStore = create<RecommendationState>((set, get) => ({
+export const useRecommendationStore = create<RecommendationState>((set, get) => ({
   recommendedItems: [],
   recommendedOutfits: [],
   savedOutfits: [],
@@ -46,7 +47,7 @@ const useRecommendationStore = create<RecommendationState>((set, get) => ({
   cartItems: [],
   viewedItems: [],
   context: null,
-  isLoading: false,
+  loading: false,
   error: null,
   
   setRecommendedItems: (items) => {
@@ -59,6 +60,18 @@ const useRecommendationStore = create<RecommendationState>((set, get) => ({
   
   setSavedOutfits: (outfits) => {
     set({ savedOutfits: outfits });
+  },
+  
+  addRecommendedItem: (item) => {
+    set((state) => ({
+      recommendedItems: [...state.recommendedItems, item]
+    }));
+  },
+  
+  addRecommendedOutfit: (outfit) => {
+    set((state) => ({
+      recommendedOutfits: [...state.recommendedOutfits, outfit]
+    }));
   },
   
   addToWishlist: (item) => {
@@ -158,12 +171,36 @@ const useRecommendationStore = create<RecommendationState>((set, get) => ({
     });
   },
   
-  setLoading: (isLoading) => {
-    set({ isLoading });
+  setLoading: (loading) => {
+    set({ loading });
   },
   
   setError: (error) => {
     set({ error });
+  },
+  
+  getItemsByCategory: (category) => {
+    return get().recommendedItems.filter(item => item.category === category);
+  },
+  
+  getItemsSortedByMatchScore: () => {
+    return [...get().recommendedItems].sort((a, b) => b.matchScore - a.matchScore);
+  },
+  
+  getOutfitById: (id) => {
+    return get().recommendedOutfits.find(outfit => outfit.id === id);
+  },
+  
+  getItemById: (id) => {
+    return get().recommendedItems.find(item => item.id === id);
+  },
+  
+  updateItem: (id, updates) => {
+    set((state) => ({
+      recommendedItems: state.recommendedItems.map(item => 
+        item.id === id ? { ...item, ...updates } : item
+      )
+    }));
   }
 }));
 

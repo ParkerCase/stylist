@@ -1,37 +1,37 @@
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
 
 .stylist-try-on-button {
-  @include flex-center;
-  padding: $spacing-xs $spacing-sm;
-  background-color: $primary-color;
-  color: $text-inverse;
-  border-radius: $border-radius-md;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  transition: all $transition-normal ease;
+  @include mixins.flex-center;
+  padding: variables.$spacing-xs variables.$spacing-sm;
+  background-color: variables.$primary-color;
+  color: variables.$text-inverse;
+  border-radius: variables.$border-radius-md;
+  font-size: variables.$font-size-sm;
+  font-weight: variables.$font-weight-medium;
+  transition: all variables.$transition-normal ease;
   
   &:hover {
-    background-color: $primary-color-dark; /* Use predefined dark variant */
+    background-color: variables.$primary-color-dark; /* Use predefined dark variant */
   }
   
   &__icon {
-    margin-right: $spacing-xs;
+    margin-right: variables.$spacing-xs;
     display: flex;
   }
   
   &__text {
-    @include text-truncate;
+    @include mixins.text-truncate;
   }
   
   &--small {
-    padding: $spacing-xs;
-    font-size: $font-size-xs;
+    padding: variables.$spacing-xs;
+    font-size: variables.$font-size-xs;
     
     .stylist-try-on-button__text {
       display: none;
       
-      @include responsive('md') {
+      @include mixins.responsive('md') {
         display: inline;
       }
     }
@@ -39,8 +39,8 @@
     .stylist-try-on-button__icon {
       margin-right: 0;
       
-      @include responsive('md') {
-        margin-right: $spacing-xs;
+      @include mixins.responsive('md') {
+        margin-right: variables.$spacing-xs;
       }
     }
   }

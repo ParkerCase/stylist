@@ -17,12 +17,17 @@ export enum AnalyticsEventType {
     ADD_TO_CART = 'add_to_cart',
     STYLE_QUIZ_START = 'style_quiz_start',
     STYLE_QUIZ_COMPLETE = 'style_quiz_complete',
+    STYLE_QUIZ_PARTIAL = 'style_quiz_partial',
     STYLE_QUIZ_ABANDON = 'style_quiz_abandon',
     TRY_ON_START = 'try_on_start',
     TRY_ON_COMPLETE = 'try_on_complete',
     TRY_ON_SAVED = 'try_on_saved',
     VIEW_LOOKBOOK = 'view_lookbook',
-    ERROR = 'error'
+    ERROR = 'error',
+    // New feedback-related events
+    MESSAGE_THUMBS_UP = 'message_thumbs_up',
+    RECOMMENDATION_THUMBS_UP = 'recommendation_thumbs_up',
+    FEEDBACK_SYNCED = 'feedback_synced'
   }
   
   // Analytics event structure

@@ -1,0 +1,238 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+// Auth Modal Styles
+.auth-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.auth-modal {
+  background-color: $color-background;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+  width: 90%;
+  max-width: 450px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  padding: 20px;
+  
+  @include respond-to('medium') {
+    width: 450px;
+  }
+}
+
+.close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $color-text-secondary;
+  
+  &:hover {
+    color: $color-text-primary;
+  }
+}
+
+// Auth Form Styles
+.auth-form-container {
+  padding: 10px 0;
+  
+  h2 {
+    margin-bottom: 20px;
+    color: $color-text-primary;
+    text-align: center;
+  }
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  
+  label {
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: $color-text-primary;
+  }
+  
+  input {
+    padding: 12px 15px;
+    border: 1px solid $color-border;
+    border-radius: $border-radius;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+    
+    &:focus {
+      border-color: $color-primary;
+      outline: none;
+    }
+    
+    &:disabled {
+      background-color: $color-background-disabled;
+      cursor: not-allowed;
+    }
+  }
+  
+  .password-requirements {
+    margin-top: 5px;
+    font-size: 12px;
+    color: $color-text-secondary;
+  }
+}
+
+.auth-button {
+  padding: 12px 15px;
+  background-color: $color-primary;
+  color: white;
+  border: none;
+  border-radius: $border-radius;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+  
+  &:hover:not(:disabled) {
+    background-color: darken($color-primary, 10%);
+  }
+  
+  &:disabled {
+    background-color: lighten($color-primary, 20%);
+    cursor: not-allowed;
+  }
+}
+
+.auth-links {
+  display: flex;
+  justify-content: center;
+  margin: 15px 0;
+  gap: 20px;
+  flex-wrap: wrap;
+  
+  .text-button {
+    background: none;
+    border: none;
+    color: $color-primary;
+    cursor: pointer;
+    font-size: 14px;
+    
+    &:hover:not(:disabled) {
+      text-decoration: underline;
+    }
+    
+    &:disabled {
+      color: $color-text-secondary;
+      cursor: not-allowed;
+    }
+  }
+}
+
+.auth-error {
+  background-color: rgba($color-error, 0.1);
+  color: $color-error;
+  padding: 12px 15px;
+  border-radius: $border-radius;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.auth-success {
+  background-color: rgba($color-success, 0.1);
+  color: $color-success;
+  padding: 12px 15px;
+  border-radius: $border-radius;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+// Social Login Styles
+.social-login {
+  margin-top: 25px;
+  text-align: center;
+  
+  p {
+    font-size: 14px;
+    color: $color-text-secondary;
+    margin-bottom: 15px;
+    position: relative;
+    
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 35%;
+      height: 1px;
+      background-color: $color-border;
+    }
+    
+    &::before {
+      left: 0;
+    }
+    
+    &::after {
+      right: 0;
+    }
+  }
+}
+
+.social-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.social-button {
+  padding: 10px 15px;
+  border-radius: $border-radius;
+  border: 1px solid $color-border;
+  background-color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  flex: 1;
+  max-width: 130px;
+  
+  &:hover:not(:disabled) {
+    background-color: darken(white, 5%);
+  }
+  
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.google-button {
+  color: #4285F4;
+}
+
+.facebook-button {
+  color: #1877F2;
+}
+
+// Create index.ts for easy imports
+export { default as Login } from './Login';
+export { default as Register } from './Register';
+export { default as ForgotPassword } from './ForgotPassword';
+export { default as ResetPassword } from './ResetPassword';
+export { default as AuthModal } from './AuthModal';
