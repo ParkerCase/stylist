@@ -12,7 +12,7 @@ interface StyleQuizProps {
   primaryColor?: string;
 }
 
-// Comprehensive 25-question style quiz
+// Comprehensive 25-question style quiz with additions for shoe size, accessory size, and brand preferences
 const DEMO_QUESTIONS: StyleQuizQuestion[] = [
   // Overall Style
   {
@@ -140,10 +140,10 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
     ],
     category: 'budget'
   },
-  // Brand Preferences
+  // Brand Preferences - Casual Wear
   {
     id: 'q10',
-    questionText: 'Which brands do you typically shop?',
+    questionText: 'Which casual wear brands do you typically shop?',
     type: 'multiple',
     options: [
       { id: 'zara', text: 'Zara', value: 'zara' },
@@ -152,26 +152,84 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
       { id: 'gap', text: 'Gap', value: 'gap' },
       { id: 'jcrew', text: 'J.Crew', value: 'jcrew' },
       { id: 'madewell', text: 'Madewell', value: 'madewell' },
-      { id: 'nike', text: 'Nike', value: 'nike' },
-      { id: 'adidas', text: 'Adidas', value: 'adidas' },
-      { id: 'lululemon', text: 'Lululemon', value: 'lululemon' },
-      { id: 'anthropologie', text: 'Anthropologie', value: 'anthropologie' },
-      { id: 'other', text: 'Other', value: 'other' }
+      { id: 'everlane', text: 'Everlane', value: 'everlane' },
+      { id: 'aritzia', text: 'Aritzia', value: 'aritzia' },
+      { id: 'mango', text: 'Mango', value: 'mango' },
+      { id: 'urban', text: 'Urban Outfitters', value: 'urban' },
+      { id: 'abercrombie', text: 'Abercrombie & Fitch', value: 'abercrombie' },
+      { id: 'ae', text: 'American Eagle', value: 'ae' },
+      { id: 'other_casual', text: 'Other', value: 'other_casual' }
     ],
     category: 'brand'
   },
-  // Celebrity Style Matching
+  // Brand Preferences - Athletic Wear
+  {
+    id: 'q10a',
+    questionText: 'Which athletic/athleisure brands do you prefer?',
+    type: 'multiple',
+    options: [
+      { id: 'nike', text: 'Nike', value: 'nike' },
+      { id: 'adidas', text: 'Adidas', value: 'adidas' },
+      { id: 'lululemon', text: 'Lululemon', value: 'lululemon' },
+      { id: 'athleta', text: 'Athleta', value: 'athleta' },
+      { id: 'under_armour', text: 'Under Armour', value: 'under_armour' },
+      { id: 'puma', text: 'Puma', value: 'puma' },
+      { id: 'alo', text: 'Alo Yoga', value: 'alo' },
+      { id: 'new_balance', text: 'New Balance', value: 'new_balance' },
+      { id: 'gymshark', text: 'Gymshark', value: 'gymshark' },
+      { id: 'fabletics', text: 'Fabletics', value: 'fabletics' },
+      { id: 'other_athletic', text: 'Other', value: 'other_athletic' }
+    ],
+    category: 'brand'
+  },
+  // Brand Preferences - Luxury
+  {
+    id: 'q10b',
+    questionText: 'Do you shop any luxury or designer brands?',
+    type: 'multiple',
+    options: [
+      { id: 'none', text: 'None/Not regularly', value: 'none' },
+      { id: 'coach', text: 'Coach', value: 'coach' },
+      { id: 'mk', text: 'Michael Kors', value: 'mk' },
+      { id: 'tory_burch', text: 'Tory Burch', value: 'tory_burch' },
+      { id: 'theory', text: 'Theory', value: 'theory' },
+      { id: 'allsaints', text: 'AllSaints', value: 'allsaints' },
+      { id: 'gucci', text: 'Gucci', value: 'gucci' },
+      { id: 'louis', text: 'Louis Vuitton', value: 'louis' },
+      { id: 'chanel', text: 'Chanel', value: 'chanel' },
+      { id: 'prada', text: 'Prada', value: 'prada' },
+      { id: 'burberry', text: 'Burberry', value: 'burberry' },
+      { id: 'other_luxury', text: 'Other', value: 'other_luxury' }
+    ],
+    category: 'brand'
+  },
+  // Celebrity Style Matching - Option 1
   {
     id: 'q11',
-    questionText: "Which celebrity's style do you most admire?",
+    questionText: "Which celebrity's style do you most admire? (Modern Icons)",
     type: 'image',
     options: [
-      { id: 'audrey', text: 'Audrey Hepburn (Classic Elegance)', value: 'audrey', imageUrl: 'https://www.fillmurray.com/400/300' },
-      { id: 'harry', text: 'Harry Styles (Bold & Eclectic)', value: 'harry', imageUrl: 'https://www.fillmurray.com/401/300' },
       { id: 'zendaya', text: 'Zendaya (Fashion-Forward)', value: 'zendaya', imageUrl: 'https://www.fillmurray.com/400/301' },
-      { id: 'pharrell', text: 'Pharrell Williams (Streetwear)', value: 'pharrell', imageUrl: 'https://www.fillmurray.com/401/301' },
+      { id: 'harry', text: 'Harry Styles (Bold & Eclectic)', value: 'harry', imageUrl: 'https://www.fillmurray.com/401/300' },
+      { id: 'rihanna', text: 'Rihanna (Trendsetter)', value: 'rihanna', imageUrl: 'https://www.fillmurray.com/401/302' },
+      { id: 'timothee', text: 'Timothée Chalamet (Modern Minimal)', value: 'timothee', imageUrl: 'https://www.fillmurray.com/400/302' },
+      { id: 'hailey', text: 'Hailey Bieber (Cool Girl)', value: 'hailey', imageUrl: 'https://www.fillmurray.com/402/301' },
+      { id: 'asap', text: 'A$AP Rocky (Streetwear)', value: 'asap', imageUrl: 'https://www.fillmurray.com/403/300' }
+    ],
+    category: 'inspiration'
+  },
+  // Celebrity Style Matching - Option 2
+  {
+    id: 'q11a',
+    questionText: "Which celebrity's style do you most admire? (Classic Icons)",
+    type: 'image',
+    options: [
+      { id: 'audrey', text: 'Audrey Hepburn (Timeless)', value: 'audrey', imageUrl: 'https://www.fillmurray.com/400/300' },
       { id: 'jlo', text: 'Jennifer Lopez (Glamorous)', value: 'jlo', imageUrl: 'https://www.fillmurray.com/402/300' },
-      { id: 'timothee', text: 'Timothée Chalamet (Modern Minimal)', value: 'timothee', imageUrl: 'https://www.fillmurray.com/400/302' }
+      { id: 'beyonce', text: 'Beyoncé (Bold & Confident)', value: 'beyonce', imageUrl: 'https://www.fillmurray.com/404/300' },
+      { id: 'pharrell', text: 'Pharrell Williams (Streetwear)', value: 'pharrell', imageUrl: 'https://www.fillmurray.com/401/301' },
+      { id: 'blake', text: 'Blake Lively (Classic Chic)', value: 'blake', imageUrl: 'https://www.fillmurray.com/403/302' },
+      { id: 'beckham', text: 'David Beckham (Polished)', value: 'beckham', imageUrl: 'https://www.fillmurray.com/405/300' }
     ],
     category: 'inspiration'
   },
@@ -190,6 +248,23 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
     ],
     category: 'footwear'
   },
+  // Shoe Size
+  {
+    id: 'q12a',
+    questionText: 'What shoe size do you typically wear?',
+    type: 'single',
+    options: [
+      { id: 'us5', text: 'US 5 / EU 35-36', value: 'us5' },
+      { id: 'us6', text: 'US 6 / EU 36-37', value: 'us6' },
+      { id: 'us7', text: 'US 7 / EU 37-38', value: 'us7' },
+      { id: 'us8', text: 'US 8 / EU 38-39', value: 'us8' },
+      { id: 'us9', text: 'US 9 / EU 39-40', value: 'us9' },
+      { id: 'us10', text: 'US 10 / EU 40-41', value: 'us10' },
+      { id: 'us11', text: 'US 11 / EU 41-42', value: 'us11' },
+      { id: 'us12', text: 'US 12+ / EU 42+', value: 'us12' }
+    ],
+    category: 'size'
+  },
   // Accessory Preferences
   {
     id: 'q13',
@@ -206,6 +281,24 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
       { id: 'belts', text: 'Belts', value: 'belts' }
     ],
     category: 'accessories'
+  },
+  // Accessory Sizes
+  {
+    id: 'q13a',
+    questionText: 'What sizes do you typically wear for accessories?',
+    type: 'multiple',
+    options: [
+      { id: 'bracelet_small', text: 'Bracelets: Small (6-7")', value: 'bracelet_small' },
+      { id: 'bracelet_medium', text: 'Bracelets: Medium (7-8")', value: 'bracelet_medium' },
+      { id: 'bracelet_large', text: 'Bracelets: Large (8"+)', value: 'bracelet_large' },
+      { id: 'ring_small', text: 'Rings: Small (5-6)', value: 'ring_small' },
+      { id: 'ring_medium', text: 'Rings: Medium (7-8)', value: 'ring_medium' },
+      { id: 'ring_large', text: 'Rings: Large (9+)', value: 'ring_large' },
+      { id: 'hat_small', text: 'Hats: Small/Medium', value: 'hat_small' },
+      { id: 'hat_large', text: 'Hats: Large/XL', value: 'hat_large' },
+      { id: 'not_sure', text: 'Not sure / Varies', value: 'not_sure' }
+    ],
+    category: 'size'
   },
   // Seasonal Preference
   {
@@ -455,6 +548,20 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
     onSubmit(answers);
   }, [answers, submitting, onSubmit]);
   
+  // Auto-move to next question for single & image options when selected
+  const handleOptionSelect = (questionId: string, optionId: string, type: string) => {
+    if (type === 'single' || type === 'image') {
+      handleSingleAnswer(questionId, optionId);
+      
+      // For single/image selections, auto-advance to next question after short delay
+      if (currentQuestion < questions.length - 1) {
+        setTimeout(() => {
+          setCurrentQuestion(currentQuestion + 1);
+        }, 300);
+      }
+    }
+  };
+  
   const handleSingleAnswer = (questionId: string, answerId: string) => {
     const newAnswers = [...answers];
     const existingIndex = answers.findIndex(a => a.questionId === questionId);
@@ -473,12 +580,8 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
     
     setAnswers(newAnswers);
     
-    // Move to next question
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(currentQuestion + 1);
-      }, 300);
-    }
+    // Note: Auto-advancing to next question is now handled in handleOptionSelect
+    // We don't automatically advance here to allow the Next button to work properly
   };
   
   const handleMultipleAnswer = (questionId: string, answerIds: string[]) => {
@@ -562,7 +665,7 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
               <button
                 key={option.id}
                 className={`stylist-style-quiz__option ${currentAnswer?.answerId === option.id ? 'stylist-style-quiz__option--selected' : ''}`}
-                onClick={() => handleSingleAnswer(question.id, option.id)}
+                onClick={() => handleOptionSelect(question.id, option.id, 'single')}
                 style={currentAnswer?.answerId === option.id ? { borderColor: primaryColor, backgroundColor: `${primaryColor}20` } : undefined}
               >
                 {option.text}
@@ -578,7 +681,7 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
               <button
                 key={option.id}
                 className={`stylist-style-quiz__image-option ${currentAnswer?.answerId === option.id ? 'stylist-style-quiz__image-option--selected' : ''}`}
-                onClick={() => handleSingleAnswer(question.id, option.id)}
+                onClick={() => handleOptionSelect(question.id, option.id, 'image')}
                 style={currentAnswer?.answerId === option.id ? { borderColor: primaryColor } : undefined}
               >
                 <div 
@@ -656,6 +759,46 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
     }
   };
   
+  // Function to check if the current question has been answered
+  const isCurrentQuestionAnswered = () => {
+    return !!answers.find(a => a.questionId === question.id);
+  };
+  
+  // Function to handle going to the next question
+  const handleNextQuestion = () => {
+    if (currentQuestion < questions.length - 1) {
+      // Animate the transition
+      document.querySelector('.stylist-style-quiz__question')?.classList.add('fade-out');
+      setTimeout(() => {
+        setCurrentQuestion(currentQuestion + 1);
+        document.querySelector('.stylist-style-quiz__question')?.classList.remove('fade-out');
+        document.querySelector('.stylist-style-quiz__question')?.classList.add('fade-in');
+        setTimeout(() => {
+          document.querySelector('.stylist-style-quiz__question')?.classList.remove('fade-in');
+        }, 300);
+      }, 200);
+    }
+  };
+  
+  // Function to handle going to the previous question
+  const handlePreviousQuestion = () => {
+    if (currentQuestion > 0) {
+      // Animate the transition
+      document.querySelector('.stylist-style-quiz__question')?.classList.add('fade-out');
+      setTimeout(() => {
+        setCurrentQuestion(currentQuestion - 1);
+        document.querySelector('.stylist-style-quiz__question')?.classList.remove('fade-out');
+        document.querySelector('.stylist-style-quiz__question')?.classList.add('fade-in');
+        setTimeout(() => {
+          document.querySelector('.stylist-style-quiz__question')?.classList.remove('fade-in');
+        }, 300);
+      }, 200);
+    }
+  };
+  
+  // Calculate completion percentage
+  const completionPercentage = Math.round((answers.length / questions.length) * 100);
+  
   return (
     <div className="stylist-style-quiz">
       <div className="stylist-style-quiz__header">
@@ -673,6 +816,9 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
             backgroundColor: primaryColor
           }}
         ></div>
+        <div className="stylist-style-quiz__progress-text">
+          {completionPercentage}% Complete
+        </div>
       </div>
       
       <div className="stylist-style-quiz__question">
@@ -688,7 +834,7 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
         {currentQuestion > 0 && (
           <button
             className="stylist-style-quiz__button stylist-style-quiz__button--secondary"
-            onClick={() => setCurrentQuestion(currentQuestion - 1)}
+            onClick={handlePreviousQuestion}
           >
             Previous
           </button>
@@ -699,16 +845,16 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
             className="stylist-style-quiz__button stylist-style-quiz__button--primary"
             onClick={handleSubmit}
             style={{ backgroundColor: primaryColor }}
-            disabled={answers.length < questions.length || submitting}
+            disabled={!isCurrentQuestionAnswered() || submitting}
           >
-            {submitting ? 'Submitting...' : 'Submit'}
+            {submitting ? 'Submitting...' : 'Complete Quiz'}
           </button>
         ) : (
           <button
             className="stylist-style-quiz__button stylist-style-quiz__button--primary"
-            onClick={() => setCurrentQuestion(currentQuestion + 1)}
+            onClick={handleNextQuestion}
             style={{ backgroundColor: primaryColor }}
-            disabled={!answers.find(a => a.questionId === question.id)}
+            disabled={!isCurrentQuestionAnswered()}
           >
             Next
           </button>

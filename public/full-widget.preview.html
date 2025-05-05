@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stylist Full Widget Preview</title>
+    <style>
+      /* Base styling */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f7f7f7;
+      }
+
+      .demo-container {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      button.open-button {
+        background-color: #000;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 20px;
+        font-weight: bold;
+      }
+
+      /* Widget styling */
+      .stylist-widget {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 380px;
+        height: 600px;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        z-index: 9999;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        pointer-events: none;
+      }
+
+      .stylist-widget.active {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: all;
+      }
+
+      .widget-header {
+        background-color: #000;
+        color: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .widget-title {
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      .widget-controls {
+        display: flex;
+        gap: 15px;
+      }
+
+      .control-button {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        opacity: 0.9;
+      }
+
+      .control-button:hover {
+        opacity: 1;
+      }
+
+      /* Radial Hub Menu Styling */
+      .hub-menu-container {
+        position: relative;
+        height: 70px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f0f2f5;
+        border-bottom: 1px solid #e1e4e8;
+        padding: 15px 0;
+      }
+
+      .hub-center-button {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #000;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+        position: relative;
+      }
+
+      .hub-center-button:hover {
+        transform: scale(1.1);
+      }
+
+      .hub-center-button.active {
+        transform: rotate(45deg);
+      }
+
+      .hub-menu {
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        transition: all 0.3s ease;
+        z-index: 9;
+        opacity: 0;
+        transform: scale(0.8);
+        pointer-events: none;
+      }
+
+      .hub-menu.expanded {
+        opacity: 1;
+        transform: scale(1);
+        pointer-events: all;
+      }
+
+      .hub-item {
+        position: relative;
+        margin: 0 8px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        opacity: 0.7;
+      }
+
+      .hub-icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #4c5667;
+      }
+
+      .hub-label {
+        position: absolute;
+        bottom: -20px;
+        font-size: 10px;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 2px 6px;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .hub-item:hover .hub-label,
+      .hub-item.active .hub-label {
+        opacity: 1;
+      }
+
+      .hub-item:hover {
+        transform: translateY(-5px);
+        opacity: 1;
+      }
+
+      .hub-item.active {
+        background: #000;
+        opacity: 1;
+        transform: translateY(-5px);
+      }
+
+      .hub-item.active .hub-icon {
+        color: white;
+      }
+
+      .widget-content {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .tab-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        overflow-y: auto;
+        padding: 15px;
+        box-sizing: border-box;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      /* Chat Tab Styling */
+      .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      /* React component mounting points */
+      #stylist-chat-component,
+      #stylist-lookbook-container,
+      #stylist-closet-container,
+      #stylist-try-on-container,
+      #stylist-quiz-container,
+      #stylist-social-container {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Recommendation container */
+      .recommendations-container {
+        margin-top: 15px;
+      }
+
+      .recommendations-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .recommendation-item {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .recommendation-image {
+        width: 100%;
+        height: 120px;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .recommendation-details {
+        padding: 10px;
+      }
+
+      .recommendation-name {
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      .recommendation-brand {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 4px;
+      }
+
+      .recommendation-price {
+        font-weight: bold;
+        color: #e63946;
+      }
+
+      /* Floating button styling */
+      .floating-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: #000;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        z-index: 9998;
+        transition: transform 0.3s ease;
+      }
+
+      .floating-button:hover {
+        transform: scale(1.1);
+      }
+
+      .floating-button.hide {
+        transform: scale(0);
+        pointer-events: none;
+      }
+
+      /* Style quiz styling */
+      .quiz-container {
+        padding: 0 10px;
+      }
+
+      .quiz-progress-container {
+        margin-bottom: 15px;
+      }
+
+      .quiz-progress-bar {
+        height: 8px;
+        background-color: #f0f0f0;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+
+      .quiz-progress-indicator {
+        height: 100%;
+        width: 20%;
+        background-color: #000;
+        transition: width 0.3s ease;
+      }
+
+      .quiz-question {
+        margin-bottom: 20px;
+      }
+
+      .quiz-options {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .quiz-option {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transition: all 0.2s ease;
+      }
+
+      .quiz-option.selected {
+        border-color: #000;
+        background-color: #f8f9fa;
+      }
+
+      .quiz-image {
+        width: 100%;
+        height: 100px;
+        background-color: #f0f0f0;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        font-size: 12px;
+      }
+
+      .quiz-option-text {
+        font-size: 14px;
+        text-align: center;
+      }
+
+      .quiz-nav-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
+
+      .quiz-button {
+        background-color: #000;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 10px 20px;
+        cursor: pointer;
+      }
+
+      .quiz-button.secondary {
+        background-color: #f0f0f0;
+        color: #333;
+      }
+
+      .quiz-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Modal styling */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+
+      .modal-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      .modal-content {
+        background-color: white;
+        border-radius: 12px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 20px;
+        position: relative;
+        transform: translateY(20px);
+        transition: transform 0.3s ease;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      .modal-overlay.active .modal-content {
+        transform: translateY(0);
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #777;
+      }
+
+      /* Try-on modal styling */
+      .try-on-container {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .try-on-canvas {
+        width: 100%;
+        height: 300px;
+        background-color: #f0f0f0;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      .try-on-controls {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+      }
+
+      .try-on-item-selector {
+        display: flex;
+        overflow-x: auto;
+        gap: 10px;
+        padding-bottom: 10px;
+      }
+
+      .try-on-item {
+        min-width: 60px;
+        height: 60px;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .try-on-item.selected {
+        border: 2px solid #000;
+      }
+
+      /* Configuration panel */
+      .config-panel {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 10001;
+        width: 300px;
+        display: none;
+      }
+
+      .config-panel.active {
+        display: block;
+      }
+
+      .config-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+      }
+
+      .config-title {
+        font-weight: bold;
+        margin: 0;
+      }
+
+      .config-close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+      }
+
+      .config-group {
+        margin-bottom: 15px;
+      }
+
+      .config-group-title {
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .toggle-switch {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      .toggle-label {
+        font-size: 14px;
+      }
+
+      .toggle-control {
+        position: relative;
+        display: inline-block;
+        width: 40px;
+        height: 20px;
+      }
+
+      .toggle-control input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 3px;
+        bottom: 2px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .toggle-slider {
+        background-color: #000;
+      }
+
+      input:checked + .toggle-slider:before {
+        transform: translateX(18px);
+      }
+
+      .color-picker-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+
+      .color-picker-label {
+        font-size: 14px;
+      }
+
+      .color-picker {
+        height: 25px;
+        width: 60px;
+        padding: 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .config-retailer {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+
+      .retailer-select {
+        padding: 5px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+      }
+
+      .config-actions {
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .config-button {
+        padding: 8px 12px;
+        border-radius: 4px;
+        border: none;
+        background-color: #000;
+        color: white;
+        cursor: pointer;
+      }
+
+      .config-button.secondary {
+        background-color: #f0f0f0;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-container">
+      <h1>Stylist Full Widget Preview</h1>
+      <p>
+        This preview demonstrates the fully integrated FashionAI widget with all
+        features. Click the button below to open the widget.
+      </p>
+      <button class="open-button" id="openWidgetButton">
+        Open Stylist Widget
+      </button>
+      <button
+        class="open-button"
+        id="openConfigButton"
+        style="background-color: #4c5667"
+      >
+        Open Config Panel
+      </button>
+    </div>
+
+    <!-- Floating Button -->
+    <div class="floating-button" id="floatingButton">
+      <div id="stylist-floating-button-container"></div>
+    </div>
+
+    <!-- Widget Container -->
+    <div class="stylist-widget" id="stylistWidget">
+      <div class="widget-header">
+        <div class="widget-title">The Stylist AI</div>
+        <div class="widget-controls">
+          <button class="control-button" id="minimizeButton">_</button>
+          <button class="control-button" id="closeButton">×</button>
+        </div>
+      </div>
+
+      <div class="hub-menu-container">
+        <div class="hub-center-button" id="hubCenterButton">
+          <!-- Plus icon -->
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="white"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </div>
+
+        <div class="hub-menu" id="hubMenu">
+          <!-- Chat Hub Item -->
+          <div class="hub-item active" data-tab="chat">
+            <div class="hub-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                ></path>
+              </svg>
+            </div>
+            <div class="hub-label">Chat</div>
+          </div>
+
+          <!-- Lookbook Hub Item -->
+          <div class="hub-item" data-tab="lookbook">
+            <div class="hub-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+            </div>
+            <div class="hub-label">Lookbook</div>
+          </div>
+
+          <!-- My Closet Hub Item -->
+          <div class="hub-item" data-tab="closet">
+            <div class="hub-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </div>
+            <div class="hub-label">My Closet</div>
+          </div>
+
+          <!-- Try On Hub Item -->
+          <div class="hub-item" data-tab="try-on">
+            <div class="hub-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5l6.74-6.76z"
+                ></path>
+                <line x1="16" y1="8" x2="2" y2="22"></line>
+                <line x1="17.5" y1="15" x2="9" y2="15"></line>
+              </svg>
+            </div>
+            <div class="hub-label">Try On</div>
+          </div>
+
+          <!-- Style Quiz Hub Item -->
+          <div class="hub-item" data-tab="quiz">
+            <div class="hub-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
+            <div class="hub-label">Style Quiz</div>
+          </div>
+
+          <!-- Social Proof Hub Item -->
+          <div class="hub-item" data-tab="social">
+            <div class="hub-icon">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+            </div>
+            <div class="hub-label">Trending</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget-content">
+        <!-- Chat Tab Content -->
+        <div class="tab-content active" id="chatTab">
+          <div id="stylist-chat-component"></div>
+        </div>
+
+        <!-- Lookbook Tab Content -->
+        <div class="tab-content" id="lookbookTab">
+          <div id="stylist-lookbook-container"></div>
+        </div>
+
+        <!-- My Closet Tab Content -->
+        <div class="tab-content" id="closetTab">
+          <div id="stylist-closet-container"></div>
+        </div>
+
+        <!-- Try On Tab Content -->
+        <div class="tab-content" id="tryOnTab">
+          <div id="stylist-try-on-container"></div>
+        </div>
+
+        <!-- Style Quiz Tab Content -->
+        <div class="tab-content" id="quizTab">
+          <div id="stylist-quiz-container">
+            <div class="quiz-container">
+              <div class="quiz-progress-container">
+                <div class="quiz-progress-bar">
+                  <div class="quiz-progress-indicator" id="quizProgress"></div>
+                </div>
+                <div id="quizCounter">Question 1/10</div>
+              </div>
+
+              <div class="quiz-question">
+                <h3>What is your fashion style?</h3>
+                <div class="quiz-options">
+                  <div class="quiz-option" data-value="casual">
+                    <div class="quiz-image">Casual</div>
+                    <div class="quiz-option-text">Casual</div>
+                  </div>
+                  <div class="quiz-option" data-value="formal">
+                    <div class="quiz-image">Formal</div>
+                    <div class="quiz-option-text">Formal</div>
+                  </div>
+                  <div class="quiz-option" data-value="boho">
+                    <div class="quiz-image">Boho</div>
+                    <div class="quiz-option-text">Bohemian</div>
+                  </div>
+                  <div class="quiz-option" data-value="athletic">
+                    <div class="quiz-image">Athletic</div>
+                    <div class="quiz-option-text">Athletic</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="quiz-nav-buttons">
+                <button
+                  class="quiz-button secondary"
+                  id="prevQuizButton"
+                  disabled
+                >
+                  Previous
+                </button>
+                <button class="quiz-button" id="nextQuizButton" disabled>
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Social Proof Tab Content -->
+        <div class="tab-content" id="socialTab">
+          <div id="stylist-social-container"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Try-On Modal -->
+    <div class="modal-overlay" id="tryOnModal">
+      <div class="modal-content">
+        <button class="modal-close" id="closeTryOnModal">×</button>
+        <h3>Virtual Try-On</h3>
+
+        <div class="try-on-container">
+          <div class="try-on-canvas" id="tryOnCanvas">
+            <div>Try-On Canvas Area</div>
+          </div>
+
+          <div class="try-on-controls">
+            <button class="quiz-button" id="uploadPhotoButton">
+              Upload Photo
+            </button>
+            <button class="quiz-button" id="saveTryOnButton">
+              Save Result
+            </button>
+          </div>
+
+          <div class="try-on-item-selector">
+            <div class="try-on-item selected"></div>
+            <div class="try-on-item"></div>
+            <div class="try-on-item"></div>
+            <div class="try-on-item"></div>
+            <div class="try-on-item"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Style Quiz Modal -->
+    <div class="modal-overlay" id="styleQuizModal">
+      <div class="modal-content">
+        <button class="modal-close" id="closeQuizModal">×</button>
+        <h3>Style Quiz</h3>
+
+        <div class="quiz-container">
+          <div class="quiz-progress-container">
+            <div class="quiz-progress-bar">
+              <div class="quiz-progress-indicator" style="width: 25%"></div>
+            </div>
+            <div>Question 1/4</div>
+          </div>
+
+          <div class="quiz-question">
+            <h3>What's your favorite clothing style?</h3>
+            <div class="quiz-options">
+              <div class="quiz-option">
+                <div class="quiz-image">Casual</div>
+                <div class="quiz-option-text">Casual</div>
+              </div>
+              <div class="quiz-option">
+                <div class="quiz-image">Formal</div>
+                <div class="quiz-option-text">Formal</div>
+              </div>
+              <div class="quiz-option">
+                <div class="quiz-image">Boho</div>
+                <div class="quiz-option-text">Bohemian</div>
+              </div>
+              <div class="quiz-option">
+                <div class="quiz-image">Athletic</div>
+                <div class="quiz-option-text">Athletic</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="quiz-nav-buttons">
+            <button class="quiz-button secondary" disabled>Previous</button>
+            <button class="quiz-button">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Social Proof Modal -->
+    <div class="modal-overlay" id="socialProofModal">
+      <div class="modal-content">
+        <button class="modal-close" id="closeSocialModal">×</button>
+        <h3>Celebrity Style: Taylor Swift</h3>
+
+        <div>
+          <img
+            src="https://via.placeholder.com/400x500?text=Celebrity+Outfit"
+            alt="Celebrity outfit"
+            style="max-width: 100%; border-radius: 8px; margin-bottom: 15px"
+          />
+
+          <h4>Get the Look</h4>
+          <div class="recommendations-grid">
+            <div class="recommendation-item">
+              <div class="recommendation-image">Item 1</div>
+              <div class="recommendation-details">
+                <div class="recommendation-name">Similar Top</div>
+                <div class="recommendation-brand">Fashion Brand</div>
+                <div class="recommendation-price">$49.99</div>
+              </div>
+            </div>
+            <div class="recommendation-item">
+              <div class="recommendation-image">Item 2</div>
+              <div class="recommendation-details">
+                <div class="recommendation-name">Similar Jeans</div>
+                <div class="recommendation-brand">Denim Co</div>
+                <div class="recommendation-price">$59.99</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Config Panel -->
+    <div class="config-panel" id="configPanel">
+      <div class="config-header">
+        <h3 class="config-title">Widget Configuration</h3>
+        <button class="config-close" id="configCloseButton">×</button>
+      </div>
+
+      <div class="config-group">
+        <div class="config-group-title">Feature Toggles</div>
+
+        <div class="toggle-switch">
+          <span class="toggle-label">Chat Assistant</span>
+          <label class="toggle-control">
+            <input type="checkbox" id="chatToggle" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-switch">
+          <span class="toggle-label">Style Quiz</span>
+          <label class="toggle-control">
+            <input type="checkbox" id="quizToggle" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-switch">
+          <span class="toggle-label">Virtual Try-On</span>
+          <label class="toggle-control">
+            <input type="checkbox" id="tryOnToggle" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-switch">
+          <span class="toggle-label">Social Proof</span>
+          <label class="toggle-control">
+            <input type="checkbox" id="socialToggle" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-switch">
+          <span class="toggle-label">My Closet</span>
+          <label class="toggle-control">
+            <input type="checkbox" id="closetToggle" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="config-group">
+        <div class="config-group-title">Branding</div>
+
+        <div class="color-picker-container">
+          <span class="color-picker-label">Primary Color</span>
+          <input
+            type="color"
+            id="primaryColorPicker"
+            class="color-picker"
+            value="#000000"
+          />
+        </div>
+      </div>
+
+      <div class="config-group">
+        <div class="config-group-title">Data Sources</div>
+
+        <div class="toggle-switch">
+          <span class="toggle-label">Use Mock Data</span>
+          <label class="toggle-control">
+            <input type="checkbox" id="mockDataToggle" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="config-retailer">
+          <span class="toggle-label">Retailer</span>
+          <select class="retailer-select" id="retailerSelect">
+            <option value="mockRetailer">Mock Retailer</option>
+            <option value="shopify">Shopify</option>
+            <option value="woocommerce">WooCommerce</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="config-actions">
+        <button class="config-button secondary" id="resetConfigButton">
+          Reset
+        </button>
+        <button class="config-button" id="applyConfigButton">Apply</button>
+      </div>
+    </div>
+
+    <!-- Widget Integration Script -->
+    <script>
+      // Widget configuration
+      const widgetConfig = {
+        apiKey: "demo-api-key",
+        retailerId: "demo-retailer-id",
+        primaryColor: "#000000",
+        useMockData: true,
+        features: {
+          chat: true,
+          lookbook: true,
+          closet: true,
+          tryOn: true,
+          styleQuiz: true,
+          socialProof: true,
+        },
+      };
+
+      // DOM Elements
+      const stylistWidget = document.getElementById("stylistWidget");
+      const floatingButton = document.getElementById("floatingButton");
+      const openWidgetButton = document.getElementById("openWidgetButton");
+      const openConfigButton = document.getElementById("openConfigButton");
+      const closeButton = document.getElementById("closeButton");
+      const minimizeButton = document.getElementById("minimizeButton");
+      const hubCenterButton = document.getElementById("hubCenterButton");
+      const hubMenu = document.getElementById("hubMenu");
+      const hubItems = document.querySelectorAll(".hub-item");
+      const tabContents = document.querySelectorAll(".tab-content");
+      const tryOnModal = document.getElementById("tryOnModal");
+      const styleQuizModal = document.getElementById("styleQuizModal");
+      const socialProofModal = document.getElementById("socialProofModal");
+      const closeTryOnModal = document.getElementById("closeTryOnModal");
+      const closeQuizModal = document.getElementById("closeQuizModal");
+      const closeSocialModal = document.getElementById("closeSocialModal");
+      const configPanel = document.getElementById("configPanel");
+      const configCloseButton = document.getElementById("configCloseButton");
+      const applyConfigButton = document.getElementById("applyConfigButton");
+      const resetConfigButton = document.getElementById("resetConfigButton");
+
+      // Quiz elements
+      const quizOptions = document.querySelectorAll(".quiz-option");
+      const nextQuizButton = document.getElementById("nextQuizButton");
+      const prevQuizButton = document.getElementById("prevQuizButton");
+      const quizProgress = document.getElementById("quizProgress");
+      const quizCounter = document.getElementById("quizCounter");
+
+      // Config form elements
+      const chatToggle = document.getElementById("chatToggle");
+      const quizToggle = document.getElementById("quizToggle");
+      const tryOnToggle = document.getElementById("tryOnToggle");
+      const socialToggle = document.getElementById("socialToggle");
+      const closetToggle = document.getElementById("closetToggle");
+      const primaryColorPicker = document.getElementById("primaryColorPicker");
+      const mockDataToggle = document.getElementById("mockDataToggle");
+      const retailerSelect = document.getElementById("retailerSelect");
+
+      // State
+      let isWidgetOpen = false;
+      let isMenuExpanded = false;
+      let isWidgetMinimized = false;
+      let activeTab = "chat";
+      let quizState = {
+        currentQuestion: 1,
+        totalQuestions: 10,
+        answers: {},
+      };
+
+      // Event Listeners
+      openWidgetButton.addEventListener("click", toggleWidget);
+      openConfigButton.addEventListener("click", toggleConfigPanel);
+      closeButton.addEventListener("click", closeWidget);
+      minimizeButton.addEventListener("click", minimizeWidget);
+      floatingButton.addEventListener("click", openWidget);
+      hubCenterButton.addEventListener("click", toggleHubMenu);
+      closeTryOnModal.addEventListener("click", () => toggleModal(tryOnModal));
+      closeQuizModal.addEventListener("click", () =>
+        toggleModal(styleQuizModal)
+      );
+      closeSocialModal.addEventListener("click", () =>
+        toggleModal(socialProofModal)
+      );
+      configCloseButton.addEventListener("click", toggleConfigPanel);
+      applyConfigButton.addEventListener("click", applyConfig);
+      resetConfigButton.addEventListener("click", resetConfig);
+
+      // Hub Menu Item Click Handlers
+      hubItems.forEach((item) => {
+        item.addEventListener("click", () => {
+          activeTab = item.dataset.tab;
+          setActiveTab(activeTab);
+        });
+      });
+
+      // Quiz Option Click Handlers
+      quizOptions.forEach((option) => {
+        option.addEventListener("click", () => {
+          // Remove selected class from all options
+          quizOptions.forEach((opt) => opt.classList.remove("selected"));
+          // Add selected class to clicked option
+          option.classList.add("selected");
+          // Enable next button
+          nextQuizButton.disabled = false;
+          // Save answer
+          quizState.answers[quizState.currentQuestion] = option.dataset.value;
+        });
+      });
+
+      // Quiz Navigation Handlers
+      nextQuizButton.addEventListener("click", () => {
+        if (quizState.currentQuestion < quizState.totalQuestions) {
+          // Increment question counter
+          quizState.currentQuestion++;
+          // Update progress
+          updateQuizProgress();
+          // Enable or disable prev button
+          prevQuizButton.disabled = quizState.currentQuestion === 1;
+          // Disable next button until selection is made
+          nextQuizButton.disabled =
+            !quizState.answers[quizState.currentQuestion];
+
+          // If it's the last question, change Next to Submit
+          if (quizState.currentQuestion === quizState.totalQuestions) {
+            nextQuizButton.textContent = "Submit";
+          }
+        } else {
+          // Submit the quiz
+          submitQuiz();
+        }
+      });
+
+      prevQuizButton.addEventListener("click", () => {
+        if (quizState.currentQuestion > 1) {
+          // Decrement question counter
+          quizState.currentQuestion--;
+          // Update progress
+          updateQuizProgress();
+          // Enable or disable prev button
+          prevQuizButton.disabled = quizState.currentQuestion === 1;
+          // Enable next button if an answer was previously selected
+          nextQuizButton.disabled =
+            !quizState.answers[quizState.currentQuestion];
+          // Change button text back to Next if it was Submit
+          nextQuizButton.textContent = "Next";
+        }
+      });
+
+      // Functions
+      function toggleWidget() {
+        if (isWidgetOpen) {
+          closeWidget();
+        } else {
+          openWidget();
+        }
+      }
+
+      function openWidget() {
+        stylistWidget.classList.add("active");
+        floatingButton.classList.add("hide");
+        isWidgetOpen = true;
+        isWidgetMinimized = false;
+
+        // Notify React components that widget is open
+        if (window.__StylistWidgetEvents) {
+          window.__StylistWidgetEvents.emit("widget:open");
+        }
+
+        // Initialize React components if not already done
+        initializeReactComponents();
+      }
+
+      function closeWidget() {
+        stylistWidget.classList.remove("active");
+        floatingButton.classList.remove("hide");
+        isWidgetOpen = false;
+
+        // Close hub menu if open
+        if (isMenuExpanded) {
+          toggleHubMenu();
+        }
+
+        // Notify React components that widget is closed
+        if (window.__StylistWidgetEvents) {
+          window.__StylistWidgetEvents.emit("widget:close");
+        }
+      }
+
+      function minimizeWidget() {
+        if (!isWidgetMinimized) {
+          stylistWidget.style.transform = "translateY(calc(100% - 60px))";
+          minimizeButton.textContent = "□";
+        } else {
+          stylistWidget.style.transform = "";
+          minimizeButton.textContent = "_";
+        }
+        isWidgetMinimized = !isWidgetMinimized;
+
+        // Notify React components about minimize state
+        if (window.__StylistWidgetEvents) {
+          window.__StylistWidgetEvents.emit("widget:minimize", {
+            isMinimized: isWidgetMinimized,
+          });
+        }
+      }
+
+      function toggleHubMenu() {
+        isMenuExpanded = !isMenuExpanded;
+        hubCenterButton.classList.toggle("active", isMenuExpanded);
+        hubMenu.classList.toggle("expanded", isMenuExpanded);
+      }
+
+      function setActiveTab(tabName) {
+        // Update hub items
+        hubItems.forEach((item) => {
+          item.classList.toggle("active", item.dataset.tab === tabName);
+        });
+
+        // Update tab contents
+        tabContents.forEach((content) => {
+          content.classList.toggle("active", content.id === `${tabName}Tab`);
+        });
+
+        // Close hub menu after selection
+        if (isMenuExpanded) {
+          toggleHubMenu();
+        }
+
+        // Notify React components about tab change
+        if (window.__StylistWidgetEvents) {
+          window.__StylistWidgetEvents.emit("tab:change", {
+            activeTab: tabName,
+          });
+        }
+      }
+
+      function toggleModal(modal) {
+        const isActive = modal.classList.contains("active");
+        modal.classList.toggle("active", !isActive);
+
+        // Notify React components about modal state
+        if (window.__StylistWidgetEvents) {
+          const modalName = modal.id;
+          window.__StylistWidgetEvents.emit(`${modalName}:toggle`, {
+            isOpen: !isActive,
+          });
+        }
+      }
+
+      function updateQuizProgress() {
+        // Update progress bar
+        const progressPercent =
+          (quizState.currentQuestion / quizState.totalQuestions) * 100;
+        quizProgress.style.width = `${progressPercent}%`;
+
+        // Update counter text
+        quizCounter.textContent = `Question ${quizState.currentQuestion}/${quizState.totalQuestions}`;
+      }
+
+      function submitQuiz() {
+        // Get all answers
+        console.log("Quiz submitted with answers:", quizState.answers);
+
+        // Reset quiz
+        quizState.currentQuestion = 1;
+        updateQuizProgress();
+        nextQuizButton.textContent = "Next";
+        prevQuizButton.disabled = true;
+        nextQuizButton.disabled = true;
+        quizOptions.forEach((opt) => opt.classList.remove("selected"));
+
+        // Send data to React components
+        if (window.__StylistWidgetEvents) {
+          window.__StylistWidgetEvents.emit("quiz:submit", {
+            answers: quizState.answers,
+          });
+        }
+
+        // Switch to lookbook tab to show recommendations
+        setActiveTab("lookbook");
+
+        // Show a success message
+        alert(
+          "Thank you for completing the style quiz! Check out your personalized recommendations in the lookbook."
+        );
+      }
+
+      function toggleConfigPanel() {
+        configPanel.classList.toggle("active");
+      }
+
+      function applyConfig() {
+        // Gather config values
+        widgetConfig.features.chat = chatToggle.checked;
+        widgetConfig.features.styleQuiz = quizToggle.checked;
+        widgetConfig.features.tryOn = tryOnToggle.checked;
+        widgetConfig.features.socialProof = socialToggle.checked;
+        widgetConfig.features.closet = closetToggle.checked;
+        widgetConfig.primaryColor = primaryColorPicker.value;
+        widgetConfig.useMockData = mockDataToggle.checked;
+        widgetConfig.retailerId = retailerSelect.value;
+
+        // Apply styles
+        document.documentElement.style.setProperty(
+          "--stylist-primary-color",
+          widgetConfig.primaryColor
+        );
+
+        // Disable tabs if features are turned off
+        hubItems.forEach((item) => {
+          const tabName = item.dataset.tab;
+          const isEnabled = getFeatureEnabled(tabName);
+          item.style.display = isEnabled ? "flex" : "none";
+
+          // If current tab is disabled, switch to chat
+          if (tabName === activeTab && !isEnabled) {
+            setActiveTab("chat");
+          }
+        });
+
+        // Notify React components about config changes
+        if (window.__StylistWidgetEvents) {
+          window.__StylistWidgetEvents.emit("config:update", widgetConfig);
+        }
+
+        // Hide config panel
+        toggleConfigPanel();
+
+        console.log("Configuration applied:", widgetConfig);
+      }
+
+      function resetConfig() {
+        // Reset to defaults
+        chatToggle.checked = true;
+        quizToggle.checked = true;
+        tryOnToggle.checked = true;
+        socialToggle.checked = true;
+        closetToggle.checked = true;
+        primaryColorPicker.value = "#000000";
+        mockDataToggle.checked = true;
+        retailerSelect.value = "mockRetailer";
+      }
+
+      function getFeatureEnabled(tabName) {
+        // Map tab names to feature flags
+        const featureMap = {
+          chat: "chat",
+          lookbook: "lookbook",
+          closet: "closet",
+          "try-on": "tryOn",
+          quiz: "styleQuiz",
+          social: "socialProof",
+        };
+
+        const featureName = featureMap[tabName];
+        return featureName ? widgetConfig.features[featureName] : true;
+      }
+
+      function initializeReactComponents() {
+        // Check if global Stylist object exists
+        if (window.Stylist) {
+          // Initialize React components with current config
+          window.Stylist.initialize({
+            apiKey: widgetConfig.apiKey,
+            retailerId: widgetConfig.retailerId,
+            primaryColor: widgetConfig.primaryColor,
+            useMockData: widgetConfig.useMockData,
+            features: widgetConfig.features,
+            mountPoints: {
+              chat: "stylist-chat-component",
+              lookbook: "stylist-lookbook-container",
+              closet: "stylist-closet-container",
+              tryOn: "stylist-try-on-container",
+              quiz: "stylist-quiz-container",
+              social: "stylist-social-container",
+              floatingButton: "stylist-floating-button-container",
+            },
+          });
+        } else {
+          console.warn(
+            "Stylist Widget SDK not loaded yet. Will try again in 500ms."
+          );
+          setTimeout(initializeReactComponents, 500);
+        }
+      }
+
+      // Define global event emitter for widget-to-React communication
+      window.__StylistWidgetEvents = {
+        listeners: {},
+
+        on(event, callback) {
+          if (!this.listeners[event]) {
+            this.listeners[event] = [];
+          }
+          this.listeners[event].push(callback);
+        },
+
+        off(event, callback) {
+          if (this.listeners[event]) {
+            this.listeners[event] = this.listeners[event].filter(
+              (cb) => cb !== callback
+            );
+          }
+        },
+
+        emit(event, data) {
+          if (this.listeners[event]) {
+            this.listeners[event].forEach((callback) => callback(data));
+          }
+        },
+      };
+
+      // Set up mock recommendation generation
+      document.addEventListener("click", function (e) {
+        if (e.target.closest("#generateRecommendations")) {
+          // Switch to lookbook tab
+          setActiveTab("lookbook");
+
+          // Notify React components to generate recommendations
+          if (window.__StylistWidgetEvents) {
+            window.__StylistWidgetEvents.emit("generate:recommendations");
+          }
+        }
+      });
+
+      // Initialize the widget
+      document.addEventListener("DOMContentLoaded", function () {
+        // Set primary color CSS variable
+        document.documentElement.style.setProperty(
+          "--stylist-primary-color",
+          widgetConfig.primaryColor
+        );
+
+        // Initialize quiz progress
+        updateQuizProgress();
+
+        // Wait for stylist-widget.js to load
+        const scriptCheckInterval = setInterval(function () {
+          if (window.Stylist) {
+            clearInterval(scriptCheckInterval);
+            console.log("Stylist Widget SDK loaded. Ready to initialize.");
+          }
+        }, 100);
+      });
+    </script>
+
+    <!-- Load the main Stylist Widget Script -->
+    <script src="/stylist-widget.js" async></script>
+  </body>
+</html>

@@ -1,0 +1,201 @@
+// SocialProofRenderer.scss
+// Styles for the social proof renderer component
+
+.social-proof-renderer {
+    margin: 15px 0;
+    
+    &__header {
+      margin-bottom: 15px;
+    }
+    
+    &__title {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0 0 5px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    &__icon {
+      font-size: 20px;
+    }
+    
+    &__subtitle {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+    }
+    
+    &__content {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    &__item {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 15px;
+      background: #fff;
+    }
+    
+    &__celebrity-info {
+      margin-bottom: 15px;
+    }
+    
+    &__celebrity-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    &__celebrity-name {
+      font-size: 16px;
+      font-weight: bold;
+      margin: 0;
+      color: #333;
+    }
+    
+    &__event {
+      font-size: 14px;
+      color: #666;
+      font-style: italic;
+    }
+    
+    &__outfit-description {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    
+    &__outfit-tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      background: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background: #e8e8e8;
+      }
+    }
+    
+    &__style-details {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 8px;
+    }
+    
+    &__colors {
+      display: flex;
+      gap: 6px;
+    }
+    
+    &__color-badge {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1px solid #ddd;
+      position: relative;
+      
+      &::after {
+        content: attr(aria-label);
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        pointer-events: none;
+        margin-top: 4px;
+      }
+      
+      &:hover::after {
+        opacity: 1;
+      }
+    }
+    
+    &__patterns {
+      display: flex;
+      gap: 6px;
+    }
+    
+    &__pattern-badge {
+      font-size: 12px;
+      padding: 2px 8px;
+      background: #f0f0f0;
+      border-radius: 10px;
+    }
+    
+    &__products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    
+    &__no-matches {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+      font-style: italic;
+    }
+    
+    &__toggle {
+      width: 100%;
+      margin-top: 15px;
+      padding: 10px 15px;
+      border: 1px solid;
+      border-radius: 5px;
+      background: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+    }
+    
+    &__empty {
+      text-align: center;
+      padding: 20px;
+      color: #999;
+      
+      p {
+        margin: 0;
+      }
+    }
+  }
+  
+  // Responsive styles
+  @media (max-width: 768px) {
+    .social-proof-renderer {
+      &__products {
+        grid-template-columns: 1fr;
+      }
+      
+      &__celebrity-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+      
+      &__event {
+        font-size: 13px;
+      }
+    }
+  }

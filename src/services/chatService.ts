@@ -4,6 +4,13 @@ import { MessageSender, MessageType, ChatMessage, TextMessage, ChatTypes } from 
 import { v4 as uuidv4 } from 'uuid';
 import { RecommendationApi } from '@/api/recommendationApi';
 import { trackMessageSent } from '@/services/analytics/analyticsService';
+import { 
+  ANTHROPIC_API_KEY, 
+  CLAUDE_API_URL, 
+  CLAUDE_MODEL,
+  FORCE_DEMO_MODE,
+  USE_CLAUDE_DEMO
+} from '@/utils/environment';
 
 interface ClaudeConfig {
   apiKey?: string;
@@ -24,10 +31,11 @@ export class ChatService {
     
     // Initialize Claude configuration
     this.claudeConfig = {
-      apiKey: process.env.ANTHROPIC_API_KEY,
-      baseUrl: process.env.CLAUDE_API_URL || 'https://api.anthropic.com/v1',
-      modelName: process.env.CLAUDE_MODEL || 'claude-3-haiku-20240307',
-      fallbackMode: !process.env.ANTHROPIC_API_KEY
+      apiKey: ANTHROPIC_API_KEY,
+      baseUrl: CLAUDE_API_URL,
+      modelName: CLAUDE_MODEL,
+      // Use fallback mode if API key is missing or demo mode is forced
+      fallbackMode: !ANTHROPIC_API_KEY || FORCE_DEMO_MODE
     };
     
     // Add initial context for the conversation
@@ -39,6 +47,19 @@ export class ChatService {
       When you recommend items, focus on why they would work for the user.
       If you don't know something specific about fashion, you can suggest general style principles.`
     ];
+    
+    // For demo purposes, print helpful info about Claude status
+    if (USE_CLAUDE_DEMO) {
+      console.info('🤖 Claude demo mode is ENABLED - will provide realistic AI responses without API key');
+    }
+    
+    if (FORCE_DEMO_MODE) {
+      console.info('🧪 Forced demo mode is ENABLED - using fallback for Claude API despite keys');
+    } else if (ANTHROPIC_API_KEY) {
+      console.info('✅ Claude API key present - will attempt to use real Claude API');
+    } else {
+      console.info('ℹ️ No Claude API key found - using rule-based fallback responses');
+    }
   }
 
   /**
@@ -51,7 +72,10 @@ export class ChatService {
     // Initialize response messages array
     const responseMessages: ChatMessage[] = [];
 
-    // Try to use Claude API if available
+    // Determine the intent for possible demo responses
+    const intent = this.categorizeIntent(text);
+
+    // Try to use Claude API if available and not in forced demo mode
     if (!this.claudeConfig.fallbackMode) {
       try {
         const claudeResponse = await this.callClaudeAPI(text);
@@ -75,12 +99,25 @@ export class ChatService {
       }
     }
     
-    // If Claude is not available or failed, use rule-based approach
-
-    // Basic NLU to categorize user intent
-    const intent = this.categorizeIntent(text);
-
-    // Based on intent, generate appropriate responses
+    // Check for demo response if Claude demo mode is enabled
+    const demoResponse = this.getDemoResponse(intent, text);
+    if (demoResponse) {
+      // This is a simulated Claude response in demo mode
+      responseMessages.push(this.createTextMessage(
+        demoResponse,
+        MessageSender.ASSISTANT
+      ));
+      
+      // If it's a wedding dress query, also add recommendations
+      if (intent === 'wedding_dress') {
+        // Add a recommendation message after the initial response
+        await this.addRecommendationMessage(responseMessages, 'wedding');
+      }
+      
+      return responseMessages;
+    }
+    
+    // If no demo response and Claude is not available or failed, use rule-based approach
     switch (intent) {
       case 'recommendation':
         // Add a simple acknowledgment message
@@ -121,6 +158,17 @@ export class ChatService {
         ));
         break;
         
+      case 'wedding_dress':
+        // Special handling for wedding dress case when not in demo mode
+        responseMessages.push(this.createTextMessage(
+          'I can help you find the perfect wedding dress! Here are some recommendations based on current trends:',
+          MessageSender.ASSISTANT
+        ));
+        
+        // Get wedding dress recommendations
+        await this.addRecommendationMessage(responseMessages, 'wedding');
+        break;
+        
       default:
         responseMessages.push(this.createTextMessage(
           'I can help you discover fashion items that match your style. Would you like to see some personalized recommendations?',
@@ -139,12 +187,22 @@ export class ChatService {
       // Add the user message to context
       this.conversationContext.push(userMessage);
       
-      // API endpoint - combine with base URL if needed
+      // API endpoint - prioritize direct Claude API if we have API key
+      if (this.claudeConfig.apiKey) {
+        try {
+          return await this.callDirectClaudeAPI(userMessage);
+        } catch (directError) {
+          console.error('Direct Claude API call failed, falling back to backend proxy:', directError);
+          // Fall back to proxy
+        }
+      }
+      
+      // Fall back to backend proxy
       const apiUrl = this.recommendationApi.apiClient 
         ? `${(this.recommendationApi.apiClient as any).baseURL || ''}/chat`
         : '/api/chat';
         
-      console.log('Calling Claude API at:', apiUrl);
+      console.log('Calling Claude API via backend proxy at:', apiUrl);
       
       // Prepare the API request to backend proxy
       const response = await fetch(apiUrl, {
@@ -177,6 +235,65 @@ export class ChatService {
       // Return fallback response instead of throwing
       return "I'm having trouble connecting right now. Let me show you some recommendations instead.";
     }
+  }
+  
+  /**
+   * Call the Claude API directly from the frontend
+   */
+  private async callDirectClaudeAPI(userMessage: string): Promise<string> {
+    if (!this.claudeConfig.apiKey) {
+      throw new Error('No Claude API key available');
+    }
+    
+    const apiUrl = this.claudeConfig.baseUrl || 'https://api.anthropic.com';
+    const model = this.claudeConfig.modelName || 'claude-3-haiku-20240307';
+    
+    console.log(`Calling Claude API directly with model: ${model}`);
+    
+    // Prepare the messages array for Claude API
+    const messages = this.conversationContext.slice(-5).map((message, index) => {
+      // First message is system prompt, then alternate between user and assistant
+      if (index === 0) {
+        return { role: "system", content: message };
+      } else {
+        return { 
+          role: index % 2 === 1 ? "user" : "assistant", 
+          content: message 
+        };
+      }
+    });
+    
+    // Add the current user message
+    messages.push({ role: "user", content: userMessage });
+    
+    // Prepare the request to the Claude API
+    const response = await fetch(`${apiUrl}/v1/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': this.claudeConfig.apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        max_tokens: 1000
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Claude API direct request failed: ${response.status} - ${errorText}`);
+      throw new Error(`Failed to get response from Claude API: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    const assistantResponse = data.content?.[0]?.text || '';
+    
+    // Add the response to context
+    this.conversationContext.push(assistantResponse);
+    
+    return assistantResponse;
   }
 
   /**
@@ -297,6 +414,13 @@ export class ChatService {
   private categorizeIntent(text: string): string {
     const lowerText = text.toLowerCase();
     
+    // Handle the wedding dress case specially for the demo
+    if (lowerText.includes('wedding dress') || 
+        lowerText.includes('bridal') || 
+        (lowerText.includes('wedding') && lowerText.includes('dress'))) {
+      return 'wedding_dress';
+    }
+    
     if (lowerText.includes('recommend') || 
         lowerText.includes('suggestion') || 
         lowerText.includes('find') || 
@@ -329,6 +453,45 @@ export class ChatService {
     }
     
     return 'general';
+  }
+  
+  /**
+   * Get a realistic Claude-like response for demo purposes
+   * These responses mock what the real API would return for specific queries
+   */
+  private getDemoResponse(intent: string, query: string): string {
+    // Special demo responses for specific query types
+    switch (intent) {
+      case 'wedding_dress':
+        return `I'd be happy to help you find the perfect wedding dress! Based on current trends and classic styles, here are some suggestions:
+
+For a traditional look, A-line and ball gown silhouettes create a timeless, romantic appearance. If you prefer something more modern, consider a fitted mermaid or trumpet style that accentuates your curves.
+
+Material is important too - delicate lace creates a romantic feel, while silk or satin offers elegant simplicity. For spring/summer weddings, lighter fabrics like chiffon or organza are beautiful options.
+
+Would you like to see specific dress recommendations? I can show you some options across different styles and price points that might match what you're looking for.`;
+        
+      case 'greeting':
+        return `Hello! I'm your personal style assistant. I'm here to help you discover clothing that matches your unique style preferences. I can recommend outfits, help you find specific items, provide style advice, or even let you virtually try on clothes. What kind of fashion help are you looking for today?`;
+        
+      case 'help':
+        return `I'm your AI fashion assistant, and I can help you with:
+
+- Finding personalized clothing recommendations
+- Creating complete outfits for specific occasions
+- Virtually trying on garments with our try-on feature
+- Answering style questions and providing fashion advice
+- Helping you complete our style quiz to better understand your preferences
+
+Just let me know what you're looking for, and I'll guide you through the process!`;
+
+      default:
+        if (USE_CLAUDE_DEMO) {
+          return `I'd be happy to help you with "${query}". This is a simulated Claude response in demo mode. In a real implementation with an API key, you would get a personalized response from Claude based on your specific query. Would you like to see some clothing recommendations related to this topic?`;
+        } else {
+          return ''; // Fall back to rule-based responses with empty string instead of null
+        }
+    }
   }
 
   /**

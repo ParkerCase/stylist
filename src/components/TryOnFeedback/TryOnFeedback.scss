@@ -1,0 +1,116 @@
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
+
+.stylist-try-on-feedback {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
+  background-color: rgba(variables.$background-color, 0.85);
+  border-radius: variables.$border-radius-md;
+  padding: variables.$spacing-sm;
+  box-shadow: variables.$shadow-md;
+  backdrop-filter: blur(4px);
+  
+  &__buttons {
+    display: flex;
+    gap: variables.$spacing-sm;
+  }
+  
+  &__button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all variables.$transition-fast ease;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+    
+    &:active {
+      transform: scale(0.95);
+    }
+    
+    &--like {
+      background-color: variables.$primary-color;
+      color: variables.$text-inverse;
+    }
+    
+    &--dislike {
+      background-color: variables.$background-color-light;
+      color: variables.$text-primary;
+      border: 1px solid variables.$border-color;
+    }
+  }
+  
+  &__options {
+    display: flex;
+    flex-direction: column;
+    gap: variables.$spacing-xs;
+    min-width: 150px;
+  }
+  
+  &__option-button {
+    padding: variables.$spacing-xs variables.$spacing-sm;
+    border: none;
+    border-radius: variables.$border-radius-sm;
+    background-color: variables.$primary-color;
+    color: variables.$text-inverse;
+    font-size: variables.$font-size-sm;
+    cursor: pointer;
+    transition: background-color variables.$transition-fast ease;
+    
+    &:hover {
+      background-color: variables.$primary-color-dark;
+    }
+  }
+  
+  &__note-input {
+    display: flex;
+    gap: variables.$spacing-xs;
+    
+    input {
+      flex: 1;
+      min-width: 180px;
+      padding: variables.$spacing-xs;
+      border: 1px solid variables.$border-color;
+      border-radius: variables.$border-radius-sm;
+      font-size: variables.$font-size-sm;
+      font-family: inherit;
+      
+      &:focus {
+        outline: none;
+        border-color: variables.$primary-color;
+      }
+    }
+  }
+  
+  &__note-save {
+    padding: variables.$spacing-xs variables.$spacing-sm;
+    border: none;
+    border-radius: variables.$border-radius-sm;
+    background-color: variables.$primary-color;
+    color: variables.$text-inverse;
+    font-size: variables.$font-size-sm;
+    cursor: pointer;
+    
+    &:hover {
+      background-color: variables.$primary-color-dark;
+    }
+  }
+  
+  &__liked {
+    display: flex;
+    align-items: center;
+    gap: variables.$spacing-xs;
+    padding: variables.$spacing-xs variables.$spacing-sm;
+    color: variables.$success-color;
+    font-weight: 600;
+  }
+}

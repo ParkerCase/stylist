@@ -30,15 +30,8 @@ const StylistWidget: React.FC<StylistWidgetProps> = (props) => {
     toggleOpen();
   };
   
-  // Force widget to open on mount and initialize feedback sync service
+  // Initialize feedback sync service
   useEffect(() => {
-    if (!isOpen) {
-      // Small delay to ensure store is ready
-      setTimeout(() => {
-        toggleOpen();
-      }, 100);
-    }
-    
     // Initialize feedback sync service
     feedbackSyncService.initialize({
       apiKey: props.apiKey,
@@ -120,6 +113,12 @@ const StylistWidget: React.FC<StylistWidgetProps> = (props) => {
     <SyncProvider>
       <>
         <ChatWidget {...props} />
+        <FloatingButton
+          position={props.position || 'bottom-right'}
+          onClick={handleOpenWidget}
+          primaryColor={props.primaryColor}
+          isOpen={isOpen}
+        />
         <SyncStatusIndicator />
       </>
     </SyncProvider>

@@ -27,6 +27,9 @@
     @include mixins.flex-row;
     width: 100%;
     margin-top: variables.$spacing-sm;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    @include mixins.scrollbar-custom;
   }
 
   &__tab {
@@ -41,6 +44,7 @@
     border: none;
     border-bottom: 2px solid transparent;
     transition: all variables.$transition-normal ease;
+    white-space: nowrap;
 
     &:hover {
       color: variables.$text-primary;
@@ -70,7 +74,7 @@
     }
   }
 
-  &__outfits, &__saved {
+  &__outfits, &__saved, &__try-on {
     @include mixins.flex-column;
     gap: variables.$spacing-lg;
   }
@@ -91,6 +95,154 @@
 
     p:last-child {
       font-size: variables.$font-size-sm;
+    }
+  }
+  
+  /* Trending section styles */
+  &__trending {
+    @include mixins.flex-column;
+    gap: variables.$spacing-lg;
+  }
+  
+  &__section-title {
+    font-size: variables.$font-size-md;
+    font-weight: variables.$font-weight-bold;
+    margin-bottom: variables.$spacing-md;
+    color: variables.$text-primary;
+  }
+  
+  &__celebrity-section {
+    margin-bottom: variables.$spacing-lg;
+  }
+  
+  &__celebrity-outfits {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: variables.$spacing-md;
+    
+    @include mixins.responsive('xs') {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  &__celebrity-outfit {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid variables.$border-color;
+    border-radius: variables.$border-radius-md;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all variables.$transition-normal ease;
+    
+    &:hover {
+      box-shadow: variables.$shadow-md;
+      transform: translateY(-2px);
+    }
+  }
+  
+  &__celebrity-image {
+    height: 300px;
+    overflow: hidden;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  
+  &__celebrity-details {
+    padding: variables.$spacing-md;
+    
+    h4 {
+      font-size: variables.$font-size-md;
+      font-weight: variables.$font-weight-bold;
+      margin-bottom: variables.$spacing-xs;
+      color: variables.$text-primary;
+    }
+  }
+  
+  &__celebrity-description {
+    margin-bottom: variables.$spacing-md;
+    font-size: variables.$font-size-sm;
+    color: variables.$text-secondary;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  &__get-the-look-btn {
+    padding: variables.$spacing-xs variables.$spacing-md;
+    background-color: variables.$primary-color;
+    color: variables.$text-inverse;
+    border: none;
+    border-radius: variables.$border-radius-sm;
+    font-size: variables.$font-size-sm;
+    cursor: pointer;
+    
+    &:hover {
+      background-color: variables.$primary-color-dark;
+    }
+  }
+  
+  &__trending-section {
+    margin-bottom: variables.$spacing-lg;
+  }
+  
+  &__wishlist {
+    height: 100%;
+  }
+  
+  /* Try-on section styles */
+  &__try-on-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: variables.$spacing-md;
+    
+    @include mixins.responsive('xs') {
+      grid-template-columns: repeat(2, 1fr);
+      gap: variables.$spacing-sm;
+    }
+  }
+  
+  &__try-on-item {
+    border: 1px solid variables.$border-color;
+    border-radius: variables.$border-radius-md;
+    overflow: hidden;
+    transition: transform variables.$transition-normal ease, box-shadow variables.$transition-normal ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: variables.$shadow-md;
+    }
+  }
+  
+  &__try-on-image {
+    height: 200px;
+    overflow: hidden;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform variables.$transition-normal ease;
+    }
+  }
+  
+  &__try-on-details {
+    padding: variables.$spacing-sm;
+    
+    h4 {
+      margin: 0 0 variables.$spacing-xs 0;
+      font-weight: variables.$font-weight-medium;
+      font-size: variables.$font-size-sm;
+    }
+    
+    p {
+      margin: 0;
+      font-size: variables.$font-size-xs;
+      color: variables.$text-tertiary;
     }
   }
 

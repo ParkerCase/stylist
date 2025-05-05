@@ -1,0 +1,3174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stylist Full Widget Demo</title>
+    <style>
+      /* Base styling */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f7f7f7;
+      }
+
+      .demo-container {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      button.open-button {
+        background-color: #fff;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 20px;
+        font-weight: bold;
+      }
+
+      /* Widget styling */
+      .stylist-widget {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 380px;
+        height: 600px;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        z-index: 9999;
+      }
+
+      .widget-header {
+        background-color: #000;
+        color: white;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .widget-title {
+        font-weight: bold;
+        font-size: 16px;
+      }
+
+      .widget-controls {
+        display: flex;
+        gap: 15px;
+      }
+
+      .control-button {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 14px;
+        opacity: 0.9;
+      }
+
+      .control-button:hover {
+        opacity: 1;
+      }
+
+      /* Radial Hub Menu Styling */
+      .hub-menu-container {
+        position: relative;
+        height: 70px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f0f2f5;
+        border-bottom: 1px solid #e1e4e8;
+        padding: 15px 0;
+      }
+
+      .hub-center-button {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #000;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+        position: relative;
+      }
+
+      .hub-center-button:hover {
+        transform: scale(1.1);
+      }
+
+      .hub-center-button.active {
+        transform: rotate(45deg);
+      }
+
+      .hub-menu {
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        transition: all 0.3s ease;
+        z-index: 9;
+        opacity: 0;
+        transform: scale(0.8);
+        pointer-events: none;
+      }
+
+      .hub-menu.expanded {
+        opacity: 1;
+        transform: scale(1);
+        pointer-events: all;
+      }
+
+      .hub-item {
+        position: relative;
+        margin: 0 8px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        opacity: 0.7;
+      }
+
+      .hub-icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #4c5667;
+      }
+
+      .hub-label {
+        position: absolute;
+        bottom: -20px;
+        font-size: 10px;
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 2px 6px;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .hub-item:hover .hub-label,
+      .hub-item.active .hub-label {
+        opacity: 1;
+      }
+
+      .hub-item:hover {
+        transform: translateY(-5px);
+        opacity: 1;
+      }
+
+      .hub-item.active {
+        background: #000;
+        opacity: 1;
+        transform: translateY(-5px);
+      }
+
+      .hub-item.active .hub-icon {
+        color: white;
+      }
+
+      .widget-content {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .tab-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        overflow-y: auto;
+        padding: 15px;
+        box-sizing: border-box;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      /* Chat Tab Styling */
+      .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px 0;
+      }
+
+      .message {
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        border-radius: 18px;
+        max-width: 80%;
+        position: relative;
+        line-height: 1.4;
+      }
+
+      .message.assistant {
+        background-color: #f1f3f4;
+        align-self: flex-start;
+        margin-right: auto;
+        border-bottom-left-radius: 4px;
+      }
+
+      .message.user {
+        background-color: #000;
+        color: white;
+        align-self: flex-end;
+        margin-left: auto;
+        border-bottom-right-radius: 4px;
+      }
+
+      .chat-input {
+        display: flex;
+        padding: 10px;
+        border-top: 1px solid #e0e0e0;
+        background: white;
+      }
+
+      .chat-input input {
+        flex: 1;
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 20px;
+        margin-right: 10px;
+        font-size: 14px;
+      }
+
+      .chat-input button {
+        background-color: #000;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      /* Closet Tab Styling */
+      .closet-container {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .closet-header {
+        margin-bottom: 15px;
+      }
+
+      .closet-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .closet-item {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .closet-item-image {
+        width: 100%;
+        height: 120px;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        font-size: 12px;
+      }
+
+      .closet-item-info {
+        padding: 10px;
+      }
+
+      .closet-item-name {
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      .closet-item-category {
+        color: #777;
+        font-size: 12px;
+      }
+
+      .closet-upload {
+        background-color: #f5f5f5;
+        border: 2px dashed #d0d0d0;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        margin-top: 10px;
+      }
+
+      .closet-upload-button {
+        background-color: #000;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 15px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-top: 10px;
+      }
+
+      /* Trending Tab Styling */
+      .trending-container h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+
+      .trending-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+      }
+
+      .trending-item {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white;
+        transition: transform 0.2s;
+        cursor: pointer;
+      }
+
+      .trending-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .trending-image {
+        width: 100%;
+        height: 130px;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        position: relative;
+      }
+
+      .trending-image::after {
+        content: "";
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 20px;
+        height: 20px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath d='M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z' fill='%23444'/%3E%3Cpath d='M1 12c0 2.5 4 8 11 8s11-5.5 11-8-4-8-11-8-11 5.5-11 8z' fill='none' stroke='%23444' stroke-width='2'/%3E%3C/svg%3E");
+        background-size: contain;
+        background-repeat: no-repeat;
+      }
+
+      .trending-info {
+        padding: 10px;
+      }
+
+      .trending-name {
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      .trending-brand {
+        color: #777;
+        font-size: 12px;
+      }
+
+      .trending-price {
+        color: #e63946;
+        font-weight: bold;
+        margin-top: 4px;
+      }
+
+      /* Try-On Tab Styling */
+      .tryon-container {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .tryon-header {
+        margin-bottom: 15px;
+      }
+
+      .tryon-canvas {
+        width: 100%;
+        height: 300px;
+        background-color: #f0f0f0;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        margin-bottom: 15px;
+        position: relative;
+      }
+
+      .tryon-canvas::before {
+        content: "Person";
+        display: block;
+        width: 80px;
+        height: 200px;
+        background-color: #d0d0d0;
+        border-radius: 40px;
+      }
+
+      .tryon-selector {
+        display: flex;
+        overflow-x: auto;
+        gap: 10px;
+        padding: 5px 0;
+        margin-bottom: 15px;
+      }
+
+      .tryon-item {
+        min-width: 60px;
+        height: 60px;
+        background-color: #e0e0e0;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        font-size: 10px;
+        cursor: pointer;
+        border: 2px solid transparent;
+      }
+
+      .tryon-item.selected {
+        border-color: #000;
+      }
+
+      .tryon-controls {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .tryon-button {
+        background-color: #000;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 8px 15px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      /* Style Quiz Tab Styling */
+      .quiz-container {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .quiz-header {
+        margin-bottom: 15px;
+      }
+
+      .quiz-progress {
+        width: 100%;
+        height: 8px;
+        background-color: #e0e0e0;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+
+      .quiz-progress-bar {
+        height: 100%;
+        background-color: #000;
+        width: 30%;
+      }
+
+      .quiz-question {
+        margin-bottom: 20px;
+      }
+
+      .quiz-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .quiz-option {
+        padding: 12px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .quiz-option:hover {
+        background-color: #f5f7fa;
+      }
+
+      .quiz-option.selected {
+        border-color: #000;
+        background-color: #eef1ff;
+      }
+
+      .quiz-navigation {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+      }
+
+      .quiz-button {
+        background-color: #000;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .quiz-button.back {
+        background-color: #e0e0e0;
+        color: #333;
+      }
+
+      /* Social Proof Tab Styling */
+      .social-container {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .social-header {
+        margin-bottom: 15px;
+      }
+
+      .testimonials {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .testimonial {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+      }
+
+      .testimonial-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .testimonial-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 20px;
+        background-color: #e0e0e0;
+        margin-right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        font-size: 16px;
+      }
+
+      .testimonial-user {
+        font-weight: bold;
+      }
+
+      .testimonial-content {
+        font-size: 14px;
+        line-height: 1.4;
+      }
+
+      .testimonial-images {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .testimonial-image {
+        width: 80px;
+        height: 80px;
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        font-size: 10px;
+      }
+
+      /* Feedback Button Styles */
+      .trending-feedback {
+        display: flex;
+        margin-top: 8px;
+        gap: 10px;
+      }
+
+      .feedback-button {
+        background-color: transparent;
+        border: 1px solid #e0e0e0;
+        border-radius: 16px;
+        padding: 4px 10px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.2s ease;
+      }
+
+      .feedback-button:hover {
+        background-color: #f5f5f5;
+        transform: translateY(-1px);
+      }
+
+      .like-button.active {
+        background-color: #e3f2fd;
+        border-color: #000;
+        color: #000;
+      }
+
+      .dislike-button.active {
+        background-color: #ffebee;
+        border-color: #f44336;
+        color: #f44336;
+      }
+
+      .thumbs-up-button {
+        background-color: #f5f5f5;
+        margin-top: 8px;
+        border-color: #d0d0d0;
+        width: auto;
+        color: #555;
+      }
+
+      .thumbs-up-button.active {
+        background-color: #e8f5e9;
+        border-color: #4caf50;
+        color: #4caf50;
+      }
+
+      .message-feedback {
+        margin-top: 8px;
+      }
+
+      /* Wishlist Tab Styling */
+      .wishlist-container {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .wishlist-header {
+        margin-bottom: 15px;
+      }
+
+      .wishlist-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .wishlist-item {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        position: relative;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .wishlist-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .wishlist-item-image {
+        width: 100%;
+        height: 120px;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #777;
+        font-size: 12px;
+        position: relative;
+      }
+
+      .wishlist-notification {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background-color: #000;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 10px;
+        font-weight: bold;
+        z-index: 1;
+      }
+
+      .sale-item .wishlist-notification {
+        background-color: #e63946;
+      }
+
+      .low-stock-item .wishlist-notification {
+        background-color: #ff9800;
+      }
+
+      .wishlist-item-info {
+        padding: 12px;
+      }
+
+      .wishlist-item-name {
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      .wishlist-item-brand {
+        color: #777;
+        font-size: 12px;
+        margin-bottom: 6px;
+      }
+
+      .wishlist-item-price {
+        color: #e63946;
+        font-weight: bold;
+        margin-bottom: 10px;
+        font-size: 15px;
+      }
+
+      .original-price {
+        text-decoration: line-through;
+        color: #999;
+        font-weight: normal;
+        font-size: 13px;
+        margin-left: 5px;
+      }
+
+      .wishlist-item-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .wishlist-action-btn {
+        background-color: transparent;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 6px 10px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .wishlist-action-btn.add-to-cart {
+        background-color: #000;
+        color: white;
+        border-color: #000;
+      }
+
+      .wishlist-action-btn.move-to-closet {
+        background-color: #f8f9fa;
+        color: #333;
+      }
+
+      .wishlist-action-btn.remove {
+        background-color: transparent;
+        color: #777;
+      }
+
+      .wishlist-action-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+      }
+
+      .wishlist-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 40px 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        margin-top: 20px;
+      }
+
+      .empty-state-icon {
+        margin-bottom: 20px;
+      }
+
+      .wishlist-empty-state h4 {
+        font-size: 16px;
+        margin: 0 0 10px 0;
+        color: #4c5667;
+      }
+
+      .wishlist-empty-state p {
+        font-size: 14px;
+        color: #777;
+        margin: 0 0 20px 0;
+        max-width: 260px;
+      }
+
+      .wishlist-browse-btn {
+        background-color: #000;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+      }
+
+      .wishlist-browse-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Try-On feedback styles */
+      .tryon-feedback-controls {
+        position: absolute;
+        bottom: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .tryon-canvas:hover .tryon-feedback-controls {
+        opacity: 1;
+      }
+
+      .tryon-advanced-options {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .tryon-option-btn {
+        background-color: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 16px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .tryon-option-btn:hover {
+        background-color: #f5f5f5;
+        transform: translateY(-1px);
+      }
+
+      /* Animation for feedback */
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .feedback-button.active {
+        animation: pulse 0.3s ease-in-out;
+      }
+
+      .feedback-icon {
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      .active .feedback-icon path {
+        fill: currentColor;
+      }
+
+      /* Feedback toast */
+      .feedback-toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #000;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 6px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        z-index: 10000;
+        font-size: 14px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .feedback-toast.show {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-container">
+      <h1>Stylist Full Widget Demo</h1>
+      <p>
+        Click the button below to open the complete stylist widget with all
+        features:
+      </p>
+      <button class="open-button" id="openWidgetBtn">
+        Open Stylist Widget
+      </button>
+    </div>
+
+    <!-- Feedback toast notification -->
+    <div class="feedback-toast" id="feedbackToast"></div>
+
+    <!-- Full Stylist Widget -->
+    <div class="stylist-widget" id="stylistWidget" style="display: none">
+      <!-- Widget Header -->
+      <div class="widget-header">
+        <div class="widget-title">The Stylist</div>
+        <div class="widget-controls">
+          <button class="control-button" id="minimizeWidgetBtn">—</button>
+          <button class="control-button" id="closeWidgetBtn">✕</button>
+        </div>
+      </div>
+
+      <!-- Radial Hub Menu -->
+      <div class="hub-menu-container">
+        <div class="hub-center-button" id="hubCenterButton">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <circle cx="12" cy="12" r="10" fill="#000" />
+            <path
+              d="M8 12h8M12 8v8"
+              stroke="white"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
+        <div class="hub-menu" id="hubRadialMenu">
+          <div class="hub-item active" data-tab="chat">
+            <div class="hub-icon">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path
+                  d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <div class="hub-label">Chat</div>
+          </div>
+          <div class="hub-item" data-tab="closet">
+            <div class="hub-icon">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path
+                  d="M3 2h18v8H3zM3 14h18v8H3z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M7 10v4M17 10v4"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <div class="hub-label">My Closet</div>
+          </div>
+          <div class="hub-item" data-tab="wishlist">
+            <div class="hub-icon">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path
+                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <div class="hub-label">Wishlist</div>
+          </div>
+          <div class="hub-item" data-tab="trending">
+            <div class="hub-icon">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path
+                  d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <div class="hub-label">Trending</div>
+          </div>
+          <div class="hub-item" data-tab="tryOn">
+            <div class="hub-icon">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path
+                  d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M16 10a4 4 0 0 1-8 0"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M3 6h18"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <div class="hub-label">Try-On</div>
+          </div>
+          <div class="hub-item" data-tab="quiz">
+            <div class="hub-icon">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <!-- Outer circle (matching your original style) -->
+                <path
+                  d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+
+                <!-- Clipboard body -->
+                <path
+                  d="M9 6h6v2h2a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1h2V6z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <div class="hub-label">Style Quiz</div>
+          </div>
+          <div class="hub-item" data-tab="social">
+            <div class="hub-icon">
+              <svg viewBox="0 0 24 24" width="24" height="24">
+                <path
+                  d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <circle
+                  cx="9"
+                  cy="7"
+                  r="4"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M23 21v-2a4 4 0 0 0-3-3.87"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M16 3.13a4 4 0 0 1 0 7.75"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <div class="hub-label">Social Proof</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Widget Content Area -->
+      <div class="widget-content">
+        <!-- Chat Tab -->
+        <div class="tab-content active" id="chatTab">
+          <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+              <div class="message assistant" data-message-id="msg-1">
+                Hi there! I'm your AI style assistant. How can I help you today?
+                <div class="message-feedback">
+                  <button
+                    class="feedback-button thumbs-up-button"
+                    data-action="thumbsUp"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="16"
+                      height="16"
+                      class="feedback-icon"
+                      style="vertical-align: middle; margin-right: 4px"
+                    >
+                      <path
+                        d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    This was helpful
+                  </button>
+                </div>
+              </div>
+              <div class="message assistant" data-message-id="msg-2">
+                I can help you with: • Finding clothes that match your style •
+                Creating complete outfits • Virtual try-ons • Style advice and
+                tips
+                <div class="message-feedback">
+                  <button
+                    class="feedback-button thumbs-up-button"
+                    data-action="thumbsUp"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="16"
+                      height="16"
+                      class="feedback-icon"
+                      style="vertical-align: middle; margin-right: 4px"
+                    >
+                      <path
+                        d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    This was helpful
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="chat-input">
+              <input
+                type="text"
+                id="chatInput"
+                placeholder="Type your message..."
+              />
+              <button id="sendMessageBtn">Send</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- My Closet Tab -->
+        <div class="tab-content" id="closetTab">
+          <div class="closet-container">
+            <div class="closet-header">
+              <h3>My Closet</h3>
+              <p>Your saved clothing items will appear here.</p>
+            </div>
+            <div class="closet-grid">
+              <div class="closet-item">
+                <div class="closet-item-image">White T-Shirt</div>
+                <div class="closet-item-info">
+                  <div class="closet-item-name">White T-Shirt</div>
+                  <div class="closet-item-category">Tops / Casual</div>
+                </div>
+              </div>
+              <div class="closet-item">
+                <div class="closet-item-image">Blue Jeans</div>
+                <div class="closet-item-info">
+                  <div class="closet-item-name">Slim Fit Jeans</div>
+                  <div class="closet-item-category">Bottoms / Jeans</div>
+                </div>
+              </div>
+              <div class="closet-item">
+                <div class="closet-item-image">Leather Jacket</div>
+                <div class="closet-item-info">
+                  <div class="closet-item-name">Leather Jacket</div>
+                  <div class="closet-item-category">Outerwear / Jackets</div>
+                </div>
+              </div>
+              <div class="closet-item">
+                <div class="closet-item-image">Sneakers</div>
+                <div class="closet-item-info">
+                  <div class="closet-item-name">White Sneakers</div>
+                  <div class="closet-item-category">Footwear / Casual</div>
+                </div>
+              </div>
+            </div>
+            <div class="closet-upload">
+              <p>Add items to your closet by uploading photos</p>
+              <button class="closet-upload-button" id="openClosetUpload">
+                Upload Item
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wishlist Tab -->
+        <div class="tab-content" id="wishlistTab">
+          <div class="wishlist-container">
+            <div class="wishlist-header">
+              <h3>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  style="vertical-align: middle; margin-right: 4px"
+                >
+                  <path
+                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                    fill="#e63946"
+                    stroke="#e63946"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                My Wishlist
+              </h3>
+              <p>Items you've saved for later will appear here.</p>
+            </div>
+            <div class="wishlist-grid">
+              <div class="wishlist-item" data-item-id="wishlist-item-1">
+                <div class="wishlist-item-image">Leather Boots</div>
+                <div class="wishlist-item-info">
+                  <div class="wishlist-item-name">Leather Chelsea Boots</div>
+                  <div class="wishlist-item-brand">Brand: BootMasters</div>
+                  <div class="wishlist-item-price">$129.99</div>
+                  <div class="wishlist-item-actions">
+                    <button class="wishlist-action-btn add-to-cart">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        style="margin-right: 4px"
+                      >
+                        <path
+                          d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm0 0"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M20 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm0 0"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      Add to Cart
+                    </button>
+                    <button class="wishlist-action-btn move-to-closet">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        style="margin-right: 4px"
+                      >
+                        <path
+                          d="M3 2h18v8H3zM3 14h18v8H3z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M7 10v4M17 10v4"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      Move to Closet
+                    </button>
+                    <button class="wishlist-action-btn remove">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        style="margin-right: 4px"
+                      >
+                        <path
+                          d="M3 6h18"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="wishlist-item" data-item-id="wishlist-item-2">
+                <div class="wishlist-item-image">Cashmere Sweater</div>
+                <div class="wishlist-item-info">
+                  <div class="wishlist-item-name">Cashmere Turtleneck</div>
+                  <div class="wishlist-item-brand">Brand: LuxuryKnits</div>
+                  <div class="wishlist-item-price">$189.99</div>
+                  <div class="wishlist-item-actions">
+                    <button class="wishlist-action-btn add-to-cart">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        style="margin-right: 4px"
+                      >
+                        <path
+                          d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm0 0"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M20 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm0 0"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      Add to Cart
+                    </button>
+                    <button class="wishlist-action-btn move-to-closet">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        style="margin-right: 4px"
+                      >
+                        <path
+                          d="M3 2h18v8H3zM3 14h18v8H3z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M7 10v4M17 10v4"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      Move to Closet
+                    </button>
+                    <button class="wishlist-action-btn remove">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        style="margin-right: 4px"
+                      >
+                        <path
+                          d="M3 6h18"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="wishlist-item sale-item"
+                data-item-id="wishlist-item-3"
+              >
+                <div class="wishlist-item-image">Designer Handbag</div>
+                <div class="wishlist-notification">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="10"
+                    height="10"
+                    style="vertical-align: middle; margin-right: 2px"
+                  >
+                    <path
+                      d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"
+                      fill="white"
+                      stroke="white"
+                      stroke-width="1"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  ON SALE!
+                </div>
+                <div class="wishlist-item-info">
+                  <div class="wishlist-item-name">Designer Crossbody Bag</div>
+                  <div class="wishlist-item-brand">Brand: FashionLux</div>
+                  <div class="wishlist-item-price">
+                    $159.99 <span class="original-price">$199.99</span>
+                  </div>
+                  <div class="wishlist-item-actions">
+                    <button class="wishlist-action-btn add-to-cart">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        style="margin-right: 4px"
+                      >
+                        <path
+                          d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm0 0"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M20 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm0 0"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      Add to Cart
+                    </button>
+                    <button class="wishlist-action-btn move-to-closet">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        style="margin-right: 4px"
+                      >
+                        <path
+                          d="M3 2h18v8H3zM3 14h18v8H3z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M7 10v4M17 10v4"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      Move to Closet
+                    </button>
+                    <button class="wishlist-action-btn remove">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        style="margin-right: 4px"
+                      >
+                        <path
+                          d="M3 6h18"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="wishlist-item low-stock-item"
+                data-item-id="wishlist-item-4"
+              >
+                <div class="wishlist-item-image">Wool Coat</div>
+                <div class="wishlist-notification">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="10"
+                    height="10"
+                    style="vertical-align: middle; margin-right: 2px"
+                  >
+                    <path
+                      d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                      fill="none"
+                      stroke="white"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  LOW STOCK!
+                </div>
+                <div class="wishlist-item-info">
+                  <div class="wishlist-item-name">Wool Blend Overcoat</div>
+                  <div class="wishlist-item-brand">Brand: WinterWear</div>
+                  <div class="wishlist-item-price">$249.99</div>
+                  <div class="wishlist-item-actions">
+                    <button class="wishlist-action-btn add-to-cart">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        style="margin-right: 4px"
+                      >
+                        <path
+                          d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm0 0"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M20 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm0 0"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      Add to Cart
+                    </button>
+                    <button class="wishlist-action-btn move-to-closet">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        style="margin-right: 4px"
+                      >
+                        <path
+                          d="M3 2h18v8H3zM3 14h18v8H3z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M7 10v4M17 10v4"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      Move to Closet
+                    </button>
+                    <button class="wishlist-action-btn remove">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="14"
+                        height="14"
+                        style="margin-right: 4px"
+                      >
+                        <path
+                          d="M3 6h18"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="wishlist-empty-state" style="display: none">
+              <div class="empty-state-icon">
+                <svg viewBox="0 0 24 24" width="48" height="48">
+                  <path
+                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                    fill="none"
+                    stroke="#e0e0e0"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+              <h4>Your wishlist is empty</h4>
+              <p>
+                Browse trending items and heart the ones you like to add them
+                here.
+              </p>
+              <button class="wishlist-browse-btn">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="14"
+                  height="14"
+                  style="margin-right: 4px"
+                >
+                  <path
+                    d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                Browse Trending Items
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trending Tab -->
+        <div class="tab-content" id="trendingTab">
+          <div class="trending-container">
+            <!-- Celebrity Inspiration Section -->
+            <div class="trending-section">
+              <h3>Celebrity Inspiration</h3>
+              <div class="celebrity-grid">
+                <div class="celebrity-outfit" data-celeb-id="celeb-1">
+                  <div class="celebrity-image">Celebrity Style 1</div>
+                  <div class="celebrity-info">
+                    <div class="celebrity-name">Celebrity Name</div>
+                    <div class="celebrity-description">Red Carpet Look</div>
+                    <button class="celebrity-getlook-btn">Get the Look</button>
+                  </div>
+                </div>
+                <div class="celebrity-outfit" data-celeb-id="celeb-2">
+                  <div class="celebrity-image">Celebrity Style 2</div>
+                  <div class="celebrity-info">
+                    <div class="celebrity-name">Celebrity Name</div>
+                    <div class="celebrity-description">Street Style</div>
+                    <button class="celebrity-getlook-btn">Get the Look</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Trending Items Section -->
+            <div class="trending-section">
+              <h3>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="18"
+                  height="18"
+                  style="vertical-align: middle; margin-right: 4px"
+                >
+                  <path
+                    d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+                    fill="#FF6B35"
+                    stroke="#FF6B35"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                Trending Now
+              </h3>
+              <p>Based on likes and purchases in the last 30 days</p>
+              <div class="trending-grid">
+                <div class="trending-item" data-item-id="trending-item-1">
+                  <div class="trending-badge">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                      style="vertical-align: middle; margin-right: 2px"
+                    >
+                      <path
+                        d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+                        fill="#FF6B35"
+                        stroke="#FF6B35"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    Trending
+                  </div>
+                  <div class="trending-image">Oversized Sweater</div>
+                  <div class="trending-info">
+                    <div class="trending-name">Oversized Sweater</div>
+                    <div class="trending-brand">Brand: Cozy Wear</div>
+                    <div class="trending-price">$49.99</div>
+                    <div class="trending-feedback">
+                      <button
+                        class="feedback-button like-button"
+                        data-action="like"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          class="feedback-icon"
+                        >
+                          <path
+                            d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        class="feedback-button dislike-button"
+                        data-action="dislike"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          class="feedback-icon"
+                        >
+                          <path
+                            d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        class="feedback-button wishlist-button"
+                        data-action="wishlist"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          class="feedback-icon"
+                        >
+                          <path
+                            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="trending-item" data-item-id="trending-item-2">
+                  <div class="trending-badge">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                      style="vertical-align: middle; margin-right: 2px"
+                    >
+                      <path
+                        d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+                        fill="#FF6B35"
+                        stroke="#FF6B35"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    Trending
+                  </div>
+                  <div class="trending-image">Cargo Pants</div>
+                  <div class="trending-info">
+                    <div class="trending-name">Cargo Pants</div>
+                    <div class="trending-brand">Brand: UrbanStyle</div>
+                    <div class="trending-price">$59.99</div>
+                    <div class="trending-feedback">
+                      <button
+                        class="feedback-button like-button"
+                        data-action="like"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          class="feedback-icon"
+                        >
+                          <path
+                            d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        class="feedback-button dislike-button"
+                        data-action="dislike"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          class="feedback-icon"
+                        >
+                          <path
+                            d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        class="feedback-button wishlist-button"
+                        data-action="wishlist"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          class="feedback-icon"
+                        >
+                          <path
+                            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="trending-item" data-item-id="trending-item-3">
+                  <div class="trending-badge">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                      style="vertical-align: middle; margin-right: 2px"
+                    >
+                      <path
+                        d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+                        fill="#FF6B35"
+                        stroke="#FF6B35"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    Trending
+                  </div>
+                  <div class="trending-image">Platform Boots</div>
+                  <div class="trending-info">
+                    <div class="trending-name">Platform Boots</div>
+                    <div class="trending-brand">Brand: FootFashion</div>
+                    <div class="trending-price">$89.99</div>
+                    <div class="trending-feedback">
+                      <button
+                        class="feedback-button like-button"
+                        data-action="like"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          class="feedback-icon"
+                        >
+                          <path
+                            d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        class="feedback-button dislike-button"
+                        data-action="dislike"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          class="feedback-icon"
+                        >
+                          <path
+                            d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        class="feedback-button wishlist-button"
+                        data-action="wishlist"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          class="feedback-icon"
+                        >
+                          <path
+                            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="trending-item" data-item-id="trending-item-4">
+                  <div class="trending-badge">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                      style="vertical-align: middle; margin-right: 2px"
+                    >
+                      <path
+                        d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+                        fill="#FF6B35"
+                        stroke="#FF6B35"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    Trending
+                  </div>
+                  <div class="trending-image">Crossbody Bag</div>
+                  <div class="trending-info">
+                    <div class="trending-name">Crossbody Bag</div>
+                    <div class="trending-brand">Brand: Accessorize</div>
+                    <div class="trending-price">$39.99</div>
+                    <div class="trending-feedback">
+                      <button
+                        class="feedback-button like-button"
+                        data-action="like"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          class="feedback-icon"
+                        >
+                          <path
+                            d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        class="feedback-button dislike-button"
+                        data-action="dislike"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          class="feedback-icon"
+                        >
+                          <path
+                            d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                          <path
+                            d="M17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        class="feedback-button wishlist-button"
+                        data-action="wishlist"
+                      >
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="16"
+                          height="16"
+                          class="feedback-icon"
+                        >
+                          <path
+                            d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Try-On Tab -->
+        <div class="tab-content" id="tryOnTab">
+          <div class="tryon-container">
+            <div class="tryon-header">
+              <h3>Virtual Try-On</h3>
+              <p>See how clothes will look on you</p>
+            </div>
+            <div class="tryon-canvas">
+              <!-- Placeholder for try-on canvas -->
+              <div class="tryon-feedback-controls" id="tryonFeedbackControls">
+                <button class="feedback-button like-button" data-action="like">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    class="feedback-icon"
+                    style="vertical-align: middle; margin-right: 4px"
+                  >
+                    <path
+                      d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  Like this look
+                </button>
+                <button
+                  class="feedback-button dislike-button"
+                  data-action="dislike"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    class="feedback-icon"
+                    style="vertical-align: middle; margin-right: 4px"
+                  >
+                    <path
+                      d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M17 2h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                  Not for me
+                </button>
+              </div>
+              <div
+                class="tryon-advanced-options"
+                id="tryonAdvancedOptions"
+                style="display: none"
+              >
+                <button class="tryon-option-btn" data-action="addToWishlist">
+                  Add to Wishlist
+                </button>
+                <button class="tryon-option-btn" data-action="addToCart">
+                  Add to Cart
+                </button>
+                <button class="tryon-option-btn" data-action="saveNote">
+                  Just Save a Note
+                </button>
+              </div>
+            </div>
+            <div class="tryon-selector">
+              <div class="tryon-item selected">Shirt 1</div>
+              <div class="tryon-item">Shirt 2</div>
+              <div class="tryon-item">Hoodie</div>
+              <div class="tryon-item">Jacket</div>
+              <div class="tryon-item">Sweater</div>
+              <div class="tryon-item">Blouse</div>
+            </div>
+            <div class="tryon-controls">
+              <button class="tryon-button">Upload Photo</button>
+              <button class="tryon-button">Try It On</button>
+              <button class="tryon-button">Save Result</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Style Quiz Tab -->
+        <div class="tab-content" id="quizTab">
+          <div class="quiz-container">
+            <div class="quiz-header">
+              <h3>Style Quiz</h3>
+              <p>Let's find your perfect style</p>
+            </div>
+            <div class="quiz-progress">
+              <div class="quiz-progress-bar"></div>
+            </div>
+            <div class="quiz-question">
+              <h4>What's your preferred style?</h4>
+            </div>
+            <div class="quiz-options">
+              <div class="quiz-option">Casual & Comfortable</div>
+              <div class="quiz-option selected">Modern & Minimalist</div>
+              <div class="quiz-option">Bold & Colorful</div>
+              <div class="quiz-option">Classic & Elegant</div>
+              <div class="quiz-option">Streetwear & Urban</div>
+            </div>
+            <div class="quiz-navigation">
+              <button class="quiz-button back">Back</button>
+              <button class="quiz-button next">Next</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Social Proof Tab -->
+        <div class="tab-content" id="socialTab">
+          <div class="social-container">
+            <div class="social-header">
+              <h3>Style Community</h3>
+              <p>See what others are saying</p>
+            </div>
+            <div class="testimonials">
+              <div class="testimonial">
+                <div class="testimonial-header">
+                  <div class="testimonial-avatar">JD</div>
+                  <div class="testimonial-user">Jane Doe</div>
+                </div>
+                <div class="testimonial-content">
+                  "This style assistant helped me find the perfect outfit for my
+                  job interview! The recommendations were on point."
+                </div>
+                <div class="testimonial-images">
+                  <div class="testimonial-image">Outfit 1</div>
+                  <div class="testimonial-image">Outfit 2</div>
+                </div>
+              </div>
+              <div class="testimonial">
+                <div class="testimonial-header">
+                  <div class="testimonial-avatar">MS</div>
+                  <div class="testimonial-user">Mike Smith</div>
+                </div>
+                <div class="testimonial-content">
+                  "The virtual try-on feature is amazing! I could see exactly
+                  how the jacket would look on me before buying."
+                </div>
+              </div>
+              <div class="testimonial">
+                <div class="testimonial-header">
+                  <div class="testimonial-avatar">AT</div>
+                  <div class="testimonial-user">Alex Taylor</div>
+                </div>
+                <div class="testimonial-content">
+                  "I've been using this for a month and my style has improved so
+                  much. Their recommendations are always on trend!"
+                </div>
+                <div class="testimonial-images">
+                  <div class="testimonial-image">Before</div>
+                  <div class="testimonial-image">After</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // We'll use our internal feedback system instead of the external widget
+
+        // Get widget elements
+        const widget = document.getElementById("stylistWidget");
+        const openBtn = document.getElementById("openWidgetBtn");
+        const closeBtn = document.getElementById("closeWidgetBtn");
+        const minimizeBtn = document.getElementById("minimizeWidgetBtn");
+        const tabs = document.querySelectorAll(".widget-tab");
+        const tabContents = document.querySelectorAll(".tab-content");
+        const chatInput = document.getElementById("chatInput");
+        const sendBtn = document.getElementById("sendMessageBtn");
+        const chatMessages = document.getElementById("chatMessages");
+
+        // Auto-open the widget
+        setTimeout(() => {
+          widget.style.display = "flex";
+          console.log("Auto-opening widget");
+        }, 1000);
+
+        // Open widget button
+        openBtn.addEventListener("click", function () {
+          widget.style.display = "flex";
+        });
+
+        // Close widget button
+        closeBtn.addEventListener("click", function () {
+          widget.style.display = "none";
+        });
+
+        // Minimize widget button (we'll just close it for this demo)
+        minimizeBtn.addEventListener("click", function () {
+          widget.style.display = "none";
+        });
+
+        // Radial Hub Menu functionality
+        const hubCenterButton = document.getElementById("hubCenterButton");
+        const hubRadialMenu = document.getElementById("hubRadialMenu");
+        const hubItems = document.querySelectorAll(".hub-item");
+
+        // Set up and initialize the hub menu
+        function initHubMenu() {
+          // Start with the menu expanded
+          hubRadialMenu.classList.add("expanded");
+          // Center button click to toggle menu
+          hubCenterButton.addEventListener("click", function () {
+            this.classList.toggle("active");
+            hubRadialMenu.classList.toggle("expanded");
+          });
+
+          // Handle hub item clicks for tab switching
+          hubItems.forEach((item) => {
+            item.addEventListener("click", function () {
+              // Remove active class from all hub items
+              hubItems.forEach((i) => i.classList.remove("active"));
+              tabContents.forEach((c) => c.classList.remove("active"));
+
+              // Add active class to clicked item
+              this.classList.add("active");
+
+              // Activate corresponding content
+              const tabName = this.getAttribute("data-tab");
+              document.getElementById(`${tabName}Tab`).classList.add("active");
+            });
+          });
+        }
+
+        // Initialize the hub menu
+        initHubMenu();
+
+        // Chat functionality
+        function sendMessage() {
+          const message = chatInput.value.trim();
+          if (message) {
+            // Add user message
+            const userMessageEl = document.createElement("div");
+            userMessageEl.className = "message user";
+            userMessageEl.textContent = message;
+            chatMessages.appendChild(userMessageEl);
+
+            // Clear input
+            chatInput.value = "";
+
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Simulate assistant response
+            setTimeout(() => {
+              const assistantMessageEl = document.createElement("div");
+              assistantMessageEl.className = "message assistant";
+
+              // Simple responses based on user message
+              let response =
+                "I'm sorry, I'm not sure how to help with that. Could you try asking about fashion or style advice?";
+
+              if (
+                message.toLowerCase().includes("hello") ||
+                message.toLowerCase().includes("hi")
+              ) {
+                response =
+                  "Hello! How can I help with your fashion needs today?";
+              } else if (message.toLowerCase().includes("style")) {
+                response =
+                  "I'd be happy to give you style advice! What kind of look are you going for?";
+              } else if (
+                message.toLowerCase().includes("outfit") ||
+                message.toLowerCase().includes("wear")
+              ) {
+                response =
+                  "I can help you put together a great outfit! What occasion are you dressing for?";
+              } else if (message.toLowerCase().includes("color")) {
+                response =
+                  "Colors are so important in fashion! What's your skin tone or hair color? That helps me recommend colors that would suit you.";
+              } else if (message.toLowerCase().includes("recommend")) {
+                response =
+                  "I'd recommend checking out some classic pieces that never go out of style, like a well-fitted white shirt, good jeans, and a versatile blazer.";
+              } else if (
+                message.toLowerCase().includes("try") ||
+                message.toLowerCase().includes("virtual")
+              ) {
+                response =
+                  "Would you like to try our virtual try-on feature? You can see how clothes look on you before buying!";
+                setTimeout(() => {
+                  // Switch to try-on tab
+                  hubItems.forEach((i) => i.classList.remove("active"));
+                  tabContents.forEach((c) => c.classList.remove("active"));
+                  document
+                    .querySelector('.hub-item[data-tab="tryOn"]')
+                    .classList.add("active");
+                  document.getElementById("tryOnTab").classList.add("active");
+                }, 1000);
+              } else if (
+                message.toLowerCase().includes("quiz") ||
+                message.toLowerCase().includes("test")
+              ) {
+                response =
+                  "Great idea! Let's take the style quiz to understand your preferences better.";
+                setTimeout(() => {
+                  // Switch to quiz tab
+                  hubItems.forEach((i) => i.classList.remove("active"));
+                  tabContents.forEach((c) => c.classList.remove("active"));
+                  document
+                    .querySelector('.hub-item[data-tab="quiz"]')
+                    .classList.add("active");
+                  document.getElementById("quizTab").classList.add("active");
+                }, 1000);
+              } else if (
+                message.toLowerCase().includes("closet") ||
+                message.toLowerCase().includes("my clothes")
+              ) {
+                response =
+                  "Let's check out your closet and see what items you have saved!";
+                setTimeout(() => {
+                  // Switch to closet tab
+                  hubItems.forEach((i) => i.classList.remove("active"));
+                  tabContents.forEach((c) => c.classList.remove("active"));
+                  document
+                    .querySelector('.hub-item[data-tab="closet"]')
+                    .classList.add("active");
+                  document.getElementById("closetTab").classList.add("active");
+                }, 1000);
+              } else if (
+                message.toLowerCase().includes("trend") ||
+                message.toLowerCase().includes("popular")
+              ) {
+                response =
+                  "Let me show you what's trending right now in fashion!";
+                setTimeout(() => {
+                  // Switch to trending tab
+                  hubItems.forEach((i) => i.classList.remove("active"));
+                  tabContents.forEach((c) => c.classList.remove("active"));
+                  document
+                    .querySelector('.hub-item[data-tab="trending"]')
+                    .classList.add("active");
+                  document
+                    .getElementById("trendingTab")
+                    .classList.add("active");
+                }, 1000);
+              } else if (
+                message.toLowerCase().includes("social") ||
+                message.toLowerCase().includes("review") ||
+                message.toLowerCase().includes("people")
+              ) {
+                response =
+                  "Here's what other people are saying about their styling experiences:";
+                setTimeout(() => {
+                  // Switch to social tab
+                  hubItems.forEach((i) => i.classList.remove("active"));
+                  tabContents.forEach((c) => c.classList.remove("active"));
+                  document
+                    .querySelector('.hub-item[data-tab="social"]')
+                    .classList.add("active");
+                  document.getElementById("socialTab").classList.add("active");
+                }, 1000);
+              }
+
+              assistantMessageEl.textContent = response;
+              chatMessages.appendChild(assistantMessageEl);
+
+              // Scroll to bottom again
+              chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1000);
+          }
+        }
+
+        // Send button click
+        sendBtn.addEventListener("click", sendMessage);
+
+        // Send on Enter key
+        chatInput.addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            sendMessage();
+          }
+        });
+
+        // Add functionality to other interactive elements
+        document.querySelectorAll(".quiz-option").forEach((option) => {
+          option.addEventListener("click", function () {
+            document
+              .querySelectorAll(".quiz-option")
+              .forEach((o) => o.classList.remove("selected"));
+            this.classList.add("selected");
+          });
+        });
+
+        document.querySelectorAll(".tryon-item").forEach((item) => {
+          item.addEventListener("click", function () {
+            document
+              .querySelectorAll(".tryon-item")
+              .forEach((i) => i.classList.remove("selected"));
+            this.classList.add("selected");
+          });
+        });
+
+        // Visual cues for buttons
+        const allButtons = document.querySelectorAll("button");
+        allButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            this.style.opacity = "0.8";
+            setTimeout(() => {
+              this.style.opacity = "1";
+            }, 200);
+          });
+        });
+
+        // Feedback System Implementation
+        // ------------------------------
+
+        // Load saved feedback from localStorage
+        const FEEDBACK_STORAGE_KEY = "stylist-feedback-data";
+        let userFeedback = {
+          likedItems: new Set(),
+          dislikedItems: new Set(),
+          helpfulMessages: new Set(),
+        };
+
+        // Load feedback data from localStorage
+        function loadFeedbackData() {
+          try {
+            const storedData = localStorage.getItem(FEEDBACK_STORAGE_KEY);
+            if (storedData) {
+              const parsedData = JSON.parse(storedData);
+              userFeedback.likedItems = new Set(parsedData.likedItems || []);
+              userFeedback.dislikedItems = new Set(
+                parsedData.dislikedItems || []
+              );
+              userFeedback.helpfulMessages = new Set(
+                parsedData.helpfulMessages || []
+              );
+            }
+          } catch (e) {
+            console.error("Error loading feedback data:", e);
+          }
+        }
+
+        // Save feedback data to localStorage
+        function saveFeedbackData() {
+          try {
+            const dataToSave = {
+              likedItems: Array.from(userFeedback.likedItems),
+              dislikedItems: Array.from(userFeedback.dislikedItems),
+              helpfulMessages: Array.from(userFeedback.helpfulMessages),
+            };
+            localStorage.setItem(
+              FEEDBACK_STORAGE_KEY,
+              JSON.stringify(dataToSave)
+            );
+          } catch (e) {
+            console.error("Error saving feedback data:", e);
+          }
+        }
+
+        // Show feedback toast message
+        function showToast(message, color = "#000") {
+          const toast = document.getElementById("feedbackToast");
+          toast.textContent = message;
+          toast.style.backgroundColor = color;
+          toast.classList.add("show");
+
+          setTimeout(() => {
+            toast.classList.remove("show");
+          }, 2000);
+        }
+
+        // Handle item like/dislike
+        function handleItemFeedback(itemId, action) {
+          if (action === "like") {
+            // Toggle like state
+            if (userFeedback.likedItems.has(itemId)) {
+              userFeedback.likedItems.delete(itemId);
+              showToast("Feedback removed");
+            } else {
+              userFeedback.likedItems.add(itemId);
+              userFeedback.dislikedItems.delete(itemId); // Remove from disliked if present
+              showToast("Added to your liked items", "#4caf50");
+            }
+          } else if (action === "dislike") {
+            // Toggle dislike state
+            if (userFeedback.dislikedItems.has(itemId)) {
+              userFeedback.dislikedItems.delete(itemId);
+              showToast("Feedback removed");
+            } else {
+              userFeedback.dislikedItems.add(itemId);
+              userFeedback.likedItems.delete(itemId); // Remove from liked if present
+              showToast("Noted - not your style", "#f44336");
+            }
+          }
+
+          // Update button states
+          updateFeedbackButtons();
+
+          // Save to localStorage
+          saveFeedbackData();
+        }
+
+        // Handle assistant message thumbs up
+        function handleMessageFeedback(messageId) {
+          if (userFeedback.helpfulMessages.has(messageId)) {
+            userFeedback.helpfulMessages.delete(messageId);
+            showToast("Feedback removed");
+          } else {
+            userFeedback.helpfulMessages.add(messageId);
+            showToast("Thanks for your feedback!", "#4caf50");
+          }
+
+          // Update button states
+          updateFeedbackButtons();
+
+          // Save to localStorage
+          saveFeedbackData();
+        }
+
+        // Update the visual state of all feedback buttons
+        function updateFeedbackButtons() {
+          // Update item like/dislike buttons
+          document.querySelectorAll(".trending-item").forEach((item) => {
+            const itemId = item.getAttribute("data-item-id");
+            if (!itemId) return;
+
+            const likeBtn = item.querySelector(".like-button");
+            const dislikeBtn = item.querySelector(".dislike-button");
+
+            if (likeBtn) {
+              if (userFeedback.likedItems.has(itemId)) {
+                likeBtn.classList.add("active");
+              } else {
+                likeBtn.classList.remove("active");
+              }
+            }
+
+            if (dislikeBtn) {
+              if (userFeedback.dislikedItems.has(itemId)) {
+                dislikeBtn.classList.add("active");
+              } else {
+                dislikeBtn.classList.remove("active");
+              }
+            }
+          });
+
+          // Update message thumbs up buttons
+          document.querySelectorAll(".message.assistant").forEach((message) => {
+            const messageId = message.getAttribute("data-message-id");
+            if (!messageId) return;
+
+            const thumbsUpBtn = message.querySelector(".thumbs-up-button");
+            if (thumbsUpBtn) {
+              if (userFeedback.helpfulMessages.has(messageId)) {
+                thumbsUpBtn.classList.add("active");
+                thumbsUpBtn.innerHTML = `
+                  <svg viewBox="0 0 24 24" width="16" height="16" class="feedback-icon" style="vertical-align: middle; margin-right: 4px;">
+                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Thanks for the feedback!
+                `;
+              } else {
+                thumbsUpBtn.classList.remove("active");
+                thumbsUpBtn.innerHTML = `
+                  <svg viewBox="0 0 24 24" width="16" height="16" class="feedback-icon" style="vertical-align: middle; margin-right: 4px;">
+                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  This was helpful
+                `;
+              }
+            }
+          });
+        }
+
+        // Add event listeners for feedback buttons
+        function initFeedbackSystem() {
+          // First load any existing feedback data
+          loadFeedbackData();
+
+          // Add listeners to like buttons
+          document.querySelectorAll(".like-button").forEach((button) => {
+            button.addEventListener("click", function (e) {
+              e.stopPropagation(); // Prevent item click
+              const itemId =
+                this.closest(".trending-item").getAttribute("data-item-id");
+              handleItemFeedback(itemId, "like");
+            });
+          });
+
+          // Add listeners to dislike buttons
+          document.querySelectorAll(".dislike-button").forEach((button) => {
+            button.addEventListener("click", function (e) {
+              e.stopPropagation(); // Prevent item click
+              const itemId =
+                this.closest(".trending-item").getAttribute("data-item-id");
+              handleItemFeedback(itemId, "dislike");
+            });
+          });
+
+          // Add listeners to message thumbs up buttons
+          document.querySelectorAll(".thumbs-up-button").forEach((button) => {
+            button.addEventListener("click", function (e) {
+              e.stopPropagation(); // Prevent message click
+              const messageId =
+                this.closest(".message").getAttribute("data-message-id");
+              handleMessageFeedback(messageId);
+            });
+          });
+
+          // Update all button states initially
+          updateFeedbackButtons();
+        }
+
+        // Initialize the feedback system
+        initFeedbackSystem();
+
+        // Virtual Try-On feedback system
+        function initTryOnFeedback() {
+          const likeButton = document.querySelector(
+            "#tryonFeedbackControls .like-button"
+          );
+          const dislikeButton = document.querySelector(
+            "#tryonFeedbackControls .dislike-button"
+          );
+          const advancedOptions = document.getElementById(
+            "tryonAdvancedOptions"
+          );
+
+          if (likeButton) {
+            likeButton.addEventListener("click", function () {
+              this.classList.toggle("active");
+
+              if (this.classList.contains("active")) {
+                // Remove dislike if active
+                dislikeButton.classList.remove("active");
+                // Show advanced options
+                advancedOptions.style.display = "flex";
+                showToast("You liked this look!", "#4caf50");
+
+                // Track this feedback
+                const tryOnItem = document.querySelector(
+                  ".tryon-item.selected"
+                ).textContent;
+                const feedbackData = {
+                  item: tryOnItem,
+                  action: "like",
+                  timestamp: new Date().toISOString(),
+                };
+
+                // Log to console (would be an API call in production)
+                console.log("TryOn Feedback:", feedbackData);
+
+                // Save to localStorage
+                const tryOnFeedback = JSON.parse(
+                  localStorage.getItem("stylist-tryon-feedback") || "[]"
+                );
+                tryOnFeedback.push(feedbackData);
+                localStorage.setItem(
+                  "stylist-tryon-feedback",
+                  JSON.stringify(tryOnFeedback)
+                );
+              } else {
+                // Hide advanced options when unliked
+                advancedOptions.style.display = "none";
+                showToast("Feedback removed");
+              }
+            });
+          }
+
+          if (dislikeButton) {
+            dislikeButton.addEventListener("click", function () {
+              this.classList.toggle("active");
+
+              if (this.classList.contains("active")) {
+                // Remove like if active
+                likeButton.classList.remove("active");
+                // Hide advanced options
+                advancedOptions.style.display = "none";
+                showToast("Not your style - noted!", "#f44336");
+
+                // Track this feedback
+                const tryOnItem = document.querySelector(
+                  ".tryon-item.selected"
+                ).textContent;
+                const feedbackData = {
+                  item: tryOnItem,
+                  action: "dislike",
+                  timestamp: new Date().toISOString(),
+                };
+
+                // Log to console (would be an API call in production)
+                console.log("TryOn Feedback:", feedbackData);
+
+                // Save to localStorage
+                const tryOnFeedback = JSON.parse(
+                  localStorage.getItem("stylist-tryon-feedback") || "[]"
+                );
+                tryOnFeedback.push(feedbackData);
+                localStorage.setItem(
+                  "stylist-tryon-feedback",
+                  JSON.stringify(tryOnFeedback)
+                );
+              } else {
+                showToast("Feedback removed");
+              }
+            });
+          }
+
+          // Advanced options handlers
+          const advancedOptionButtons =
+            document.querySelectorAll(".tryon-option-btn");
+          advancedOptionButtons.forEach((button) => {
+            button.addEventListener("click", function () {
+              const action = this.getAttribute("data-action");
+              const tryOnItem = document.querySelector(
+                ".tryon-item.selected"
+              ).textContent;
+
+              switch (action) {
+                case "addToWishlist":
+                  showToast("Added to your wishlist!", "#000");
+                  break;
+                case "addToCart":
+                  showToast("Added to cart!", "#4caf50");
+                  break;
+                case "saveNote":
+                  showToast("Note saved!", "#ff9800");
+                  break;
+              }
+
+              // Track this action
+              const actionData = {
+                item: tryOnItem,
+                action: action,
+                timestamp: new Date().toISOString(),
+              };
+
+              // Log to console (would be an API call in production)
+              console.log("TryOn Action:", actionData);
+
+              // Save to localStorage
+              const tryOnActions = JSON.parse(
+                localStorage.getItem("stylist-tryon-actions") || "[]"
+              );
+              tryOnActions.push(actionData);
+              localStorage.setItem(
+                "stylist-tryon-actions",
+                JSON.stringify(tryOnActions)
+              );
+            });
+          });
+
+          // Update the try-on selection to reset feedback
+          document.querySelectorAll(".tryon-item").forEach((item) => {
+            item.addEventListener("click", function () {
+              // Reset feedback buttons
+              likeButton.classList.remove("active");
+              dislikeButton.classList.remove("active");
+
+              // Hide advanced options
+              advancedOptions.style.display = "none";
+            });
+          });
+        }
+
+        // Initialize the Try-On feedback system
+        initTryOnFeedback();
+
+        // Wishlist functionality
+        function initWishlistFunctionality() {
+          // Get wishlist elements
+          const wishlistItems = document.querySelectorAll(".wishlist-item");
+          const wishlistGrid = document.querySelector(".wishlist-grid");
+          const emptyState = document.querySelector(".wishlist-empty-state");
+          const browseBtn = document.querySelector(".wishlist-browse-btn");
+
+          // Handle remove buttons
+          document
+            .querySelectorAll(".wishlist-action-btn.remove")
+            .forEach((button) => {
+              button.addEventListener("click", function (e) {
+                const wishlistItem = this.closest(".wishlist-item");
+                const itemId = wishlistItem.getAttribute("data-item-id");
+
+                // Animation before removal
+                wishlistItem.style.opacity = "0";
+                wishlistItem.style.transform = "scale(0.9)";
+
+                setTimeout(() => {
+                  wishlistItem.remove();
+
+                  // Show empty state if no items left
+                  if (
+                    document.querySelectorAll(".wishlist-item").length === 0
+                  ) {
+                    wishlistGrid.style.display = "none";
+                    emptyState.style.display = "flex";
+                  }
+
+                  // Show feedback toast
+                  showToast("Item removed from wishlist");
+                }, 300);
+              });
+            });
+
+          // Handle add to cart
+          document
+            .querySelectorAll(".wishlist-action-btn.add-to-cart")
+            .forEach((button) => {
+              button.addEventListener("click", function () {
+                const itemName = this.closest(".wishlist-item").querySelector(
+                  ".wishlist-item-name"
+                ).textContent;
+                showToast(`${itemName} added to cart!`, "#4caf50");
+              });
+            });
+
+          // Handle move to closet
+          document
+            .querySelectorAll(".wishlist-action-btn.move-to-closet")
+            .forEach((button) => {
+              button.addEventListener("click", function () {
+                const itemName = this.closest(".wishlist-item").querySelector(
+                  ".wishlist-item-name"
+                ).textContent;
+                showToast(`${itemName} moved to your closet!`, "#000");
+
+                // Trigger the remove action as well
+                this.closest(".wishlist-item")
+                  .querySelector(".wishlist-action-btn.remove")
+                  .click();
+              });
+            });
+
+          // Browse button should switch to trending tab
+          if (browseBtn) {
+            browseBtn.addEventListener("click", function () {
+              // Switch to trending tab
+              hubItems.forEach((i) => i.classList.remove("active"));
+              tabContents.forEach((c) => c.classList.remove("active"));
+              document
+                .querySelector('.hub-item[data-tab="trending"]')
+                .classList.add("active");
+              document.getElementById("trendingTab").classList.add("active");
+            });
+          }
+        }
+
+        // Initialize the wishlist functionality
+        initWishlistFunctionality();
+
+        // Handle message sending to add feedback buttons to new messages
+        const originalSendMessage = sendMessage;
+        sendMessage = function () {
+          originalSendMessage();
+
+          // The original function will add a new assistant message after 1 second
+          setTimeout(() => {
+            const messages = document.querySelectorAll(".message.assistant");
+            const latestMessage = messages[messages.length - 1];
+
+            // Only add feedback if not already there
+            if (
+              latestMessage &&
+              !latestMessage.querySelector(".message-feedback")
+            ) {
+              // Add message id if not present
+              if (!latestMessage.hasAttribute("data-message-id")) {
+                latestMessage.setAttribute(
+                  "data-message-id",
+                  `msg-${Date.now()}`
+                );
+              }
+
+              // Add feedback button
+              const feedbackDiv = document.createElement("div");
+              feedbackDiv.className = "message-feedback";
+              feedbackDiv.innerHTML = `<button class="feedback-button thumbs-up-button" data-action="thumbsUp">
+                <svg viewBox="0 0 24 24" width="16" height="16" class="feedback-icon" style="vertical-align: middle; margin-right: 4px;">
+                  <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                This was helpful
+              </button>`;
+              latestMessage.appendChild(feedbackDiv);
+
+              // Add event listener to the new button
+              const button = feedbackDiv.querySelector(".thumbs-up-button");
+              button.addEventListener("click", function () {
+                const messageId = latestMessage.getAttribute("data-message-id");
+                handleMessageFeedback(messageId);
+              });
+            }
+          }, 1500);
+        };
+      });
+    </script>
+  </body>
+</html>

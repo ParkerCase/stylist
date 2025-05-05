@@ -2,6 +2,7 @@
 import React from 'react';
 import './ChatHeader.scss';
 import { useChatStore } from '@store/index';
+import WishlistNotification from '@/components/WishlistNotification';
 
 interface ChatHeaderProps {
   title?: string;
@@ -55,6 +56,27 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
       </div>
       <div className="stylist-chat-header__title">{title}</div>
       <div className="stylist-chat-header__controls">
+        {!isMinimized && (
+          <WishlistNotification
+            onClickNotification={() => {
+              if (onSwitchView) {
+                // Switch to lookbook first, then to wishlist tab
+                if (currentView !== 'lookbook') {
+                  onSwitchView('lookbook');
+                }
+                
+                // Set wishlist tab as active
+                // This would require connecting to the Lookbook component,
+                // which is beyond the scope of this inline edit
+                // We could use a global event or store for this
+                
+                // For demonstration, we'll just log this action
+                console.log('Switch to wishlist tab');
+              }
+            }}
+          />
+        )}
+        
         {onSwitchView && !isMinimized && (
           <button
             className="stylist-chat-header__button stylist-chat-header__button--switch"

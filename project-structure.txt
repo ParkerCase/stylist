@@ -1,0 +1,430 @@
+.
+├──  integrations
+│   ├── __init__.py
+│   ├── cache
+│   │   ├── __init__.py
+│   │   ├── memory_cache.py
+│   │   └── redis_cache.py
+│   ├── retailer_api.py
+│   ├── retailers
+│   │   ├── __init__.py
+│   │   ├── generic_rest.py
+│   │   ├── mock_retailer.py
+│   │   ├── shopify.py
+│   │   └── woocommerce.py
+│   └── transformers
+│       ├── __init__.py
+│       └── data_transformers.py
+├── AWSCLIV2.pkg
+├── COMPLETION.md
+├── DATA_SYNC_COMPLETION.md
+├── Dockerfile
+├── ENV_SETUP.md
+├── FEEDBACK_SYSTEM_COMPLETION_REPORT.md
+├── GOALS.md
+├── IMPLEMENTATION_PLAN.md
+├── LAUNCH_INSTRUCTIONS.md
+├── NOTES.txt
+├── PROJECT_SUMMARY.md
+├── README.md
+├── RECOMMENDATION_ENGINE_REPORT.md
+├── RETAILER_INTEGRATION_REPORT.md
+├── STILL_MISSING.md
+├── TESTING_COMPLETION_REPORT.md
+├── UI_COMPLETION_REPORT.md
+├── WIDGET_ARCHITECTURE_REPORT.md
+├── WIDGET_INTEGRATION.md
+├── __init__.py
+├── __mocks__
+│   └── fileMock.js
+├── api
+│   ├── __init__.py
+│   ├── closet_routes.py
+│   ├── inventory_routes.py
+│   ├── recommendation_routes.py
+│   ├── retailer_routes.py
+│   └── user_routes.py
+├── backend.log
+├── background.js
+├── config.py
+├── content_scripts
+│   └── detector.js
+├── cypress
+│   ├── e2e
+│   │   ├── chat-widget.spec.ts
+│   │   └── virtual-try-on.spec.ts
+│   ├── fixtures
+│   │   ├── images
+│   │   ├── recommendations.json
+│   │   └── test-photo.jpg
+│   ├── support
+│   │   ├── commands.ts
+│   │   └── e2e.ts
+│   └── tsconfig.json
+├── cypress.config.js
+├── demo.py
+├── demo_retailer_api.py
+├── dist
+│   ├── INSTRUCTIONS.txt
+│   ├── WIDGET_FINAL_FLOW_REPORT.md
+│   ├── debug_server.py
+│   ├── direct_server.js
+│   ├── embed.js
+│   ├── embed.js.LICENSE.txt
+│   ├── fix_404.html
+│   ├── fixed_server.js
+│   ├── full-widget.html
+│   ├── index.html
+│   ├── only_widget.js
+│   ├── run_app.sh
+│   ├── serve.py
+│   ├── server.js
+│   ├── simple-widget.html
+│   ├── simple_server.py
+│   ├── standalone.html
+│   ├── stylist-widget.css
+│   ├── stylist-widget.js
+│   ├── stylist-widget.js.LICENSE.txt
+│   └── ultra_simple.py
+├── feedback_demo.html
+├── icons
+│   ├── android-chrome-192x192.png
+│   ├── android-chrome-512x512.png
+│   ├── apple-touch-icon.png
+│   ├── favicon-16x16.png
+│   ├── favicon-32x32.png
+│   ├── favicon.ico
+│   ├── icon128.png
+│   ├── icon16.png
+│   ├── icon192.png
+│   ├── icon32.png
+│   └── icon48.png
+├── initialize_mock_retailer.py
+├── inject.js
+├── integrations
+│   ├── cache
+│   │   ├── __init__.py
+│   │   ├── memory_cache.py
+│   │   └── redis_cache.py
+│   ├── retailer_api.py
+│   └── retailers
+│       ├── generic_rest.py
+│       ├── mock_retailer.py
+│       ├── shopify.py
+│       └── woocommerce.py
+├── jest.config.js
+├── jest.setup.js
+├── main.py
+├── manifest.json
+├── models
+│   ├── __init__.py
+│   ├── clothing.py
+│   ├── recommendation.py
+│   └── user.py
+├── nginx.conf
+├── package-lock.json
+├── package.json
+├── popup.html
+├── popup.js
+├── project-structure.txt
+├── public
+│   ├── button-icons
+│   │   ├── my-closet.png
+│   │   ├── social-proof.png
+│   │   ├── style-quiz.png
+│   │   ├── trending-items.png
+│   │   └── virtual-try-on.png
+│   ├── embed-script.js
+│   ├── embed.js
+│   ├── embed.js.LICENSE.txt
+│   ├── feedback-demo.html
+│   ├── full-widget copy 2.html
+│   ├── full-widget-do-not-touch.html
+│   ├── full-widget.html
+│   ├── index.html
+│   ├── lookbook-demo.html
+│   ├── lookbook-test.html
+│   ├── models
+│   │   └── segmentation-model
+│   │       ├── README.md
+│   │       └── model.json
+│   ├── recommendationEngine
+│   │   └── recommendationEngine.js
+│   ├── simple-widget.html
+│   ├── standalone-lookbook.html
+│   ├── stylist-widget.css
+│   ├── stylist-widget.js
+│   └── stylist-widget.js.LICENSE.txt
+├── requirements.txt
+├── run_server.sh
+├── run_simple.sh
+├── scripts
+│   └── deploy-lambda.js
+├── services
+│   ├── DynamicParser.js
+│   ├── ProductScraper.js
+│   ├── __init__.py
+│   ├── integrated_recommendation_service.py
+│   ├── recommendation_service.py
+│   ├── social-proof
+│   │   ├── __tests__
+│   │   │   ├── demo.ts
+│   │   │   └── runWhoWhatWearScraper.ts
+│   │   ├── alternativeSocialProofSource.ts
+│   │   ├── config.ts
+│   │   ├── matchSocialOutfits.ts
+│   │   ├── package-lock.json
+│   │   ├── package.json
+│   │   ├── scrapeSocialProof.ts
+│   │   ├── tsconfig.json
+│   │   ├── types.ts
+│   │   └── whoWhatWearScraper.ts
+│   └── style_analysis_service.py
+├── simple_server.py
+├── src
+│   ├── StylistWidget.tsx
+│   ├── api
+│   │   ├── __tests__
+│   │   │   └── apiClient.test.ts
+│   │   ├── apiClient.ts
+│   │   ├── feedbackApi.ts
+│   │   ├── index.ts
+│   │   ├── recommendationApi.ts
+│   │   └── userApi.ts
+│   ├── components
+│   │   ├── Auth
+│   │   │   ├── Auth.scss
+│   │   │   ├── AuthModal.tsx
+│   │   │   ├── ForgotPassword.tsx
+│   │   │   ├── Login.tsx
+│   │   │   ├── Register.tsx
+│   │   │   ├── ResetPassword.tsx
+│   │   │   └── index.ts
+│   │   ├── Cart
+│   │   │   ├── Cart.scss
+│   │   │   └── Cart.tsx
+│   │   ├── ChatBody
+│   │   │   ├── ChatBody.scss
+│   │   │   ├── ChatBody.tsx
+│   │   │   └── index.ts
+│   │   ├── ChatHeader
+│   │   │   ├── ChatHeader.scss
+│   │   │   ├── ChatHeader.tsx
+│   │   │   └── index.ts
+│   │   ├── ChatInput
+│   │   │   ├── ChatInput.scss
+│   │   │   ├── ChatInput.tsx
+│   │   │   └── index.ts
+│   │   ├── ChatWidget
+│   │   │   ├── ChatWidget.scss
+│   │   │   ├── ChatWidget.tsx
+│   │   │   ├── FloatingButton.tsx
+│   │   │   ├── __tests__
+│   │   │   └── index.ts
+│   │   ├── FeedbackControls
+│   │   │   ├── FeedbackControls.scss
+│   │   │   ├── FeedbackControls.tsx
+│   │   │   ├── ThumbsUpButton.tsx
+│   │   │   └── index.ts
+│   │   ├── ImageUploader
+│   │   │   ├── ImageUploader.scss
+│   │   │   ├── ImageUploader.tsx
+│   │   │   └── index.ts
+│   │   ├── ItemCard
+│   │   │   ├── ItemCard.scss
+│   │   │   ├── ItemCard.tsx
+│   │   │   ├── __tests__
+│   │   │   └── index.ts
+│   │   ├── Lookbook
+│   │   │   ├── Lookbook.scss
+│   │   │   ├── Lookbook.tsx
+│   │   │   └── index.ts
+│   │   ├── MessageBubble
+│   │   │   ├── MessageBubble.scss
+│   │   │   ├── MessageBubble.tsx
+│   │   │   └── index.ts
+│   │   ├── MyCloset
+│   │   │   ├── MyCloset.scss
+│   │   │   ├── MyCloset.tsx
+│   │   │   └── index.ts
+│   │   ├── OutfitBuilder
+│   │   │   ├── OutfitBuilder.scss
+│   │   │   ├── OutfitBuilder.tsx
+│   │   │   └── index.ts
+│   │   ├── OutfitDisplay
+│   │   │   ├── OutfitDisplay.scss
+│   │   │   ├── OutfitDisplay.tsx
+│   │   │   └── index.ts
+│   │   ├── SocialProof
+│   │   │   ├── SocialProofRenderer.scss
+│   │   │   ├── SocialProofRenderer.tsx
+│   │   │   └── index.ts
+│   │   ├── SocialProofModal
+│   │   │   ├── SocialProofModal.scss
+│   │   │   ├── SocialProofModal.tsx
+│   │   │   └── index.ts
+│   │   ├── StyleQuiz
+│   │   │   ├── StyleQuiz.scss
+│   │   │   ├── StyleQuiz.tsx
+│   │   │   ├── StyleQuizModal.scss
+│   │   │   ├── StyleQuizModal.tsx
+│   │   │   ├── __tests__
+│   │   │   └── index.ts
+│   │   ├── TrendingItems
+│   │   │   ├── TrendingItems.scss
+│   │   │   ├── TrendingItems.tsx
+│   │   │   └── index.ts
+│   │   ├── TryOnButton
+│   │   │   ├── TryOnButton.scss
+│   │   │   └── TryOnButton.tsx
+│   │   ├── TryOnCanvas
+│   │   │   ├── BodyGuide.scss
+│   │   │   ├── BodyGuide.tsx
+│   │   │   ├── TryOnCanvas.scss
+│   │   │   ├── TryOnCanvas.tsx
+│   │   │   ├── __tests__
+│   │   │   └── index.ts
+│   │   ├── TryOnControls
+│   │   │   ├── TryOnControls.scss
+│   │   │   ├── TryOnControls.tsx
+│   │   │   └── index.ts
+│   │   ├── TryOnFeedback
+│   │   │   ├── TryOnFeedback.scss
+│   │   │   ├── TryOnFeedback.tsx
+│   │   │   └── index.ts
+│   │   ├── TryOnModal
+│   │   │   ├── TryOnModal.scss
+│   │   │   ├── TryOnModal.tsx
+│   │   │   └── index.ts
+│   │   ├── UserPreferences
+│   │   │   ├── UserPreferences.scss
+│   │   │   └── UserPreferences.tsx
+│   │   ├── UserProfile
+│   │   │   ├── UserProfile.scss
+│   │   │   ├── UserProfile.tsx
+│   │   │   └── index.ts
+│   │   ├── VirtualTryOn
+│   │   │   ├── VirtualTryOn.scss
+│   │   │   ├── VirtualTryOn.tsx
+│   │   │   └── index.ts
+│   │   ├── Wishlist
+│   │   │   ├── Wishlist.scss
+│   │   │   └── Wishlist.tsx
+│   │   ├── WishlistButton
+│   │   │   ├── WishlistButton.scss
+│   │   │   ├── WishlistButton.tsx
+│   │   │   └── index.ts
+│   │   ├── WishlistNotification
+│   │   │   ├── WishlistNotification.scss
+│   │   │   ├── WishlistNotification.tsx
+│   │   │   └── index.ts
+│   │   ├── WishlistTab
+│   │   │   ├── WishlistTab.scss
+│   │   │   ├── WishlistTab.tsx
+│   │   │   └── index.ts
+│   │   └── common
+│   │       ├── ErrorMessage.scss
+│   │       ├── ErrorMessage.tsx
+│   │       ├── LoadingIndicator.scss
+│   │       ├── LoadingIndicator.tsx
+│   │       ├── SyncStatusIndicator.scss
+│   │       └── SyncStatusIndicator.tsx
+│   ├── edgeCases
+│   │   ├── ImageProcessingTestCompletionReport.md
+│   │   └── imageProcessing.test.ts
+│   ├── embed.ts
+│   ├── hooks
+│   │   ├── __tests__
+│   │   │   └── useTryOn.test.ts
+│   │   ├── useBackgroundRemoval.ts
+│   │   ├── useImageProcessing.ts
+│   │   ├── useNetworkStatus.ts
+│   │   ├── useSyncedStore.ts
+│   │   └── useTryOn.ts
+│   ├── index.tsx
+│   ├── integration
+│   │   └── integrateTryOn.ts
+│   ├── services
+│   │   ├── SyncProvider.tsx
+│   │   ├── __tests__
+│   │   │   └── chatService.test.ts
+│   │   ├── analytics
+│   │   │   └── analyticsService.ts
+│   │   ├── auth
+│   │   │   ├── __tests__
+│   │   │   └── authService.ts
+│   │   ├── background-removal
+│   │   │   ├── __tests__
+│   │   │   ├── removeBackgroundApi.ts
+│   │   │   ├── tfBackgroundRemoval.ts
+│   │   │   └── utils.ts
+│   │   ├── chatService.ts
+│   │   ├── feedbackSyncService.ts
+│   │   ├── image-processing
+│   │   │   ├── canvasUtils.ts
+│   │   │   ├── fileUtils.ts
+│   │   │   ├── imagePositioning.ts
+│   │   │   └── imageScaling.ts
+│   │   ├── purchaseTrackingService.ts
+│   │   └── syncService.ts
+│   ├── setupTests.ts
+│   ├── store
+│   │   ├── __tests__
+│   │   │   ├── chatStore.test.ts
+│   │   │   └── recommendationStore.test.ts
+│   │   ├── chatStore.ts
+│   │   ├── feedbackStore.ts
+│   │   ├── index.ts
+│   │   ├── recommendationStore.ts
+│   │   ├── tryOnStore.ts
+│   │   └── userStore.ts
+│   ├── styles
+│   │   ├── global.scss
+│   │   ├── mixins.scss
+│   │   └── variables.scss
+│   ├── test-claude-simulation.js
+│   ├── test-recommendations-flow.js
+│   ├── types
+│   │   ├── chat.ts
+│   │   ├── index.ts
+│   │   ├── recommendation.ts
+│   │   ├── retailer.ts
+│   │   ├── tryOn.ts
+│   │   └── user.ts
+│   └── utils
+│       ├── analytics.ts
+│       ├── environment.ts
+│       ├── formatters.ts
+│       ├── index.ts
+│       ├── localStorage.ts
+│       ├── mock_social_proof.json
+│       └── productMappings.ts
+├── standalone_widget.html
+├── static
+├── stillremaining.txt
+├── stylist
+│   ├── __init__.py
+│   ├── api
+│   ├── integrations
+│   │   ├── cache
+│   │   └── retailers
+│   ├── models
+│   ├── services
+│   └── utils
+├── tests
+│   ├── __init__.py
+│   ├── conftest.py
+│   ├── test_recommendation.py
+│   ├── test_retailer_api.py
+│   └── test_style_analysis.py
+├── tsconfig.json
+├── update-scss.sh
+├── utils
+│   ├── __init__.py
+│   └── recommendation_utils.py
+├── verify.js
+├── verify.py
+├── verify_project.sh
+└── webpack.config.js
+
+95 directories, 333 files

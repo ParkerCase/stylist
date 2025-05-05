@@ -73,7 +73,7 @@ export enum AnalyticsEventType {
     // Log event to console in development
     // Only log in development 
     if (process.env.NODE_ENV !== 'production') {
-      console.log('Analytics Event:', event);
+      console.log('[Analytics Event]:', event);
     }
     
     // Queue event for sending to backend

@@ -136,11 +136,12 @@ const ItemCard: React.FC<ItemCardProps> = ({
     : null;
 
   // Check if product is try-on compatible
-  const isTryOnCompatible = category && 
-    ['top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory'].includes(category.toLowerCase());
+  const isTryOnCompatible = category ? 
+    ['top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory'].includes(category.toLowerCase())
+    : false;
     
   // Get garment type for try-on
-  const garmentType = mapProductTypeToGarmentType(category);
+  const garmentType = category ? mapProductTypeToGarmentType(category) : GarmentType.TOP;
 
   return (
     <div className={`stylist-item-card ${animateItem ? 'stylist-item-card--animate' : ''}`}>
@@ -209,10 +210,10 @@ const ItemCard: React.FC<ItemCardProps> = ({
         </div>
       </div>
 
-      {showDetails && matchReasons.length > 0 && (
+      {showDetails && matchReasons && matchReasons.length > 0 && (
         <div className="stylist-item-card__match-reasons">
           <div className="stylist-item-card__match-score" style={{ color: primaryColor }}>
-            {Math.round(matchScore * 100)}% Match
+            {typeof matchScore === 'number' ? `${Math.round(matchScore * 100)}% Match` : 'Good Match'}
           </div>
           <ul className="stylist-item-card__reason-list">
             {matchReasons.map((reason: string, index: number) => (

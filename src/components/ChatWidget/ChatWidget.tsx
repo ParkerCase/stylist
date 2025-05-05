@@ -569,6 +569,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
     if (!user) return;
     
     try {
+      // Add to cart in state
       addToCart({
         itemId: item.id,
         retailerId,
@@ -576,6 +577,17 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
         size,
         color,
         addedAt: new Date()
+      });
+      
+      // Track purchase for bot-driven sales analytics
+      import('@/services/purchaseTrackingService').then(({ purchaseTrackingService }) => {
+        purchaseTrackingService.trackPurchase({
+          productId: item.id,
+          source: 'StylistBot',
+          timestamp: new Date(),
+          userId: user.userId,
+          retailerId
+        });
       });
       
       if (currentView === 'chat') {

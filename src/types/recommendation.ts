@@ -74,6 +74,10 @@ export interface RecommendationRequest {
     name?: string;
     savedAt: Date;
     notes?: string;
+    // Additional fields required by components
+    id?: string;
+    imageUrl?: string;
+    createdAt?: Date;
   }
   
   export interface SimilarItemsRequest {
@@ -99,6 +103,9 @@ export interface RecommendationRequest {
     name?: string;
     brand?: string;
     price?: number;
+    url?: string;
+    category?: string;
+    salePrice?: number;
   }
   
   export interface CartItem {

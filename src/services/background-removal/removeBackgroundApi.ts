@@ -1,158 +1,102 @@
-// Remove.bg API client for background removal
+/**
+ * Service to remove background using remove.bg API
+ */
+import { REMOVE_BG_API_KEY } from '@/utils/environment';
 
-import { BackgroundRemovalMethod, BackgroundRemovalResult } from '@/types/tryOn';
-
-interface RemoveBgApiOptions {
-  apiKey: string;
-  outputFormat?: 'auto' | 'png' | 'jpg' | 'zip';
-  size?: 'auto' | 'preview' | 'full' | '4k';
-  scale?: 'original' | '10%' | '20%' | '50%' | '80%' | '100%';
-  type?: 'auto' | 'person' | 'product' | 'car';
+interface RemoveBackgroundOptions {
+  apiKey?: string;
+  size?: 'auto' | 'preview' | 'small' | 'medium' | 'hd' | '4k';
   crop?: boolean;
-  cropMargin?: string; // e.g., "30px" or "0px 10px 10px 20px"
-  roi?: string; // Region of interest, e.g., "0% 0% 100% 100%"
-  semitransparency?: boolean;
-  channels?: 'rgba' | 'alpha';
+  scale?: 'original' | 'fit' | 'stretch';
+  format?: 'auto' | 'png' | 'jpg' | 'zip';
 }
 
-const DEFAULT_OPTIONS: Partial<RemoveBgApiOptions> = {
-  outputFormat: 'png',
-  size: 'auto',
-  type: 'person',
-  semitransparency: true,
-  channels: 'rgba'
-};
+/**
+ * Remove background from an image using remove.bg API
+ * @param imageFile Image file to remove background from
+ * @param options Configuration options
+ * @returns DataURL of the processed image
+ */
+export async function removeBackgroundApi(
+  imageFile: File,
+  options: RemoveBackgroundOptions = {}
+): Promise<string> {
+  // Get API key from options or environment
+  const apiKey = options.apiKey || REMOVE_BG_API_KEY;
+  if (!apiKey) {
+    throw new Error('No API key provided for remove.bg');
+  }
+
+  // Create FormData for API request
+  const formData = new FormData();
+  formData.append('image_file', imageFile);
+  
+  // Add options to request
+  if (options.size) formData.append('size', options.size);
+  formData.append('crop', options.crop ? 'true' : 'false');
+  if (options.scale) formData.append('scale', options.scale);
+  if (options.format) formData.append('format', options.format);
+
+  // Send request to remove.bg API
+  const response = await fetch('https://api.remove.bg/v1.0/removebg', {
+    method: 'POST',
+    headers: {
+      'X-Api-Key': apiKey
+    },
+    body: formData
+  });
+
+  // Handle API errors
+  if (!response.ok) {
+    let errorMessage = `Remove.bg API error (${response.status})`;
+    
+    try {
+      const errorData = await response.json();
+      errorMessage = `${errorMessage}: ${errorData.errors?.[0]?.title || 'Unknown error'}`;
+    } catch (e) {
+      // If JSON parsing fails, use status text
+      errorMessage = `${errorMessage}: ${response.statusText}`;
+    }
+    
+    throw new Error(errorMessage);
+  }
+
+  // Get binary image data from response
+  const imageBlob = await response.blob();
+  
+  // Convert to data URL
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(imageBlob);
+  });
+}
 
 /**
- * Remove background from an image using the Remove.bg API
+ * Check if remove.bg API is available with current API key
+ * @returns Boolean indicating if API is available
  */
-export const removeBackgroundApi = async (
-  imageData: string | File,
-  options?: Partial<RemoveBgApiOptions>
-): Promise<BackgroundRemovalResult> => {
+export async function isRemoveBgAvailable(): Promise<boolean> {
+  const apiKey = REMOVE_BG_API_KEY;
+  
+  if (!apiKey) {
+    return false;
+  }
+  
   try {
-    if (!options?.apiKey) {
-      throw new Error('API key is required for Remove.bg API');
-    }
-    
-    // Combine default options with provided options and ensure apiKey is present
-    const apiOptions: RemoveBgApiOptions = {
-      ...DEFAULT_OPTIONS,
-      ...options,
-      apiKey: options.apiKey as string // We've already checked for apiKey existence above
-    };
-    
-    // Create form data
-    const formData = new FormData();
-    
-    // Add image data
-    if (typeof imageData === 'string') {
-      // If the image is a data URL
-      if (imageData.startsWith('data:')) {
-        // Extract base64 data and convert to blob
-        const base64Data = imageData.split(',')[1];
-        const blob = base64ToBlob(base64Data, 'image/png');
-        formData.append('image_file', blob);
-      } else {
-        // If it's a URL
-        formData.append('image_url', imageData);
-      }
-    } else {
-      // If it's a file
-      formData.append('image_file', imageData);
-    }
-    
-    // Add all options
-    formData.append('size', apiOptions.size || 'auto');
-    
-    if (apiOptions.outputFormat) {
-      formData.append('format', apiOptions.outputFormat);
-    }
-    
-    if (apiOptions.type) {
-      formData.append('type', apiOptions.type);
-    }
-    
-    if (apiOptions.crop !== undefined) {
-      formData.append('crop', apiOptions.crop ? 'true' : 'false');
-    }
-    
-    if (apiOptions.cropMargin) {
-      formData.append('crop_margin', apiOptions.cropMargin);
-    }
-    
-    if (apiOptions.roi) {
-      formData.append('roi', apiOptions.roi);
-    }
-    
-    if (apiOptions.scale) {
-      formData.append('scale', apiOptions.scale);
-    }
-    
-    if (apiOptions.semitransparency !== undefined) {
-      formData.append('semitransparency', apiOptions.semitransparency ? 'true' : 'false');
-    }
-    
-    if (apiOptions.channels) {
-      formData.append('channels', apiOptions.channels);
-    }
-    
-    // Make API request
-    const response = await fetch('https://api.remove.bg/v1.0/removebg', {
-      method: 'POST',
-      body: formData,
+    // Make a lightweight account API call to check key validity
+    const response = await fetch('https://api.remove.bg/v1.0/account', {
+      method: 'GET',
       headers: {
-        'X-Api-Key': apiOptions.apiKey
+        'X-Api-Key': apiKey,
+        'Accept': 'application/json'
       }
     });
     
-    // Check response
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        `Remove.bg API error (${response.status}): ${
-          errorData.errors?.[0]?.title || response.statusText
-        }`
-      );
-    }
-    
-    // Convert the response to a blob and then to a URL
-    const imageBlob = await response.blob();
-    const imageUrl = URL.createObjectURL(imageBlob);
-    
-    return {
-      success: true,
-      imageUrl,
-      method: BackgroundRemovalMethod.REMOVE_BG_API
-    };
+    return response.ok;
   } catch (error) {
-    console.error('Background removal API error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error),
-      method: BackgroundRemovalMethod.REMOVE_BG_API
-    };
+    console.error('Error checking remove.bg API availability:', error);
+    return false;
   }
-};
-
-/**
- * Helper function to convert base64 to Blob
- */
-function base64ToBlob(base64: string, mimeType: string): Blob {
-  const byteCharacters = atob(base64);
-  const byteArrays = [];
-  
-  for (let offset = 0; offset < byteCharacters.length; offset += 1024) {
-    const slice = byteCharacters.slice(offset, offset + 1024);
-    
-    const byteNumbers = new Array(slice.length);
-    for (let i = 0; i < slice.length; i++) {
-      byteNumbers[i] = slice.charCodeAt(i);
-    }
-    
-    const byteArray = new Uint8Array(byteNumbers);
-    byteArrays.push(byteArray);
-  }
-  
-  return new Blob(byteArrays, { type: mimeType });
 }

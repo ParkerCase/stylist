@@ -1,0 +1,6 @@
+{
+  "esm": true,
+  "transpileOnly": true,
+  "files": true,
+  "swc": false
+}

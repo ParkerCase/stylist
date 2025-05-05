@@ -176,7 +176,117 @@ def format_recommendation_response(
     result = response.to_dict()
 
     # Additional formatting logic can be added here
+    
+    # Format for frontend compatibility - rename fields
+    if "recommended_items" in result:
+        result["items"] = result.pop("recommended_items")
+    
+    if "recommended_outfits" in result:
+        result["outfits"] = result.pop("recommended_outfits")
+    
+    if "recommendation_context" in result:
+        result["context"] = result.pop("recommendation_context")
+        
+    # Reformat each item to match frontend expectations
+    if "items" in result and result["items"]:
+        for item in result["items"]:
+            if "item_id" in item:
+                item["id"] = item.pop("item_id")
+            
+            if "score" in item:
+                item["matchScore"] = item.pop("score")
+                
+            if "match_reasons" in item:
+                item["matchReasons"] = item.pop("match_reasons")
+                
+            # Extract retailer ID from id
+            if "id" in item and "_" in item["id"]:
+                retailer_id = item["id"].split("_")[0] 
+                item["retailerId"] = retailer_id
+                
+            # Ensure required frontend fields exist
+            if "imageUrls" not in item:
+                item["imageUrls"] = item.get("image_urls", [])
+                
+            # Default stock status
+            if "inStock" not in item:
+                item["inStock"] = item.get("in_stock", True)
+    
+    # Reformat each outfit to match frontend expectations
+    if "outfits" in result and result["outfits"]:
+        for outfit in result["outfits"]:
+            if "outfit_id" in outfit:
+                outfit["id"] = outfit.pop("outfit_id")
+                
+            if "score" in outfit:
+                outfit["matchScore"] = outfit.pop("score")
+                
+            if "match_reasons" in outfit:
+                outfit["matchReasons"] = outfit.pop("match_reasons")
+                
+            # Add a name if not present
+            if "name" not in outfit and "occasion" in outfit:
+                outfit["name"] = f"Outfit for {outfit['occasion']}"
+            elif "name" not in outfit and "id" in outfit:
+                outfit["name"] = f"Outfit {outfit['id']}"
 
+    return result
+
+
+def format_frontend_recommendation_response(
+    response: RecommendationResponse, 
+    item_details: Optional[Dict[str, Dict[str, Any]]] = None
+) -> Dict[str, Any]:
+    """
+    Format recommendation response specifically for frontend API consumption.
+    This provides a more thorough transformation than the basic format_recommendation_response.
+
+    Args:
+        response: The recommendation response object
+        item_details: Optional dictionary mapping item_ids to detailed item information
+
+    Returns:
+        Dictionary formatted for frontend consumption
+    """
+    # Start with the basic transformation
+    result = format_recommendation_response(response)
+    
+    # If we have detailed item information, enhance the response
+    if item_details:
+        # Enhance items with detailed information
+        if "items" in result and result["items"]:
+            for i, item in enumerate(result["items"]):
+                item_id = item.get("id")
+                if item_id and item_id in item_details:
+                    # Update with detailed information while preserving match data
+                    match_score = item.get("matchScore", 0)
+                    match_reasons = item.get("matchReasons", [])
+                    
+                    # Replace with detailed item but keep recommendation data
+                    result["items"][i] = {**item_details[item_id], 
+                                         "matchScore": match_score,
+                                         "matchReasons": match_reasons}
+        
+        # Enhance outfits with detailed item information
+        if "outfits" in result and result["outfits"]:
+            for outfit in result["outfits"]:
+                if "items" in outfit and isinstance(outfit["items"], list):
+                    # Convert from just IDs to detailed items
+                    detailed_items = []
+                    for item_id in outfit["items"]:
+                        if item_id in item_details:
+                            detailed_items.append(item_details[item_id])
+                        else:
+                            # Fallback for items without details
+                            detailed_items.append({
+                                "id": item_id,
+                                "name": f"Item {item_id}",
+                                "imageUrls": []
+                            })
+                    
+                    # Replace IDs with detailed items
+                    outfit["items"] = detailed_items
+    
     return result
 
 

@@ -4,13 +4,19 @@ Main entry point for The Stylist backend application.
 
 import os
 import logging
+import json
+from datetime import datetime
 from typing import Dict, Any
 from fastapi import FastAPI, HTTPException, Request, Depends, Header, UploadFile, File, Body, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 import uvicorn
-from dotenv import load_dotenv
+
+# Import config - this will load environment variables
+from config import (
+    API_KEY, DEBUG, API_VERSION, PORT, USE_MOCK_RETAILER, JWT_SECRET, ANTHROPIC_API_KEY
+)
 
 # Import API routes
 from api.recommendation_routes import (
@@ -19,6 +25,7 @@ from api.recommendation_routes import (
     save_outfit,
     create_user,
     update_user,
+    router as recommendation_router,
 )
 from api.retailer_routes import (
     add_retailer,
@@ -52,14 +59,8 @@ from api.closet_routes import (
     delete_saved_outfit,
 )
 
-# Import config
-from config import API_KEY, DEBUG, API_VERSION
-
 # Import mock retailer initialization
 from initialize_mock_retailer import initialize_mock_retailer
-
-# Load environment variables
-load_dotenv()
 
 # Set up logging
 logging.basicConfig(
@@ -151,7 +152,11 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy", "version": "1.0.0"}
+    return {"status": "healthy", "version": "1.0.0", "configuration": {
+        "api_version": API_VERSION,
+        "port": PORT,
+        "debug": DEBUG
+    }}
 
 # WebSocket chat endpoint
 @app.websocket("/ws/chat/{user_id}")
@@ -412,12 +417,54 @@ async def websocket_endpoint(websocket: WebSocket):
 # Serve static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Initialize mock retailer if needed
+# Initialize services on startup
 @app.on_event("startup")
 async def startup_event():
     """Initialize resources on startup."""
+    # Include recommendation router for direct API endpoint access
+    app.include_router(recommendation_router)
+    logger.info("Registered recommendation API router")
+    
     # Initialize mock retailer if USE_MOCK_RETAILER is true
     initialize_mock_retailer()
+    
+    # Initialize recommendation services
+    try:
+        # Try to initialize integrated recommendation service
+        from services.integrated_recommendation_service import IntegratedRecommendationService
+        logger.info("Successfully imported integrated recommendation service")
+        
+        # Initialize retailer clients if needed (from retailer_routes)
+        try:
+            from api.retailer_routes import initialize_retailer_clients
+            if 'initialize_retailer_clients' in locals():
+                await initialize_retailer_clients()
+                logger.info("Successfully initialized retailer clients")
+        except Exception as e:
+            logger.warning(f"Failed to initialize retailer clients: {str(e)}")
+            
+        # Test the integrated recommendation service
+        try:
+            from models.user import UserProfile
+            test_user = UserProfile(user_id="test_user")
+            
+            # Run a test recommendation
+            result = await IntegratedRecommendationService.get_recommendations_with_availability(
+                user=test_user,
+                limit_per_retailer=5,
+                check_availability=False
+            )
+            
+            logger.info(f"Integrated recommendation service test successful: {len(result.recommended_items)} items")
+        except Exception as e:
+            logger.warning(f"Failed to test integrated recommendation service: {str(e)}")
+            
+    except ImportError:
+        logger.warning("Integrated recommendation service not available, using fallback")
+    except Exception as e:
+        logger.error(f"Error initializing integrated recommendation service: {str(e)}")
+        
+    logger.info("Application startup complete")
 
 # Run the app
 if __name__ == "__main__":

@@ -1,0 +1,198 @@
+{
+  "socialProofItems": [
+    {
+      "id": "social-proof-1",
+      "celebrity": "Emma Watson",
+      "event": "Met Gala 2023",
+      "outfitTags": [
+        "off-white gown",
+        "sequin dress",
+        "high slit",
+        "Stella McCartney"
+      ],
+      "patterns": ["sequin", "fitted"],
+      "colors": ["off-white", "silver"],
+      "timestamp": "2024-05-01T20:00:00Z",
+      "matchedProducts": [
+        {
+          "id": "product-001",
+          "name": "Crystal-Embellished Evening Gown",
+          "description": "Elegant off-white evening gown with crystal embellishments",
+          "price": 899.99,
+          "brand": "Luxury Couture",
+          "category": "dresses",
+          "imageUrl": "https://via.placeholder.com/300x400?text=Crystal+Gown",
+          "matchScore": 0.92,
+          "matchReasons": [
+            "Matches off-white color",
+            "Similar sequin/crystal embellishment",
+            "Formal gown style"
+          ]
+        },
+        {
+          "id": "product-002",
+          "name": "Sequined Cocktail Dress",
+          "description": "Sophisticated sequined dress with high slit",
+          "price": 499.99,
+          "brand": "Evening Star",
+          "category": "dresses",
+          "imageUrl": "https://via.placeholder.com/300x400?text=Sequin+Dress",
+          "matchScore": 0.88,
+          "matchReasons": [
+            "Features sequin detailing",
+            "High slit design",
+            "Evening wear category"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "social-proof-2",
+      "celebrity": "Zendaya",
+      "event": "Street Style NYC",
+      "outfitTags": [
+        "oversized blazer",
+        "wide-leg trousers",
+        "Tom Ford sunglasses"
+      ],
+      "patterns": ["pinstripe", "oversized"],
+      "colors": ["black", "white"],
+      "timestamp": "2024-05-15T14:30:00Z",
+      "matchedProducts": [
+        {
+          "id": "product-003",
+          "name": "Oversized Power Blazer",
+          "description": "Relaxed-fit blazer in premium black wool",
+          "price": 279.99,
+          "brand": "Urban Elite",
+          "category": "blazers",
+          "imageUrl": "https://via.placeholder.com/300x400?text=Oversized+Blazer",
+          "matchScore": 0.95,
+          "matchReasons": [
+            "Perfect oversized fit",
+            "Black color match",
+            "Blazer category"
+          ]
+        },
+        {
+          "id": "product-004",
+          "name": "Wide-Leg Trousers",
+          "description": "High-waisted wide-leg trousers in white",
+          "price": 129.99,
+          "brand": "Modern Classics",
+          "category": "pants",
+          "imageUrl": "https://via.placeholder.com/300x400?text=Wide+Leg+Trousers",
+          "matchScore": 0.9,
+          "matchReasons": [
+            "Wide-leg silhouette",
+            "White color match",
+            "Contemporary style"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "social-proof-3",
+      "celebrity": "Rihanna",
+      "event": "Business Event",
+      "outfitTags": ["power suit", "blazer", "matching pants", "Louis Vuitton"],
+      "patterns": ["structured", "fitted"],
+      "colors": ["navy blue", "pinstripe"],
+      "timestamp": "2024-05-20T10:00:00Z",
+      "matchedProducts": [
+        {
+          "id": "product-005",
+          "name": "Executive Power Suit",
+          "description": "Two-piece navy suit with pinstripe detail",
+          "price": 649.99,
+          "brand": "Professional Edge",
+          "category": "suits",
+          "imageUrl": "https://via.placeholder.com/300x400?text=Power+Suit",
+          "matchScore": 0.97,
+          "matchReasons": [
+            "Navy blue pinstripe",
+            "Complete suit set",
+            "Professional styling"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "social-proof-4",
+      "celebrity": "Jennifer Lopez",
+      "event": "Red Carpet Premiere",
+      "outfitTags": [
+        "emerald green dress",
+        "body-hugging silhouette",
+        "mermaid hem",
+        "Versace"
+      ],
+      "patterns": ["fitted", "jersey fabric"],
+      "colors": ["emerald green"],
+      "timestamp": "2024-04-28T19:00:00Z",
+      "matchedProducts": [
+        {
+          "id": "product-006",
+          "name": "Emerald Mermaid Gown",
+          "description": "Stunning emerald green gown with mermaid silhouette",
+          "price": 799.99,
+          "brand": "Red Carpet Boutique",
+          "category": "dresses",
+          "imageUrl": "https://via.placeholder.com/300x400?text=Emerald+Gown",
+          "matchScore": 0.93,
+          "matchReasons": [
+            "Emerald green color",
+            "Mermaid silhouette",
+            "Body-hugging fit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "social-proof-5",
+      "celebrity": "Blake Lively",
+      "event": "Cannes Film Festival",
+      "outfitTags": [
+        "floral print dress",
+        "empire waist",
+        "flowing train",
+        "Maticevski"
+      ],
+      "patterns": ["floral print", "empire waist"],
+      "colors": ["pink", "yellow", "green"],
+      "timestamp": "2024-05-10T17:45:00Z",
+      "matchedProducts": [
+        {
+          "id": "product-007",
+          "name": "Botanical Empire Dress",
+          "description": "Elegant floral print dress with empire waist",
+          "price": 459.99,
+          "brand": "Garden Couture",
+          "category": "dresses",
+          "imageUrl": "https://via.placeholder.com/300x400?text=Floral+Dress",
+          "matchScore": 0.89,
+          "matchReasons": [
+            "Floral print pattern",
+            "Empire waist design",
+            "Multi-color florals"
+          ]
+        },
+        {
+          "id": "product-008",
+          "name": "Spring Garden Maxi Dress",
+          "description": "Flowing maxi dress with botanical print",
+          "price": 349.99,
+          "brand": "Bloom Fashion",
+          "category": "dresses",
+          "imageUrl": "https://via.placeholder.com/300x400?text=Maxi+Dress",
+          "matchScore": 0.86,
+          "matchReasons": [
+            "Similar floral motif",
+            "Flowing silhouette",
+            "Spring color palette"
+          ]
+        }
+      ]
+    }
+  ]
+}

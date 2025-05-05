@@ -1,0 +1,119 @@
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
+
+.stylist-trending-items {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: variables.$spacing-md;
+    border-bottom: 1px solid variables.$border-color;
+  }
+  
+  &__title {
+    margin: 0;
+    font-size: variables.$font-size-lg;
+    font-weight: 600;
+  }
+  
+  &__filter {
+    display: flex;
+    align-items: center;
+    
+    &-select {
+      padding: variables.$spacing-xs variables.$spacing-sm;
+      border: 1px solid variables.$border-color;
+      border-radius: variables.$border-radius-sm;
+      background-color: variables.$background-color;
+      font-size: variables.$font-size-sm;
+      font-family: inherit;
+      
+      &:focus {
+        outline: none;
+        border-color: variables.$primary-color;
+      }
+    }
+  }
+  
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: variables.$spacing-md;
+    padding: variables.$spacing-md;
+    overflow-y: auto;
+    flex: 1;
+  }
+  
+  &__item {
+    position: relative;
+    transition: transform variables.$transition-fast ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+  
+  &__trending-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: rgba(variables.$primary-color, 0.9);
+    color: variables.$text-inverse;
+    padding: 4px 8px;
+    border-radius: variables.$border-radius-sm;
+    font-size: variables.$font-size-xs;
+    font-weight: 600;
+    z-index: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: variables.$shadow-sm;
+  }
+  
+  &__loading,
+  &__error,
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: variables.$spacing-xl;
+    text-align: center;
+    color: variables.$text-muted;
+  }
+  
+  &__retry-btn {
+    margin-top: variables.$spacing-md;
+    padding: variables.$spacing-xs variables.$spacing-md;
+    background-color: variables.$primary-color;
+    color: variables.$text-inverse;
+    border: none;
+    border-radius: variables.$border-radius-sm;
+    font-size: variables.$font-size-sm;
+    cursor: pointer;
+    
+    &:hover {
+      background-color: variables.$primary-color-dark;
+    }
+  }
+  
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    &__grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: variables.$spacing-sm;
+      padding: variables.$spacing-sm;
+    }
+  }
+  
+  @media (min-width: 1200px) {
+    &__grid {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+  }
+}

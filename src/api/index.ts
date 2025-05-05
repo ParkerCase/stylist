@@ -5,9 +5,11 @@ import { UserApi } from './userApi';
 import { RecommendationApi } from './recommendationApi';
 import { FeedbackApi } from './feedbackApi';
 
-// Default API configuration
-const DEFAULT_API_URL = 'http://localhost:8000/api';
-const DEFAULT_TIMEOUT = 15000;
+import { API_URL, API_TIMEOUT } from '@/utils/environment';
+
+// Default API configuration from environment
+const DEFAULT_API_URL = API_URL;
+const DEFAULT_TIMEOUT = API_TIMEOUT;
 
 // API client configuration interface
 export interface StylistApiConfig {

@@ -84,8 +84,8 @@ const MyCloset: React.FC<MyClosetProps> = ({
       // For now, we'll use a mock detection service
       await detectClothingAttributes(file);
       
-      // Show the form to complete item details
-      setShowUploader(false);
+      // Show the form to complete item details - don't hide uploader
+      // The form will be shown within the uploader area
     } catch (error) {
       console.error('Error uploading file:', error);
     } finally {
@@ -209,6 +209,7 @@ const MyCloset: React.FC<MyClosetProps> = ({
         <h2>My Closet</h2>
         <button 
           className="stylist-my-closet__add-btn"
+          id="openClosetUpload"
           onClick={() => setShowUploader(true)}
         >
           Add Item

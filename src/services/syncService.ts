@@ -51,11 +51,13 @@ export interface SyncState {
 }
 
 // Create API client for sync operations
+import { API_URL, API_TIMEOUT, MAX_RETRY_ATTEMPTS, IS_PRODUCTION } from '@/utils/environment';
+
 const createSyncApiClient = (): UserApi => {
   const apiClient = new ApiClient({
-    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
-    timeout: 10000,
-    maxRetries: 3,
+    baseURL: API_URL,
+    timeout: API_TIMEOUT,
+    maxRetries: MAX_RETRY_ATTEMPTS,
     getAuthHeader: () => {
       const token = localStorage.getItem('stylist_auth_token');
       return token ? { Authorization: `Bearer ${token}` } : { Authorization: '' };

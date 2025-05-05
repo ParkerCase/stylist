@@ -1,0 +1,187 @@
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
+
+.stylist-wishlist-notification {
+  position: relative;
+  display: inline-block;
+  
+  &__bell {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: variables.$spacing-xs;
+    border-radius: 50%;
+    transition: background-color variables.$transition-fast ease;
+    position: relative;
+    
+    &:hover {
+      background-color: rgba(variables.$primary-color, 0.1);
+    }
+    
+    &.has-unread {
+      animation: pulse 2s infinite;
+    }
+  }
+  
+  &__icon {
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  &__badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: variables.$error-color;
+    border: 2px solid variables.$background-color;
+  }
+  
+  &__panel {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 300px;
+    max-height: 400px;
+    background-color: variables.$background-color;
+    border-radius: variables.$border-radius-md;
+    box-shadow: variables.$shadow-lg;
+    z-index: variables.$z-index-dropdown;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: slideDown variables.$transition-fast forwards;
+  }
+  
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: variables.$spacing-sm variables.$spacing-md;
+    border-bottom: 1px solid variables.$border-color;
+  }
+  
+  &__title {
+    margin: 0;
+    font-size: variables.$font-size-md;
+    font-weight: 600;
+  }
+  
+  &__close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 variables.$spacing-xs;
+    
+    &:hover {
+      color: variables.$text-muted;
+    }
+  }
+  
+  &__list {
+    overflow-y: auto;
+    max-height: 300px;
+  }
+  
+  &__empty {
+    padding: variables.$spacing-md;
+    text-align: center;
+    color: variables.$text-muted;
+  }
+  
+  &__item {
+    padding: variables.$spacing-sm variables.$spacing-md;
+    border-bottom: 1px solid variables.$border-color-light;
+    cursor: pointer;
+    transition: background-color variables.$transition-fast ease;
+    
+    &:hover {
+      background-color: variables.$background-color-light;
+    }
+    
+    &.unread {
+      background-color: rgba(variables.$primary-color, 0.05);
+      
+      .stylist-wishlist-notification__item-message {
+        font-weight: 600;
+      }
+    }
+  }
+  
+  &__content {
+    display: flex;
+    align-items: flex-start;
+    gap: variables.$spacing-sm;
+  }
+  
+  &__item-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+  
+  &__item-text {
+    flex: 1;
+  }
+  
+  &__item-message {
+    margin: 0 0 2px 0;
+    font-size: variables.$font-size-sm;
+  }
+  
+  &__item-time {
+    font-size: variables.$font-size-xs;
+    color: variables.$text-muted;
+  }
+  
+  &__footer {
+    padding: variables.$spacing-sm;
+    border-top: 1px solid variables.$border-color-light;
+    text-align: right;
+  }
+  
+  &__clear {
+    background: none;
+    border: none;
+    color: variables.$text-muted;
+    font-size: variables.$font-size-xs;
+    padding: variables.$spacing-xs variables.$spacing-sm;
+    cursor: pointer;
+    
+    &:hover {
+      color: variables.$text-primary;
+      text-decoration: underline;
+    }
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

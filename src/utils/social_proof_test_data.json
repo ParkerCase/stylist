@@ -1,0 +1,104 @@
+{
+  "celebrity_outfits": [
+    {
+      "id": "celeb-1",
+      "celebrityName": "Hailey Bieber",
+      "imageUrl": "https://cdn.mos.cms.futurecdn.net/whowhatwear/posts/284916/celebrity-style-amazon-284916-1579832019186-image-1920-80.jpg",
+      "description": "Hailey Bieber spotted in a casual street style look featuring a minimalist outfit that's perfect for everyday wear."
+    },
+    {
+      "id": "celeb-2",
+      "celebrityName": "Rihanna",
+      "imageUrl": "https://cdn.mos.cms.futurecdn.net/XKsPY3qVMmSDjuismrMddc-230-80.jpg",
+      "description": "Discover Rihanna's latest red carpet fashion at the Met Gala, showcasing her iconic style and trend-setting approach."
+    }
+  ],
+  "recommended_items": [
+    {
+      "id": "item-1",
+      "name": "Minimalist Cotton T-Shirt",
+      "brand": "Fashion Brand",
+      "category": "tops",
+      "price": 49.99,
+      "retailerId": "retailer-1",
+      "colors": ["white", "black"],
+      "sizes": ["S", "M", "L"],
+      "imageUrls": ["https://via.placeholder.com/300x400?text=T-Shirt"],
+      "url": "#",
+      "matchScore": 0.87,
+      "matchReasons": ["Inspired by Hailey Bieber's style", "Matches your casual style preference"],
+      "inStock": true,
+      "socialProofMatch": {
+        "celebrity": "Hailey Bieber",
+        "matchScore": 0.87,
+        "event": "Street style"
+      }
+    },
+    {
+      "id": "item-2",
+      "name": "Designer Dress",
+      "brand": "Luxury Brand",
+      "category": "dresses",
+      "price": 499.99,
+      "retailerId": "retailer-2",
+      "colors": ["red", "gold"],
+      "sizes": ["S", "M", "L"],
+      "imageUrls": ["https://via.placeholder.com/300x400?text=Red+Dress"],
+      "url": "#",
+      "matchScore": 0.92,
+      "matchReasons": ["Inspired by Rihanna's Met Gala look", "Matches your formal style preference"],
+      "inStock": true,
+      "socialProofMatch": {
+        "celebrity": "Rihanna",
+        "matchScore": 0.92,
+        "event": "Met Gala"
+      }
+    },
+    {
+      "id": "item-3",
+      "name": "Casual Jeans",
+      "brand": "Denim Co",
+      "category": "bottoms",
+      "price": 89.99,
+      "retailerId": "retailer-1",
+      "colors": ["blue"],
+      "sizes": ["28", "30", "32"],
+      "imageUrls": ["https://via.placeholder.com/300x400?text=Jeans"],
+      "url": "#",
+      "matchScore": 0.76,
+      "matchReasons": ["Complements Hailey Bieber's style", "Matches your casual style preference"],
+      "inStock": true,
+      "socialProofMatch": {
+        "celebrity": "Hailey Bieber",
+        "matchScore": 0.76,
+        "event": "Street style"
+      }
+    }
+  ],
+  "outfits": [
+    {
+      "id": "outfit-1",
+      "name": "Casual Street Style Outfit",
+      "occasion": "casual",
+      "matchScore": 0.89,
+      "matchReasons": ["Inspired by Hailey Bieber's street style", "Perfect for everyday casual wear"],
+      "items": ["item-1", "item-3"],
+      "socialProof": {
+        "celebrity": "Hailey Bieber",
+        "event": "Street style outing"
+      }
+    },
+    {
+      "id": "outfit-2",
+      "name": "Glamorous Evening Look",
+      "occasion": "formal",
+      "matchScore": 0.92,
+      "matchReasons": ["Inspired by Rihanna's red carpet style", "Perfect for formal events"],
+      "items": ["item-2"],
+      "socialProof": {
+        "celebrity": "Rihanna",
+        "event": "Met Gala"
+      }
+    }
+  ]
+}

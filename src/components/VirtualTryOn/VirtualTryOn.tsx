@@ -4,19 +4,27 @@ import React, { useEffect, useState } from 'react';
 import './VirtualTryOn.scss';
 import TryOnCanvas from '@/components/TryOnCanvas';
 import TryOnControls from '@/components/TryOnControls';
+import TryOnFeedback from '@/components/TryOnFeedback';
 import ImageUploader from '@/components/ImageUploader';
 import { useTryOn } from '@/hooks/useTryOn';
 import { GarmentType, ProcessingStatus } from '@/types/tryOn';
 import { Recommendation } from '@/types';
 import { preloadBodyPixModel } from '@/services/background-removal/utils';
+import { useRecommendationStore } from '@/store/recommendationStore';
 
 interface VirtualTryOnProps {
   onClose?: () => void;
   onSave?: (resultUrl: string) => void;
   onAddToLookbook?: (result: Recommendation.SavedOutfit) => void;
+  primaryColor?: string;
 }
 
-const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave, onAddToLookbook }) => {
+const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ 
+  onClose, 
+  onSave, 
+  onAddToLookbook,
+  primaryColor = '#3f51b5' 
+}) => {
   const {
     currentOutfit,
     userImage,
@@ -32,6 +40,9 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave, onAddToLoo
     saveTryOnResult,
     closeTryOnModal
   } = useTryOn();
+  
+  // Get recommendation store functions
+  const { addToWishlist, addToCart } = useRecommendationStore();
   
   const [activeGarmentId, setActiveGarmentId] = useState<string | null>(null);
   const [showUploader, setShowUploader] = useState(!userImage);
@@ -94,9 +105,12 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave, onAddToLoo
           const savedOutfit: Recommendation.SavedOutfit = {
             userId: 'current_user', // Should be updated with actual user ID
             outfitId: result.id,
+            id: result.id, // Use the same ID as outfitId
             name: `Try-On Result ${new Date().toLocaleDateString()}`,
-            items: currentOutfit.garments.map(g => g.id),
+            items: currentOutfit?.garments?.map(g => g.id) || [],
             savedAt: new Date(),
+            imageUrl: result.resultImageUrl || '',
+            createdAt: new Date()
           };
           
           onAddToLookbook(savedOutfit);
@@ -137,9 +151,54 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave, onAddToLoo
     setSaveSuccess(false);
   };
   
+  // Convert garment to wishlist item
+  const handleAddToWishlist = (garmentId: string) => {
+    if (!currentOutfit || !currentOutfit.garments) return;
+    
+    const garment = currentOutfit.garments.find(g => g.id === garmentId);
+    if (!garment) return;
+    
+    // Create a wishlist item from garment
+    const wishlistItem = {
+      itemId: garment.id,
+      retailerId: 'default_retailer_id', // Add required retailerId
+      name: garment.type || 'Garment',
+      addedAt: new Date(),
+      imageUrl: garment.url || '',
+      price: 0 // Mock price, would come from product data
+    };
+    
+    // Add to wishlist
+    addToWishlist(wishlistItem);
+    alert('Item added to wishlist!');
+  };
+  
+  // Convert garment to cart item
+  const handleAddToCart = (garmentId: string) => {
+    if (!currentOutfit || !currentOutfit.garments) return;
+    
+    const garment = currentOutfit.garments.find(g => g.id === garmentId);
+    if (!garment) return;
+    
+    // Create a cart item from garment
+    const cartItem = {
+      itemId: garment.id,
+      retailerId: 'default_retailer_id', // Add required retailerId
+      name: garment.type || 'Garment',
+      price: 0, // Mock price, would come from product data
+      quantity: 1,
+      imageUrl: garment.url || '',
+      addedAt: new Date() // Add required addedAt field
+    };
+    
+    // Add to cart
+    addToCart(cartItem);
+    alert('Item added to cart!');
+  };
+  
   return (
     <div className="stylist-virtual-try-on">
-      <div className="stylist-virtual-try-on__header">
+      <div className="stylist-virtual-try-on__header" style={{ backgroundColor: primaryColor }}>
         <h2 className="stylist-virtual-try-on__title">Virtual Try-On</h2>
         <button
           className="stylist-virtual-try-on__close-btn"
@@ -187,6 +246,42 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave, onAddToLoo
                 </button>
               </div>
             )}
+            
+            {userImage?.processingStatus === ProcessingStatus.COMPLETED && 
+             currentOutfit?.garments.length > 0 && 
+             activeGarmentId && (
+              <TryOnFeedback
+                garmentId={activeGarmentId}
+                onLike={(garmentId) => {
+                  // Find the garment in the outfit
+                  const garment = currentOutfit?.garments?.find(g => g.id === garmentId);
+                  if (garment) {
+                    // Log a positive feedback to AI model
+                    console.log('Liked garment:', garmentId);
+                    alert('Thanks for your feedback!');
+                  }
+                }}
+                onDislike={(garmentId) => {
+                  // Find the garment in the outfit
+                  const garment = currentOutfit?.garments?.find(g => g.id === garmentId);
+                  if (garment) {
+                    // Remove from try-on queue
+                    removeGarment(garmentId);
+                    // Log a negative feedback to AI model
+                    console.log('Disliked garment:', garmentId);
+                    alert('Item removed. We\'ll note your preference.');
+                  }
+                }}
+                onAddToWishlist={handleAddToWishlist}
+                onAddToCart={handleAddToCart}
+                onSaveNote={(garmentId, note) => {
+                  // Add note to garment for AI learning
+                  console.log('Save note for garment:', garmentId, note);
+                  alert('Note saved! We\'ll use this feedback to improve recommendations.');
+                }}
+                primaryColor={primaryColor}
+              />
+            )}
           </div>
         )}
         
@@ -232,10 +327,11 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({ onClose, onSave, onAddToLoo
             isLoading || 
             !userImage || 
             userImage.processingStatus !== ProcessingStatus.COMPLETED ||
-            !currentOutfit?.garments.length ||
+            !currentOutfit?.garments?.length ||
             savingToLookbook ||
             saveSuccess
           }
+          style={{ backgroundColor: primaryColor }}
         >
           {savingToLookbook ? 'Saving...' : (saveSuccess ? 'Saved!' : 'Save to Lookbook')}
         </button>

@@ -3,6 +3,23 @@
 import { useChatStore } from '@store/index';
 import { StylistWidgetAPI, StylistWidgetConfig } from './types/index';
 
+// Map window.STYLIST_CONFIG values to a global config object
+// This is only needed for the standalone full-widget.html file
+if (typeof window !== 'undefined' && (window as any).STYLIST_CONFIG) {
+  const config = (window as any).STYLIST_CONFIG;
+  
+  // Create a global runtime config object instead of modifying process.env
+  (window as any).__STYLIST_RUNTIME_CONFIG = {
+    FORCE_DEMO_MODE: typeof config.forceDemoMode === 'boolean' ? config.forceDemoMode : false,
+    USE_CLAUDE_DEMO: typeof config.useClaudeDemo === 'boolean' ? config.useClaudeDemo : false,
+    USE_MOCK_RETAILER: typeof config.useMockRetailer === 'boolean' ? config.useMockRetailer : true,
+    ANTHROPIC_API_KEY: config.anthropicApiKey || ''
+  };
+  
+  // Log configuration
+  console.log('Stylist widget runtime configuration loaded');
+}
+
 // Initialize the widget with all features enabled
 function init(config: StylistWidgetConfig): void {
   // Store configuration

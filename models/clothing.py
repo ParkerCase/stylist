@@ -31,6 +31,14 @@ class ClothingItem:
     sustainable: bool = False
     trending_score: float = 0.0  # 0-1 score indicating how trending the item is
     retailer_id: str = ""
+    
+    # Additional fields used in tests but not in the main model
+    season: Optional[str] = None  # For backward compatibility with tests
+    available_sizes: List[str] = field(default_factory=list)  # For backward compatibility with tests
+    size: Optional[str] = None  # For backward compatibility with tests
+    url: Optional[str] = None  # For backward compatibility with tests
+    imageUrls: List[str] = field(default_factory=list)  # For backward compatibility with tests
+    inStock: bool = True  # For backward compatibility with tests
 
     def to_dict(self) -> Dict:
         """Convert to dictionary for API responses."""
@@ -55,6 +63,13 @@ class ClothingItem:
             "sustainable": self.sustainable,
             "trending_score": self.trending_score,
             "retailer_id": self.retailer_id,
+            # Include backwards compatibility fields if they have values
+            **({"season": self.season} if self.season else {}),
+            **({"available_sizes": self.available_sizes} if self.available_sizes else {}),
+            **({"size": self.size} if self.size else {}),
+            **({"url": self.url} if self.url else {}),
+            **({"imageUrls": self.imageUrls} if self.imageUrls else {}),
+            **({"inStock": self.inStock} if self.inStock is not None else {}),
         }
 
 

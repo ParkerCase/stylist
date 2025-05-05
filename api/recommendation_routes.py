@@ -291,9 +291,14 @@ async def update_user(user_id: str, update_data: Dict[str, Any] = Body(...)) -> 
 
 
 @router.get("/recommendations", response_model=Dict[str, Any])
+@router.post("/v1/recommendations", response_model=Dict[str, Any])
 async def get_recommendations(
-    user_id: str = Query(..., description="User ID"),
-    context: Optional[str] = Query(None, description="Optional context for recommendations")
+    user_id: str = Query(None, description="User ID"),
+    context: Optional[str] = Query(None, description="Optional context for recommendations"),
+    request: Request = None,
+    retailer_ids: Optional[List[str]] = Query(None, description="List of retailer IDs to include"),
+    category: Optional[str] = Query(None, description="Optional category filter"),
+    request_data: Optional[Dict[str, Any]] = Body(None)
 ) -> Dict[str, Any]:
     """
     Get personalized recommendations for a user.
@@ -301,15 +306,36 @@ async def get_recommendations(
     Args:
         user_id: ID of the user to get recommendations for
         context: Optional context for recommendations
+        request: Request object for POST data
+        retailer_ids: Optional list of retailer IDs to include
+        category: Optional category filter
+        request_data: POST request data
 
     Returns:
         Dictionary with recommendation data
     """
+    # Handle both GET and POST requests
+    if request_data:
+        # Extract data from POST body
+        user_id = request_data.get("userId") or user_id
+        context = request_data.get("context") or context
+        retailer_ids = request_data.get("retailerIds") or retailer_ids
+        category = request_data.get("category") or category
+        filters = request_data.get("filters", {})
+    else:
+        filters = {}
+
     if not user_id:
         raise HTTPException(status_code=400, detail="User ID is required")
 
     if user_id not in mock_users:
-        raise HTTPException(status_code=404, detail=f"User with ID {user_id} not found")
+        logger.warning(f"User with ID {user_id} not found, creating a new one")
+        # Create a new user if not found (for demo purposes)
+        mock_users[user_id] = UserProfile(
+            user_id=user_id,
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
 
     # Validate context if provided
     valid_contexts = [
@@ -342,40 +368,94 @@ async def get_recommendations(
             return {
                 "user_id": user_id,
                 "timestamp": datetime.now().isoformat(),
-                "recommended_items": [],
-                "recommended_outfits": [],
-                "recommendation_context": context,
+                "items": [],
+                "outfits": [],
+                "context": context,
                 "message": "Not enough style data available. Please complete the style quiz or add items to your closet.",
             }
 
-        # Get available items (in a real implementation, this would come from retailer APIs)
-        available_items = list(mock_items.values())
+        try:
+            # Try to use the integrated recommendation service for real data
+            from services.integrated_recommendation_service import IntegratedRecommendationService
+            
+            # Use asyncio to run the async method
+            import asyncio
+            recommendations = await IntegratedRecommendationService.get_recommendations_with_availability(
+                user=user,
+                retailer_ids=retailer_ids,
+                category=category,
+                context=context
+            )
+            logger.info(f"Generated recommendations using integrated service for user {user_id}")
+        except (ImportError, Exception) as e:
+            logger.warning(f"Failed to use integrated service, falling back to mock data: {str(e)}")
+            
+            # Get available items (fallback to mock data)
+            available_items = list(mock_items.values())
 
-        if not available_items:
-            logger.warning("No items available in inventory for recommendations")
-            return {
-                "user_id": user_id,
-                "timestamp": datetime.now().isoformat(),
-                "recommended_items": [],
-                "recommended_outfits": [],
-                "recommendation_context": context,
-                "message": "No items currently available for recommendations.",
-            }
+            if not available_items:
+                logger.warning("No items available in inventory for recommendations")
+                return {
+                    "user_id": user_id,
+                    "timestamp": datetime.now().isoformat(),
+                    "items": [],
+                    "outfits": [],
+                    "context": context,
+                    "message": "No items currently available for recommendations.",
+                }
 
-        # Generate recommendations
-        recommendations = RecommendationService.generate_recommendations(
-            user, available_items, context
-        )
+            # Generate recommendations
+            recommendations = RecommendationService.generate_recommendations(
+                user, available_items, context
+            )
 
-        # Format and return recommendations
+        # Format and return recommendations with frontend-compatible structure
         result = format_recommendation_response(recommendations)
+        
+        # Convert to frontend-expected format
+        frontend_response = {
+            "user_id": user_id,
+            "timestamp": datetime.now().isoformat(),
+            "items": [
+                {
+                    "id": item.get("item_id"),
+                    "name": item.get("name", ""),
+                    "brand": item.get("brand", ""),
+                    "category": item.get("category", ""),
+                    "price": item.get("price", 0),
+                    "retailerId": item.get("retailer_id", "").split("_")[0] if "_" in item.get("retailer_id", "") else "",
+                    "colors": item.get("colors", []),
+                    "sizes": item.get("sizes", []),
+                    "imageUrls": item.get("image_urls", []),
+                    "url": item.get("url", "#"),
+                    "matchScore": item.get("score", 0),
+                    "matchReasons": item.get("match_reasons", []),
+                    "inStock": item.get("in_stock", True)
+                }
+                for item in result.get("recommended_items", [])
+            ],
+            "outfits": [
+                {
+                    "id": outfit.get("outfit_id"),
+                    "name": outfit.get("name", f"Outfit for {outfit.get('occasion', 'any occasion')}"),
+                    "occasion": outfit.get("occasion", ""),
+                    "matchScore": outfit.get("score", 0),
+                    "matchReasons": outfit.get("match_reasons", []),
+                    "items": [
+                        # Here we could expand each item, but for simplicity just return IDs
+                        # Frontend can look up full item data from the items array
+                        item_id for item_id in outfit.get("items", [])
+                    ]
+                }
+                for outfit in result.get("recommended_outfits", [])
+            ],
+            "context": context
+        }
 
         # Add cache headers or other metadata in a real implementation
-        logger.info(
-            f"Generated {len(recommendations.recommended_items)} item recommendations for user {user_id}"
-        )
+        logger.info(f"Generated {len(frontend_response['items'])} item recommendations for user {user_id}")
 
-        return result
+        return frontend_response
     except Exception as e:
         logger.error(f"Error generating recommendations for user {user_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to generate recommendations: {str(e)}")
@@ -705,16 +785,28 @@ async def chat_with_assistant(request_data: Dict[str, Any] = Body(...)) -> Dict[
         # Use Claude API to generate response
         # Get user style profile for context
         user_preferences = ""
-        if user.stylePreferences:
-            prefs = user.stylePreferences
-            if prefs.preferredStyles:
-                user_preferences += f"- Preferred styles: {', '.join(prefs.preferredStyles)}\n"
-            if prefs.preferredColors:
-                user_preferences += f"- Preferred colors: {', '.join(prefs.preferredColors)}\n"
-            if prefs.preferredOccasions:
-                user_preferences += f"- Preferred occasions: {', '.join(prefs.preferredOccasions)}\n"
-            if prefs.dislikedStyles:
-                user_preferences += f"- Disliked styles: {', '.join(prefs.dislikedStyles)}\n"
+        # First check if user has style quiz results
+        if user.style_quiz:
+            # Extract style preferences from style quiz
+            if user.style_quiz.overall_style:
+                user_preferences += f"- Preferred styles: {', '.join(str(style) for style in user.style_quiz.overall_style)}\n"
+            if user.style_quiz.color_palette:
+                user_preferences += f"- Preferred colors: {', '.join(str(color) for color in user.style_quiz.color_palette)}\n"
+            if user.style_quiz.occasion_preferences:
+                user_preferences += f"- Preferred occasions: {', '.join(str(occasion) for occasion in user.style_quiz.occasion_preferences)}\n"
+            if user.style_quiz.disliked_styles:
+                user_preferences += f"- Disliked styles: {', '.join(str(style) for style in user.style_quiz.disliked_styles)}\n"
+        # As fallback, check for preferences directly (for older API compatibility)
+        elif hasattr(user, 'preferences'):
+            prefs = user.preferences
+            if hasattr(prefs, 'preferred_styles') and prefs.preferred_styles:
+                user_preferences += f"- Preferred styles: {', '.join(prefs.preferred_styles)}\n"
+            if hasattr(prefs, 'preferred_colors') and prefs.preferred_colors:
+                user_preferences += f"- Preferred colors: {', '.join(prefs.preferred_colors)}\n"
+            if hasattr(prefs, 'preferred_occasions') and prefs.preferred_occasions:
+                user_preferences += f"- Preferred occasions: {', '.join(prefs.preferred_occasions)}\n"
+            if hasattr(prefs, 'disliked_styles') and prefs.disliked_styles:
+                user_preferences += f"- Disliked styles: {', '.join(prefs.disliked_styles)}\n"
         
         # Previous message context
         context_str = "\n".join(context) if context else ""

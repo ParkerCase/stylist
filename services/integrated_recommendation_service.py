@@ -13,6 +13,7 @@ from stylist.models.recommendation import (
     ItemRecommendation,
     OutfitRecommendation,
     RecommendationResponse,
+    SocialProofContext,
 )
 from stylist.services.recommendation_service import RecommendationService
 from stylist.services.style_analysis_service import StyleAnalysisService
@@ -33,6 +34,7 @@ class IntegratedRecommendationService:
         context: Optional[str] = None,
         limit_per_retailer: int = 50,
         check_availability: bool = True,
+        social_proof_context: Optional[SocialProofContext] = None,
     ) -> RecommendationResponse:
         """
         Get personalized recommendations with real-time availability checking.
@@ -44,6 +46,7 @@ class IntegratedRecommendationService:
             context: Optional context for recommendations
             limit_per_retailer: Maximum number of items to retrieve per retailer
             check_availability: Whether to check availability for recommended items
+            social_proof_context: Optional social proof context for celebrity-inspired recommendations
 
         Returns:
             RecommendationResponse object
@@ -91,9 +94,9 @@ class IntegratedRecommendationService:
             except Exception as e:
                 logger.error(f"Error in async inventory retrieval: {str(e)}")
 
-        # Generate recommendations
+        # Generate recommendations with social proof context if provided
         recommendations = RecommendationService.generate_recommendations(
-            user, all_items, context
+            user, all_items, context, social_proof_context
         )
 
         # If requested, check availability for recommended items
@@ -200,6 +203,7 @@ class IntegratedRecommendationService:
         user: Optional[UserProfile] = None,
         category: Optional[str] = None,
         limit: int = 10,
+        social_proof_context: Optional[SocialProofContext] = None,
     ) -> List[ClothingItem]:
         """
         Get items similar to a specific item, optionally personalized for a user.
@@ -209,6 +213,7 @@ class IntegratedRecommendationService:
             user: Optional user profile for personalization
             category: Optional category filter
             limit: Maximum number of items to return
+            social_proof_context: Optional social proof context for celebrity-inspired recommendations
 
         Returns:
             List of similar ClothingItem objects
@@ -280,6 +285,13 @@ class IntegratedRecommendationService:
                     if price_ratio > 0.7:
                         score += 0.05 * price_ratio
 
+                # Social proof matching
+                if social_proof_context:
+                    social_score = RecommendationService.calculate_social_proof_match(
+                        item, social_proof_context
+                    )
+                    score += social_score * 0.3  # Weight for social proof
+
                 return score
 
             # If user provided, personalize further
@@ -295,11 +307,11 @@ class IntegratedRecommendationService:
 
                     # Calculate match score for user
                     user_score, _ = RecommendationService.calculate_item_match_score(
-                        item, user_style_profile
+                        item, user_style_profile, social_proof_context
                     )
 
-                    # Combine scores (70% similarity, 30% personalization)
-                    combined_score = (base_score * 0.7) + (user_score * 0.3)
+                    # Combine scores (60% similarity, 30% personalization, 10% social if available)
+                    combined_score = (base_score * 0.6) + (user_score * 0.4)
 
                     personalized_items.append((item, combined_score))
 
@@ -331,6 +343,7 @@ class IntegratedRecommendationService:
         user: UserProfile,
         occasion: Optional[str] = None,
         limit: int = 5,
+        social_proof_context: Optional[SocialProofContext] = None,
     ) -> List[OutfitRecommendation]:
         """
         Complete an outfit based on provided items.
@@ -340,6 +353,7 @@ class IntegratedRecommendationService:
             user: User profile for personalization
             occasion: Optional occasion type
             limit: Maximum number of outfit suggestions
+            social_proof_context: Optional social proof context for celebrity-inspired recommendations
 
         Returns:
             List of OutfitRecommendation objects
@@ -422,6 +436,7 @@ class IntegratedRecommendationService:
                 occasion=occasion,
                 match_reasons=[f"Complete outfit for {occasion}"],
                 created_at=datetime.now(),
+                social_proof=social_proof_context,
             )
 
             return [outfit]
@@ -468,7 +483,7 @@ class IntegratedRecommendationService:
         for base_item in base_items:
             try:
                 outfit = RecommendationService.generate_outfit_recommendation(
-                    base_item, all_items, user_style_profile, occasion
+                    base_item, all_items, user_style_profile, occasion, social_proof_context
                 )
 
                 if outfit:
@@ -480,6 +495,10 @@ class IntegratedRecommendationService:
                         # Add missing base items to outfit
                         outfit.items.extend(missing_base_items)
 
+                    # Add social proof context if provided
+                    if social_proof_context:
+                        outfit.social_proof = social_proof_context
+
                     outfit_suggestions.append(outfit)
             except Exception as e:
                 logger.warning(
@@ -489,3 +508,63 @@ class IntegratedRecommendationService:
         # Sort by score and return top suggestions
         outfit_suggestions.sort(key=lambda x: x.score, reverse=True)
         return outfit_suggestions[:limit]
+        
+    @staticmethod
+    async def get_social_proof_recommendations(
+        user: UserProfile,
+        social_proof_items: List[Dict[str, Any]],
+        retailer_ids: Optional[List[str]] = None,
+        limit: int = 5,
+    ) -> List[RecommendationResponse]:
+        """
+        Generate recommendations inspired by celebrity outfits.
+        
+        Args:
+            user: User profile
+            social_proof_items: List of social proof items with celebrity info
+            retailer_ids: Optional list of retailer IDs to include
+            limit: Maximum number of recommendations per social proof item
+            
+        Returns:
+            List of RecommendationResponse objects, one per social proof item
+        """
+        recommendations = []
+        
+        for social_item in social_proof_items:
+            # Create social proof context
+            social_context = SocialProofContext(
+                celebrity=social_item.get("celebrity", ""),
+                event=social_item.get("event", ""),
+                outfit_description=social_item.get("outfitDescription", ""),
+                outfit_tags=social_item.get("outfitTags", []),
+                patterns=social_item.get("patterns", []),
+                colors=social_item.get("colors", []),
+            )
+            
+            # Get recommendations with social proof context
+            try:
+                recs = await IntegratedRecommendationService.get_recommendations_with_availability(
+                    user=user,
+                    retailer_ids=retailer_ids,
+                    limit_per_retailer=25,
+                    check_availability=True,
+                    social_proof_context=social_context,
+                )
+                
+                # Only keep top recommendations for this social proof item
+                if recs.recommended_items:
+                    recs.recommended_items = recs.recommended_items[:limit]
+                
+                if recs.recommended_outfits:
+                    recs.recommended_outfits = recs.recommended_outfits[:limit]
+                    
+                # Add metadata about source
+                if social_item.get("id"):
+                    recs.social_proof_source_id = social_item["id"]
+                
+                recommendations.append(recs)
+                
+            except Exception as e:
+                logger.error(f"Error generating social proof recommendations: {str(e)}")
+        
+        return recommendations

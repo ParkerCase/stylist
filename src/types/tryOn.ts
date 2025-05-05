@@ -88,11 +88,22 @@ export interface Point {
     MANUAL = 'manual'
   }
   
+  export interface BodyMeasurements {
+    approximateSize: string;
+    bodyShape: string;
+    width?: number;
+    height?: number;
+    shouldersY?: number;
+    waistWidth?: number;
+    hipsWidth?: number;
+  }
+
   export interface BackgroundRemovalResult {
     success: boolean;
     imageUrl?: string;
     error?: string;
     method: BackgroundRemovalMethod;
+    bodyMeasurements?: BodyMeasurements;
   }
   
   export interface TryOnSettings {

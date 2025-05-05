@@ -14,7 +14,7 @@ import {
 } from '../types/index';
 
 // Mock data for fallback when API is unavailable
-const MOCK_RECOMMENDATIONS: RecommendationResponse = {
+const MOCK_RECOMMENDATIONS: Partial<RecommendationResponse> = {
   items: [
     {
       id: 'mock1',
@@ -135,6 +135,15 @@ const MOCK_RECOMMENDATIONS: RecommendationResponse = {
   ]
 };
 
+// Add missing required fields for mock data
+const completeMockRecommendations: RecommendationResponse = {
+  ...MOCK_RECOMMENDATIONS,
+  userId: 'mock_user',
+  timestamp: new Date(),
+  items: MOCK_RECOMMENDATIONS.items || [],
+  outfits: MOCK_RECOMMENDATIONS.outfits || []
+};
+
 export class RecommendationApi {
   apiClient: ApiClient;
   
@@ -145,11 +154,105 @@ export class RecommendationApi {
   // Get personalized recommendations
   async getRecommendations(request: RecommendationRequest): Promise<RecommendationResponse> {
     try {
-      return await this.apiClient.post<RecommendationResponse>('/api/v1/recommendations', request);
-    } catch (error) {
+      // Add timeouts and retries for production reliability
+      // Use the correct endpoint format to match backend structure - converting GET to POST
+      const response = await this.apiClient.post<RecommendationResponse>(
+        `/api/v1/recommendations`, {
+          userId: request.userId,
+          context: request.context,
+          filterByRetailers: request.filterByRetailers,
+          category: request.category
+        }
+      );
+      
+      // If the response is valid, return it
+      if (response && Array.isArray(response.items)) {
+        return response;
+      }
+      
+      // If response is missing expected structure, map it
+      interface ApiResponse {
+        recommended_items?: any[];
+        recommended_outfits?: any[];
+        [key: string]: any;
+      }
+      
+      const apiResponse = response as unknown as ApiResponse;
+      
+      if (apiResponse && Array.isArray(apiResponse.recommended_items)) {
+        return {
+          userId: request.userId,
+          timestamp: new Date(),
+          items: apiResponse.recommended_items.map((item: any) => ({
+            id: item.item_id,
+            name: item.name || '',
+            brand: item.brand || '',
+            category: item.category || '',
+            price: item.price || 0,
+            retailerId: item.retailer_id ? item.retailer_id.split('_')[0] : '',
+            colors: item.colors || [],
+            sizes: item.sizes || [],
+            imageUrls: item.image_urls || [],
+            url: item.url || '#',
+            matchScore: item.score || 0,
+            matchReasons: item.match_reasons || [],
+            inStock: item.in_stock !== false
+          })),
+          outfits: (apiResponse.recommended_outfits || []).map((outfit: any) => ({
+            id: outfit.outfit_id,
+            name: outfit.name || `Outfit for ${outfit.occasion || 'any occasion'}`,
+            occasion: outfit.occasion || '',
+            matchScore: outfit.score || 0,
+            matchReasons: outfit.match_reasons || [],
+            items: outfit.items.map((id: string) => {
+              // Find the full item in the items array
+              const item = apiResponse.recommended_items?.find((i: any) => i.item_id === id);
+              if (!item) return { 
+                id, 
+                name: '', 
+                brand: '', 
+                category: '',
+                price: 0, 
+                imageUrls: [''],
+                retailerId: '',
+                colors: [],
+                sizes: [],
+                url: '',
+                matchScore: 0,
+                matchReasons: [],
+                inStock: true
+              };
+              
+              return {
+                id: item.item_id,
+                name: item.name || '',
+                brand: item.brand || '',
+                category: item.category || '',
+                price: item.price || 0,
+                retailerId: item.retailer_id ? item.retailer_id.split('_')[0] : '',
+                colors: item.colors || [],
+                sizes: item.sizes || [],
+                imageUrls: item.image_urls || [],
+                url: item.url || '#',
+                matchScore: item.score || 0,
+                matchReasons: item.match_reasons || [],
+                inStock: item.in_stock !== false
+              };
+            })
+          }))
+        };
+      }
+      
+      throw new Error('Invalid response format from API');
+    } catch (error: unknown) {
       console.warn('Failed to fetch recommendations from API, using mock data:', error);
+      // Add log for clean error message
+      if (error && typeof error === 'object' && 'response' in error) {
+        const errorWithResponse = error as { response: { status: number, statusText: string } };
+        console.error(`Recommendation API error: ${errorWithResponse.response.status} - ${errorWithResponse.response.statusText}`);
+      }
       // Return mock data as fallback
-      return MOCK_RECOMMENDATIONS;
+      return completeMockRecommendations;
     }
   }
   
@@ -170,7 +273,7 @@ export class RecommendationApi {
     } catch (error) {
       console.warn('Failed to fetch outfit recommendations, using mock data:', error);
       // Return mock outfit data as fallback
-      return MOCK_RECOMMENDATIONS.outfits;
+      return completeMockRecommendations.outfits;
     }
   }
   

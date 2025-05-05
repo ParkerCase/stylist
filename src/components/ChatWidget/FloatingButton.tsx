@@ -1,17 +1,21 @@
 // Floating button component for chat widget activation
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface FloatingButtonProps {
   position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
   onClick: () => void;
   primaryColor?: string;
+  isOpen?: boolean;
 }
 
 const FloatingButton: React.FC<FloatingButtonProps> = ({
   position,
   onClick,
-  primaryColor
+  primaryColor,
+  isOpen = false
 }) => {
+  const [animateState, setAnimateState] = useState('animate-in');
+  
   // Position classes for the button
   const positionClasses = {
     'bottom-right': 'stylist-floating-button--bottom-right',
@@ -23,12 +27,25 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({
   // Custom style for primary color
   const buttonStyle = primaryColor ? { backgroundColor: primaryColor } : undefined;
   
+  // Handle animation states when opening/closing
+  useEffect(() => {
+    if (isOpen) {
+      setAnimateState('animate-out');
+    } else {
+      setAnimateState('animate-in');
+    }
+  }, [isOpen]);
+  
+  // Don't render the button if the chat widget is open
+  if (isOpen) return null;
+  
   return (
     <div 
-      className={`stylist-floating-button ${positionClasses[position]} animate-in`}
+      className={`stylist-floating-button ${positionClasses[position]} ${animateState}`}
       onClick={onClick}
       style={buttonStyle}
       data-testid="stylist-floating-button"
+      aria-label="Open chat assistant"
     >
       <div className="stylist-floating-button__icon">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
