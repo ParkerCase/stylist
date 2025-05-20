@@ -2,12 +2,19 @@
 
 export interface UserProfile {
     userId: string;
-    isAnonymous: boolean;
+    username?: string;
+    isAnonymous?: boolean;
     email?: string;
     name?: string;
     preferences: UserPreferences;
-    closet: ClosetItem[];
-    feedback: UserFeedback;
+    closet?: ClosetItem[];
+    feedback?: UserFeedback;
+    history?: {
+      viewedItems: string[];
+      likedItems: string[];
+      dislikedItems: string[];
+      purchasedItems: string[];
+    };
     createdAt: Date;
     lastActive: Date;
   }
@@ -20,6 +27,19 @@ export interface UserProfile {
     favoriteRetailers?: string[];
     excludedCategories?: string[];
     occasionPreferences?: string[];
+    // For mock data support
+    sizes?: {
+      top?: string[];
+      bottom?: string[];
+      dress?: string[];
+      shoe?: string[];
+      [key: string]: string[] | undefined;
+    };
+    colors?: string[];
+    styles?: string[];
+    brands?: string[];
+    occasions?: string[];
+    priceRanges?: string[];
   }
   
   export interface StylePreference {
@@ -49,6 +69,7 @@ export interface UserProfile {
     subcategory?: string;
     brand?: string;
     color: string;
+    pattern?: string;
     size?: string;
     imageUrl?: string;
     dateAdded: Date;
@@ -73,6 +94,7 @@ export interface UserProfile {
     maxValue?: number;
     step?: number;
     category: string; // e.g., "style", "color", "fit", "occasion"
+    section: string; // e.g., "basics", "preferences", "lifestyle", "brands", "celebrities"
   }
   
   export interface StyleQuizOption {

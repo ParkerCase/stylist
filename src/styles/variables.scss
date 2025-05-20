@@ -1,5 +1,10 @@
 // Variables for styling the widget
 
+// Additional background colors
+$background-color-light: var(--stylist-background-color-light, #f5f5f7);
+$background-color-dark: var(--stylist-background-color-dark, #e9e9ef);
+$border-color-light: var(--stylist-border-color-light, #f0f0f5);
+
 // Brand colors
 $primary-color: var(--stylist-primary-color, #4361ee);
 $primary-color-light: var(--stylist-primary-color-light, #6c8aee);
@@ -12,6 +17,7 @@ $secondary-color-dark: var(--stylist-secondary-color-dark, #d32638);
 // Neutral colors
 $background-color: var(--stylist-background-color, #ffffff);
 $surface-color: var(--stylist-surface-color, #f9f9fb);
+$surface-light: var(--stylist-surface-light, #f0f0f5);
 $border-color: var(--stylist-border-color, #e5e7eb);
 
 // Text colors
@@ -65,6 +71,12 @@ $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 
 $transition-fast: 150ms;
 $transition-normal: 250ms;
 $transition-slow: 350ms;
+
+// Consistent animation duration for demo readiness
+$animation-duration: 250ms; // standard duration for animations
+$animation-delay: 50ms; // standard delay for staggered animations
+$animation-fade-duration: 200ms; // specific duration for fade transitions
+$animation-scale-duration: 150ms; // specific duration for scale effects
 
 // Z-index levels
 $z-index-dropdown: 1000;

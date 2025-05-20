@@ -6,44 +6,170 @@
   margin: variables.$spacing-md 0;
   overflow: hidden;
   border: 1px solid variables.$border-color;
-  
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+
   &__header {
-    padding: variables.$spacing-md;
+    @include mixins.component-spacing;
+    margin-bottom: 0;
     border-bottom: 1px solid variables.$border-color;
   }
-  
+
   &__title {
     font-size: variables.$font-size-lg;
     font-weight: variables.$font-weight-bold;
     margin-bottom: variables.$spacing-xs;
     color: variables.$text-primary;
   }
-  
+
   &__description {
     font-size: variables.$font-size-sm;
     color: variables.$text-secondary;
   }
-  
+
+  // Overall progress
   &__progress {
     height: 4px;
     background-color: variables.$border-color;
-    
+    position: relative;
+
     &-bar {
       height: 100%;
       background-color: variables.$primary-color;
       transition: width variables.$transition-normal ease;
     }
+
+    &-text {
+      position: absolute;
+      right: variables.$spacing-sm;
+      top: variables.$spacing-xs;
+      font-size: variables.$font-size-xs;
+      color: variables.$text-secondary;
+      background-color: variables.$background-color;
+      padding: 2px 4px;
+      border-radius: variables.$border-radius-sm;
+    }
   }
-  
+
+  // Section tabs
+  &__section-tabs {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: variables.$spacing-sm variables.$spacing-md;
+    border-bottom: 1px solid variables.$border-color;
+    overflow-x: auto;
+    scrollbar-width: none; // Firefox
+    -ms-overflow-style: none; // IE/Edge
+
+    &::-webkit-scrollbar {
+      display: none; // Chrome/Safari
+    }
+
+    // Fade edges to indicate more content
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 30px;
+      height: 100%;
+      background: linear-gradient(to right, transparent, variables.$background-color);
+      pointer-events: none;
+      opacity: 0.8;
+    }
+  }
+
+  &__section-tab {
+    flex: 1;
+    min-width: 90px;
+    position: relative;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: variables.$spacing-xs variables.$spacing-xs;
+    font-size: variables.$font-size-xs;
+    color: variables.$text-secondary;
+    cursor: pointer;
+    transition: all variables.$transition-normal ease;
+    text-align: center;
+
+    &:hover:not(:disabled) {
+      color: variables.$text-primary;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &--active {
+      color: variables.$primary-color;
+      border-bottom-color: variables.$primary-color;
+      font-weight: variables.$font-weight-bold;
+    }
+
+    &-label {
+      margin-bottom: variables.$spacing-xs;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    &-progress {
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      height: 2px;
+      background-color: variables.$primary-color;
+      transition: width variables.$transition-normal ease;
+    }
+  }
+
+  // Section content
+  &__section-content {
+    flex: 1;
+    overflow-y: auto;
+    @include mixins.content-spacing;
+    padding-bottom: variables.$spacing-md;
+  }
+
+  &__section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: variables.$spacing-md variables.$spacing-md variables.$spacing-xs;
+
+    h3 {
+      font-size: variables.$font-size-md;
+      font-weight: variables.$font-weight-medium;
+      color: variables.$text-primary;
+      margin: 0;
+    }
+  }
+
+  &__section-title {
+    font-size: variables.$font-size-md;
+    font-weight: variables.$font-weight-medium;
+    color: variables.$text-primary;
+  }
+
+  &__section-progress {
+    font-size: variables.$font-size-xs;
+    color: variables.$text-secondary;
+  }
+
   &__question {
-    padding: variables.$spacing-md;
-    
+    padding: variables.$spacing-md variables.$spacing-md variables.$spacing-sm;
+
     &-number {
       font-size: variables.$font-size-xs;
       color: variables.$text-secondary;
       margin-bottom: variables.$spacing-xs;
     }
-    
+
     &-text {
       font-size: variables.$font-size-md;
       font-weight: variables.$font-weight-medium;
@@ -51,14 +177,14 @@
       margin-bottom: variables.$spacing-md;
     }
   }
-  
+
   &__options {
     padding: 0 variables.$spacing-md variables.$spacing-md;
     display: flex;
     flex-direction: column;
     gap: variables.$spacing-sm;
   }
-  
+
   &__option {
     padding: variables.$spacing-sm variables.$spacing-md;
     background-color: variables.$background-color;
@@ -68,35 +194,35 @@
     text-align: left;
     transition: all variables.$transition-normal ease;
     cursor: pointer;
-    
+
     &:hover {
       background-color: variables.$surface-color;
       border-color: variables.$text-secondary;
     }
-    
+
     &--selected {
       background-color: rgba(variables.$primary-color, 0.1);
       border-color: variables.$primary-color;
-      
+
       &:hover {
         background-color: rgba(variables.$primary-color, 0.15);
         border-color: variables.$primary-color;
       }
     }
   }
-  
+
   // Image options styling
   &__image-options {
     padding: 0 variables.$spacing-md variables.$spacing-md;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: variables.$spacing-md;
-    
+
     @include mixins.responsive('md') {
       grid-template-columns: repeat(3, 1fr);
     }
   }
-  
+
   &__image-option {
     display: flex;
     flex-direction: column;
@@ -106,21 +232,21 @@
     padding: 0;
     cursor: pointer;
     transition: all variables.$transition-normal ease;
-    
+
     &--selected {
       .stylist-style-quiz__image-container {
         border-color: variables.$primary-color;
         transform: translateY(-4px);
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
       }
-      
+
       .stylist-style-quiz__image-label {
         color: variables.$primary-color;
         font-weight: variables.$font-weight-bold;
       }
     }
   }
-  
+
   &__image-container {
     width: 100%;
     height: 120px;
@@ -132,13 +258,13 @@
     background-position: center;
     background-repeat: no-repeat;
     transition: all variables.$transition-normal ease;
-    
+
     &:hover {
       border-color: variables.$text-secondary;
       transform: translateY(-2px);
     }
   }
-  
+
   &__image-placeholder {
     width: 100%;
     height: 100%;
@@ -146,14 +272,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
     &::after {
       content: 'No Image';
       font-size: variables.$font-size-xs;
       color: variables.$text-secondary;
     }
   }
-  
+
   &__image-label {
     font-size: variables.$font-size-sm;
     color: variables.$text-primary;
@@ -162,20 +288,21 @@
     line-height: 1.2;
     max-width: 100%;
   }
-  
+
+  // Slider styling
   &__slider {
     padding: 0 variables.$spacing-md variables.$spacing-md;
-    
+
     input[type="range"] {
       width: 100%;
-      margin: variables.$spacing-md 0;
+      margin: variables.$spacing-md 0 variables.$spacing-xs;
       height: 6px;
       -webkit-appearance: none;
       appearance: none;
       background: linear-gradient(to right, #ccc, variables.$primary-color);
       border-radius: 3px;
       outline: none;
-      
+
       &::-webkit-slider-thumb {
         -webkit-appearance: none;
         appearance: none;
@@ -187,7 +314,7 @@
         border: 2px solid white;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
       }
-      
+
       &::-moz-range-thumb {
         width: 18px;
         height: 18px;
@@ -198,68 +325,165 @@
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
       }
     }
-    
+
+    // Current slider value display
+    &-value {
+      font-size: variables.$font-size-md;
+      font-weight: variables.$font-weight-bold;
+      color: variables.$text-primary;
+      text-align: center;
+      margin-bottom: variables.$spacing-xs;
+    }
+
     &-labels {
       @include mixins.flex-between;
       font-size: variables.$font-size-sm;
       color: variables.$text-secondary;
-      margin-top: variables.$spacing-xs;
     }
-    
+
     &-label-left, &-label-right {
       font-weight: variables.$font-weight-medium;
     }
   }
-  
+
+  // Action buttons
   &__actions {
     @include mixins.flex-between;
-    padding: variables.$spacing-md;
+    @include mixins.container-spacing;
     border-top: 1px solid variables.$border-color;
+    background-color: variables.$background-color;
+    margin-top: auto;
   }
-  
+
   &__button {
     @include mixins.button-base;
     padding: variables.$spacing-sm variables.$spacing-md;
     font-size: variables.$font-size-sm;
     cursor: pointer;
-    
+
     &--primary {
       @include mixins.button-primary;
       min-width: 100px;
       transition: all variables.$transition-normal ease;
-      
+
       &:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       }
-      
+
       &:disabled {
         opacity: 0.6;
         cursor: not-allowed;
       }
     }
-    
+
     &--secondary {
       @include mixins.button-secondary;
       min-width: 100px;
       transition: all variables.$transition-normal ease;
-      
+
       &:hover {
         background-color: variables.$surface-color;
       }
     }
+
+    &--skip {
+      background: none;
+      border: none;
+      color: variables.$text-secondary;
+      text-decoration: underline;
+      padding: variables.$spacing-xs;
+      transition: all variables.$transition-fast ease;
+
+      &:hover {
+        color: variables.$text-primary;
+      }
+    }
   }
-  
+
+  // Save progress reminder
+  &__save-progress {
+    display: flex;
+    align-items: center;
+    padding: variables.$spacing-sm variables.$spacing-md;
+    background-color: variables.$surface-color;
+    border-top: 1px solid variables.$border-color;
+
+    &-icon {
+      margin-right: variables.$spacing-sm;
+      color: variables.$primary-color;
+    }
+
+    &-text {
+      font-size: variables.$font-size-xs;
+      color: variables.$text-secondary;
+    }
+  }
+
+  // Skip confirmation dialog
+  &__skip-confirm {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+    }
+
+    &-dialog {
+      position: relative;
+      background-color: variables.$background-color;
+      border-radius: variables.$border-radius-md;
+      padding: variables.$spacing-lg;
+      max-width: 90%;
+      width: 400px;
+      box-shadow: variables.$shadow-lg;
+
+      h4 {
+        font-size: variables.$font-size-lg;
+        font-weight: variables.$font-weight-bold;
+        margin-top: 0;
+        margin-bottom: variables.$spacing-md;
+      }
+
+      p {
+        font-size: variables.$font-size-sm;
+        margin-bottom: variables.$spacing-md;
+      }
+    }
+
+    &-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: variables.$spacing-md;
+      margin-top: variables.$spacing-md;
+    }
+  }
+
+  // Loading state
   &--loading {
     padding: variables.$spacing-xl;
     @include mixins.flex-center;
+    min-height: 300px;
   }
-  
+
   &__loader {
     @include mixins.flex-center;
     flex-direction: column;
     color: variables.$text-secondary;
-    
+
     &::before {
       content: '';
       display: block;
@@ -272,32 +496,34 @@
       margin-bottom: variables.$spacing-sm;
     }
   }
-  
+
+  // Error state
   &--error {
     padding: variables.$spacing-xl;
     @include mixins.flex-center;
+    min-height: 300px;
   }
-  
+
   &__error {
     color: variables.$error-color;
     text-align: center;
   }
-  
+
+  // Animations
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
-  
-  // Animations
+
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  
+
   @keyframes fadeOut {
     from { opacity: 1; transform: translateY(0); }
     to { opacity: 0; transform: translateY(-10px); }
   }
-  
+
   @keyframes slideInUp {
     from {
       opacity: 0;
@@ -308,23 +534,24 @@
       transform: translateY(0);
     }
   }
-  
+
   // Apply animations
+  &__section-content,
   &__question {
     animation: fadeIn 0.5s ease forwards;
   }
-  
+
   &__options,
   &__image-options,
   &__slider {
     animation: slideInUp 0.5s ease forwards;
   }
-  
+
   // Animation classes for JS control
   .fade-in {
     animation: fadeIn 0.3s ease-in-out forwards !important;
   }
-  
+
   .fade-out {
     animation: fadeOut 0.2s ease-in-out forwards !important;
   }

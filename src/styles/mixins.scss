@@ -84,27 +84,79 @@
   }
 }
 
+// Alias for scrollbar-custom
+@mixin scrollbar {
+  @include scrollbar-custom;
+}
+
 // Box shadow with color variable
 @mixin box-shadow($color: rgba(0, 0, 0, 0.1), $y: 4px) {
   box-shadow: 0 $y 8px 0 $color;
 }
 
-// Responsive styles
+// Shadow on bottom edge
+@mixin shadow-bottom {
+  box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+// Responsive styles with modern breakpoints and extreme sizes
 @mixin responsive($breakpoint) {
-  @if $breakpoint == "xs" {
-    @media (max-width: 576px) { @content; }
+  @if $breakpoint == "xxs" {
+    @media (max-width: 320px) { @content; } // Extra small phones
+  }
+  @else if $breakpoint == "xs" {
+    @media (max-width: 576px) { @content; } // Small phones
   }
   @else if $breakpoint == "sm" {
-    @media (min-width: 576px) { @content; }
+    @media (min-width: 576px) { @content; } // Large phones/small tablets
   }
   @else if $breakpoint == "md" {
-    @media (min-width: 768px) { @content; }
+    @media (min-width: 768px) { @content; } // Tablets
   }
   @else if $breakpoint == "lg" {
-    @media (min-width: 992px) { @content; }
+    @media (min-width: 992px) { @content; } // Small desktops/laptops
   }
   @else if $breakpoint == "xl" {
-    @media (min-width: 1200px) { @content; }
+    @media (min-width: 1200px) { @content; } // Large desktops
+  }
+  @else if $breakpoint == "xxl" {
+    @media (min-width: 1400px) { @content; } // Extra large screens
+  }
+}
+
+// Direction-specific responsive mixins
+@mixin mobile-only {
+  @media (max-width: 767px) { @content; }
+}
+
+@mixin tablet-only {
+  @media (min-width: 768px) and (max-width: 991px) { @content; }
+}
+
+@mixin desktop-only {
+  @media (min-width: 992px) { @content; }
+}
+
+// For height-based breakpoints
+@mixin responsive-height($breakpoint) {
+  @if $breakpoint == "xs" {
+    @media (max-height: 600px) { @content; }
+  }
+  @else if $breakpoint == "sm" {
+    @media (min-height: 600px) { @content; }
+  }
+  @else if $breakpoint == "md" {
+    @media (min-height: 800px) { @content; }
+  }
+  @else if $breakpoint == "lg" {
+    @media (min-height: 1000px) { @content; }
+  }
+}
+
+// Alias for responsive-to for backward compatibility
+@mixin respond-to($breakpoint) {
+  @include responsive($breakpoint) {
+    @content;
   }
 }
 
@@ -119,10 +171,41 @@
   cursor: pointer;
   transition: all variables.$transition-normal ease;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    opacity: 0;
+    transition: opacity variables.$transition-fast ease;
+  }
+  
+  &:hover::after {
+    opacity: 0.1;
+    background-color: currentColor;
+  }
+  
+  &:active {
+    transform: scale(0.98);
+  }
   
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    
+    &:hover::after {
+      opacity: 0;
+    }
+    
+    &:active {
+      transform: none;
+    }
   }
 }
 
@@ -133,11 +216,25 @@
   
   &:hover {
     background-color: variables.$primary-color-dark;
+    box-shadow: variables.$shadow-md;
   }
   
-  &:focus {
+  &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(variables.$primary-color, 0.3);
+    box-shadow: 0 0 0 3px rgba(variables.$primary-color, 0.4);
+    border-color: variables.$primary-color;
+    position: relative;
+    z-index: 2;
+  }
+  
+  &:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
+  
+  &:active {
+    background-color: variables.$primary-color-dark;
+    box-shadow: variables.$shadow-sm;
   }
 }
 
@@ -148,12 +245,27 @@
   border: 1px solid variables.$border-color;
   
   &:hover {
-    opacity: 0.9; /* Use opacity instead of darken for CSS variables */
+    background-color: variables.$background-color-light;
+    border-color: variables.$primary-color;
+    box-shadow: variables.$shadow-sm;
   }
   
-  &:focus {
+  &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(variables.$primary-color, 0.2);
+    box-shadow: 0 0 0 3px rgba(variables.$primary-color, 0.3);
+    border-color: variables.$primary-color;
+    position: relative;
+    z-index: 2;
+  }
+  
+  &:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
+  
+  &:active {
+    background-color: variables.$background-color-dark;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 }
 
@@ -224,4 +336,248 @@
   border-radius: variables.$border-radius-round;
   font-size: variables.$font-size-xs;
   font-weight: variables.$font-weight-medium;
+}
+
+// Animation mixins for consistent transitions with adaptive complexity
+@mixin animate-fade {
+  @media (prefers-reduced-motion: no-preference) {
+    transition: opacity variables.$animation-duration ease-in-out, 
+                visibility variables.$animation-duration ease-in-out;
+  }
+}
+
+@mixin animate-scale {
+  @media (prefers-reduced-motion: no-preference) {
+    transition: transform variables.$animation-duration ease-in-out;
+  }
+}
+
+@mixin animate-slide {
+  @media (prefers-reduced-motion: no-preference) {
+    transition: transform variables.$animation-duration ease-in-out;
+  }
+}
+
+@mixin animate-color {
+  @media (prefers-reduced-motion: no-preference) {
+    transition: background-color variables.$animation-duration ease-in-out,
+                color variables.$animation-duration ease-in-out;
+  }
+}
+
+@mixin animate-all {
+  @media (prefers-reduced-motion: no-preference) {
+    transition: all variables.$animation-duration ease-in-out;
+  }
+}
+
+// Animation complexity levels based on device capabilities
+@mixin animation-complexity($level: 'high') {
+  .animation--high {
+    @if $level == 'high' {
+      will-change: transform, opacity;
+      transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+  }
+  
+  .animation--medium {
+    @if $level == 'medium' or $level == 'high' {
+      will-change: transform;
+      transition-timing-function: ease-out;
+    }
+  }
+  
+  .animation--low {
+    @if $level == 'low' or $level == 'medium' or $level == 'high' {
+      transition-timing-function: ease;
+      transition-duration: calc(variables.$animation-duration * 0.7);
+    }
+  }
+  
+  .animation--none {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+// Scale effect mixins for different components
+@mixin scale-effect($size: 'sm') {
+  transition: transform variables.$animation-scale-duration cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+  
+  @if $size == 'xs' {
+    &:hover {
+      transform: scale(1.02);
+    }
+    &:active {
+      transform: scale(0.98);
+    }
+  } @else if $size == 'sm' {
+    &:hover {
+      transform: scale(1.05);
+    }
+    &:active {
+      transform: scale(0.97);
+    }
+  } @else if $size == 'md' {
+    &:hover {
+      transform: scale(1.08);
+    }
+    &:active {
+      transform: scale(0.96);
+    }
+  } @else if $size == 'lg' {
+    &:hover {
+      transform: scale(1.12);
+    }
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+// Accessibility-friendly animations that respect user preferences
+@mixin respect-motion-preferences {
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+    animation: none;
+  }
+}
+
+// Staggered animations for lists of items
+@mixin staggered-animation($property, $duration: variables.$animation-duration, $delay: variables.$animation-delay) {
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) {
+      transition: $property $duration ease-in-out;
+      transition-delay: $delay * $i;
+    }
+  }
+}
+
+// Consistent spacing for components
+@mixin component-spacing {
+  padding: variables.$spacing-md;
+  margin-bottom: variables.$spacing-md;
+}
+
+// Consistent container spacing
+@mixin container-spacing {
+  padding: variables.$spacing-md variables.$spacing-lg;
+}
+
+// Consistent grid spacing
+@mixin grid-spacing {
+  gap: variables.$spacing-md;
+  padding: variables.$spacing-md;
+}
+
+// Consistent inner component spacing
+@mixin inner-spacing {
+  padding: variables.$spacing-sm variables.$spacing-md;
+}
+
+// Consistent content spacing
+@mixin content-spacing {
+  gap: variables.$spacing-md;
+
+  > * + * {
+    margin-top: variables.$spacing-md;
+  }
+}
+
+// Card content spacing
+@mixin card-content-spacing {
+  padding: variables.$spacing-md;
+  gap: variables.$spacing-sm;
+}
+
+// Icon button mixin
+@mixin icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: transparent;
+  color: variables.$text-secondary;
+  border: 1px solid variables.$border-color;
+  cursor: pointer;
+  transition: all variables.$transition-normal ease;
+  position: relative;
+  overflow: hidden;
+  
+  &:hover {
+    background-color: variables.$background-color-light;
+    color: variables.$primary-color;
+    border-color: variables.$primary-color-light;
+    transform: translateY(-2px);
+    box-shadow: variables.$shadow-sm;
+  }
+  
+  &:active {
+    transform: translateY(0) scale(0.95);
+    box-shadow: none;
+  }
+  
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(variables.$primary-color, 0.4);
+    position: relative;
+    z-index: 2;
+  }
+  
+  &:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
+  
+  &--active {
+    background-color: variables.$primary-color;
+    color: variables.$text-inverse;
+    border-color: variables.$primary-color;
+    
+    &:hover {
+      background-color: variables.$primary-color-dark;
+      border-color: variables.$primary-color-dark;
+      color: variables.$text-inverse;
+    }
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    
+    &:hover, &:active, &:focus {
+      background-color: transparent;
+      border-color: variables.$border-color;
+      color: variables.$text-secondary;
+      transform: none;
+      box-shadow: none;
+    }
+  }
+}
+
+// Consistent form spacing
+@mixin form-spacing {
+  gap: variables.$spacing-md;
+
+  > * + * {
+    margin-top: variables.$spacing-md;
+  }
+
+  .form-group {
+    margin-bottom: variables.$spacing-md;
+  }
+
+  label {
+    margin-bottom: variables.$spacing-xs;
+    display: block;
+  }
+
+  input, select, textarea {
+    margin-top: variables.$spacing-xs;
+  }
 }

@@ -27,7 +27,16 @@ export enum AnalyticsEventType {
     // New feedback-related events
     MESSAGE_THUMBS_UP = 'message_thumbs_up',
     RECOMMENDATION_THUMBS_UP = 'recommendation_thumbs_up',
-    FEEDBACK_SYNCED = 'feedback_synced'
+    FEEDBACK_SYNCED = 'feedback_synced',
+    // New input-related events
+    IMAGE_UPLOAD = 'image_upload',
+    URL_INPUT = 'url_input',
+    VOICE_INPUT = 'voice_input',
+    // New tab navigation events
+    VIEW_MY_CLOSET = 'view_my_closet',
+    VIEW_VIRTUAL_TRY_ON = 'view_virtual_try_on',
+    VIEW_SOCIAL_PROOF = 'view_social_proof',
+    VIEW_TRENDING_ITEMS = 'view_trending_items'
   }
   
   // Analytics event structure

@@ -1,161 +1,66 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>The Stylist Widget Demo</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
-  <style>
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="FashionAI Stylist Widget - AI-powered fashion recommendations"><title>FashionAI Stylist Widget</title><link rel="preload" href="/fonts/your-main-font.woff2" as="font" type="font/woff2" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><style>/* Critical CSS for initial rendering */
+    :root {
+      --stylist-primary-color: #4361ee;
+      --stylist-secondary-color: #3f37c9;
+      --stylist-text-color: #1b1b1b;
+      --stylist-background-color: #ffffff;
+      --stylist-border-radius: 8px;
+      --stylist-transition-speed: 0.3s;
+    }
+    
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, 
-                   Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      padding: 20px;
-      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     }
-    header {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .demo-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    .store-mock {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
-      margin-top: 30px;
-    }
-    .product-card {
-      border: 1px solid #eee;
-      border-radius: 4px;
-      padding: 15px;
-      transition: transform 0.2s;
-    }
-    .product-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-    .product-image {
+    
+    #stylist-root {
       width: 100%;
-      height: 180px;
-      background-color: #f0f0f0;
-      margin-bottom: 10px;
+      height: 100%;
+    }
+    
+    .stylist-loading-container {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: #999;
+      padding: 2rem;
+      height: 100%;
     }
-    .product-title {
-      font-weight: bold;
-      margin-bottom: 5px;
+    
+    .stylist-loading-spinner {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 3px solid rgba(67, 97, 238, 0.2);
+      border-top-color: var(--stylist-primary-color, #4361ee);
+      animation: spin 1s linear infinite;
     }
-    .product-price {
-      color: #e63946;
-      font-weight: 600;
-    }
-    .product-brand {
-      color: #777;
-      font-size: 0.9em;
-    }
-    button.stylist-button {
-      background-color: #4361ee;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 20px;
-      transition: background-color 0.2s;
-    }
-    button.stylist-button:hover {
-      background-color: #3a56d4;
-    }
-  </style>
-  <!-- Widget script and style -->
-  <script defer="defer" src="stylist-widget.js"></script>
-  <link href="stylist-widget.css" rel="stylesheet">
-</head>
-<body>
-  <header>
-    <h1>The Stylist Widget Demo</h1>
-    <p>This page demonstrates how The Stylist widget integrates with an e-commerce website.</p>
-  </header>
-  <div class="demo-container">
-    <div>
-      <h2>Fashion Collection</h2>
-      <p>Click the button below to get personalized fashion recommendations:</p>
-      <button class="stylist-button" id="open-stylist">Get Style Recommendations</button>
-    </div>
-    <div class="store-mock">
-      <div class="product-card">
-        <div class="product-image">Product Image</div>
-        <div class="product-title">Classic White T-Shirt</div>
-        <div class="product-brand">Brand: Essentials</div>
-        <div class="product-price">$24.99</div>
-      </div>
-      <div class="product-card">
-        <div class="product-image">Product Image</div>
-        <div class="product-title">Slim Fit Jeans</div>
-        <div class="product-brand">Brand: DenimCo</div>
-        <div class="product-price">$59.99</div>
-      </div>
-      <div class="product-card">
-        <div class="product-image">Product Image</div>
-        <div class="product-title">Casual Sneakers</div>
-        <div class="product-brand">Brand: UrbanStep</div>
-        <div class="product-price">$79.99</div>
-      </div>
-      <div class="product-card">
-        <div class="product-image">Product Image</div>
-        <div class="product-title">Oversized Hoodie</div>
-        <div class="product-brand">Brand: Comfort+</div>
-        <div class="product-price">$49.99</div>
-      </div>
-    </div>
-  </div>
-  <script>
-    // Initialize and auto-open the widget with configuration
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOM loaded, preparing to initialize Stylist Widget');
-      
-      // Small delay to ensure the widget script is fully loaded
-      setTimeout(function() {
-        if (window.StylistWidget && window.StylistWidget.init) {
-          console.log('Initializing Stylist Widget');
-          // Initialize with demo key - this should match what the backend expects
-          window.StylistWidget.init({
-            apiKey: 'demo_key',
-            retailerId: 'demo_retailer'
-          });
-          
-          // Auto-open the widget after initialization
-          if (window.StylistWidget.open) {
-            console.log('Auto-opening Stylist Widget');
-            window.StylistWidget.open();
-          }
-        } else {
-          console.error('StylistWidget not available. Check if the script loaded correctly.');
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }</style><script>// Feature detection and minimal initial setup
+    window.__STYLIST_CAPABILITIES = {
+      webp: (function() {
+        var canvas = document.createElement('canvas');
+        if (!!(canvas.getContext && canvas.getContext('2d'))) {
+          return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
         }
-      }, 1000);
-
-      // Open button event listener
-      document.getElementById('open-stylist').addEventListener('click', function() {
-        console.log('Open button clicked');
-        if (window.StylistWidget && window.StylistWidget.open) {
-          window.StylistWidget.open();
-        } else {
-          console.error('StylistWidget not available when button was clicked.');
+        return false;
+      })(),
+      webgl: (function() {
+        try {
+          return !!window.WebGLRenderingContext && 
+            !!(document.createElement('canvas').getContext('webgl') || 
+               document.createElement('canvas').getContext('experimental-webgl'));
+        } catch(e) {
+          return false;
         }
-      });
-    });
-  </script>
-</body>
-</html>
+      })(),
+      touch: (function() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      })(),
+      perfEntry: !!(window.PerformanceObserver && window.PerformanceMark),
+      raf: !!window.requestAnimationFrame
+    };</script><meta name="theme-color" content="#4361ee"><meta name="application-name" content="FashionAI Stylist"><script defer="defer" src="/stylist-runtime.b2002e2b9ed5dc70bd18.js"></script><script defer="defer" src="/stylist-react.34c8dc240b1d199a42f2.js"></script><script defer="defer" src="/stylist-state.405e585f45f4757d2f93.js"></script><script defer="defer" src="/stylist-api.77f652eafe604df818aa.js"></script><script defer="defer" src="/stylist-ui-utils.10d5b4ce97e4c091e7ec.js"></script><script defer="defer" src="/stylist-vendors-49d0a293.62c952adcbbd95d1915c.js"></script><script defer="defer" src="/stylist-vendors-f82e0cd2.e4a2ca885a2c8f27cbae.js"></script><script defer="defer" src="/stylist-vendors-a05dac6c.7eda103aaf8ebb634bc8.js"></script><script defer="defer" src="/stylist-vendors-db4b2390.dba310727f3ea990c3c4.js"></script><script defer="defer" src="/stylist-vendors-539d3e59.02cb9be64a29ed9efff9.js"></script><script defer="defer" src="/stylist-vendors-90af5a2e.d967fcf665ba30957635.js"></script><script defer="defer" src="/stylist-vendors-8cb190b9.ffcbe7ad849e09b96587.js"></script><script defer="defer" src="/stylist-vendors-26c5ada6.7321d61fb38473b4b0ae.js"></script><script defer="defer" src="/stylist-vendors-9dd4f2b7.a6d734984794af74f2f3.js"></script><script defer="defer" src="/stylist-vendors-a3688a81.8a9d945064a1ac491957.js"></script><script defer="defer" src="/stylist-vendors-967788e1.655bd2d514caf462a05a.js"></script><script defer="defer" src="/stylist-vendors-477a324d.d31e9f66e37ab809ffec.js"></script><script defer="defer" src="/stylist-vendors-0b561521.742ef679e40615dc3ce0.js"></script><script defer="defer" src="/stylist-vendors-1d8c27d8.2344a53cb1ab4dc79b68.js"></script><script defer="defer" src="/stylist-vendors-bc4935f5.3762ef72d56901209bba.js"></script><script defer="defer" src="/stylist-vendors-746661ec.85c981ae2a3802b05e42.js"></script><script defer="defer" src="/stylist-vendors-18ac46db.d80c80849691050ea929.js"></script><script defer="defer" src="/stylist-vendors-0005df24.4922f85daa881a100a28.js"></script><script defer="defer" src="/stylist-vendors-54c80241.d363dad177d8b05a440f.js"></script><script defer="defer" src="/stylist-vendors-ef10862d.372f0e591f6ce36ae790.js"></script><script defer="defer" src="/stylist-vendors-e649bd53.ea0e2ba5c81c46266e08.js"></script><script defer="defer" src="/stylist-vendors-bef946b4.bdd19c1a9e73af24821d.js"></script><script defer="defer" src="/stylist-vendors-0eee1a79.74ea7b552602acc60a71.js"></script><script defer="defer" src="/stylist-vendors-92835348.be3ac1dfac7b752312a9.js"></script><script defer="defer" src="/stylist-vendors-549f4807.e6ae7bd33fb37690261e.js"></script><script defer="defer" src="/stylist-vendors-92a9faa8.cfd9c81d731d098195aa.js"></script><script defer="defer" src="/stylist-vendors-e656afa6.f59eddeebdf1337d0c7b.js"></script><script defer="defer" src="/stylist-vendors-8f2a0d86.66d063afa090f7911d20.js"></script><script defer="defer" src="/stylist-vendors-6cadb9c0.db44f3b8e658d3424b7a.js"></script><script defer="defer" src="/stylist-vendors-4f68e0f9.8b946eb58f25cdef348c.js"></script><script defer="defer" src="/stylist-vendors-820dece3.3ac52030b170b778b0c5.js"></script><script defer="defer" src="/stylist-vendors-9dd1e315.576f4328640f52427bd9.js"></script><script defer="defer" src="/stylist-vendors-f6e5d052.4e8f92d5acdb2e409a2a.js"></script><script defer="defer" src="/stylist-vendors-cc701928.09a9350bf035d8c9ad62.js"></script><script defer="defer" src="/stylist-vendors-26e45b2b.59faeb717c7568fe2e3e.js"></script><script defer="defer" src="/stylist-vendors-75b6a1ac.f794190d38d7493ceb89.js"></script><script defer="defer" src="/stylist-vendors-f9a8c152.851b144f8e08293d3f8b.js"></script><script defer="defer" src="/stylist-vendors-eeb47446.6408eac6e63d658865ed.js"></script><script defer="defer" src="/stylist-vendors-3d6101e0.cc724cc4eaed8f55cf63.js"></script><script defer="defer" src="/stylist-vendors-79dd5a9c.b8d51d6737746c197552.js"></script><script defer="defer" src="/stylist-vendors-6e5319ad.e9cc3240e5750b720ac7.js"></script><script defer="defer" src="/stylist-vendors-858486a3.f180251d61c7375b43cc.js"></script><script defer="defer" src="/stylist-vendors-866ab763.8fa3701ee7c97ee2972b.js"></script><script defer="defer" src="/stylist-main-43dd7041.a79b28afd9d0df0c9f37.js"></script><script defer="defer" src="/stylist-main-66be5345.3260c0c074893c5f96d7.js"></script><script defer="defer" src="/stylist-main-d91a9049.9d541b6e253475d40da3.js"></script><script defer="defer" src="/stylist-main-1680ab66.5ba4fbf2c2e0deb51434.js"></script><script defer="defer" src="/stylist-main-3e79b48a.2c92b5f0f5e2ce452a1b.js"></script><script defer="defer" src="/stylist-main-e9c37989.61af812e496553a156c8.js"></script><script defer="defer" src="/stylist-main-afbe97b7.ccdc225e6d8ff6e583c7.js"></script><script defer="defer" src="/stylist-main-84781932.32ffe035c746d5d23dde.js"></script><script defer="defer" src="/stylist-main-f2578e20.a8a1a3d9ffdaa9a68aa9.js"></script><script defer="defer" src="/stylist-main-ef7d455c.ba808e02975ca075409b.js"></script><link href="/stylist-widget.7be997732f40e3a10e18.css" rel="stylesheet"></head><body><div id="stylist-root"><div class="stylist-loading-container"><div class="stylist-loading-spinner"></div><p style="margin-top: 1rem; color: var(--stylist-text-color, #1b1b1b);">Loading Stylist Widget...</p></div></div><link rel="prefetch" href="/assets/social-proof-images.json"><link rel="prefetch" href="/assets/trending-items-placeholder.json"><script src="/service-worker-registration.js" defer="defer"></script></body></html>

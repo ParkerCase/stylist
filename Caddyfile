@@ -1,0 +1,80 @@
+{$DOMAIN} {
+  tls {
+    # Auto-generate SSL certificates
+    # You can also provide custom certs by mounting them in Docker
+  }
+
+  # Reverse proxy to the widget application
+  reverse_proxy stylist-widget:80 {
+    # Health checks
+    health_path /health
+    health_interval 30s
+    
+    # Timeouts
+    header_up X-Real-IP {remote_host}
+    header_up X-Forwarded-For {remote_host}
+    header_up X-Forwarded-Proto {scheme}
+    
+    # Connect timeout
+    transport http {
+      tls_insecure_skip_verify # For internal communication only
+      keepalive 30s
+    }
+  }
+
+  # Compression
+  encode gzip zstd
+
+  # Security headers
+  header {
+    # Enable HSTS with preload
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    
+    # Security headers
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "SAMEORIGIN"
+    X-XSS-Protection "1; mode=block"
+    Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Cache control for the page itself (not the assets)
+    Cache-Control "public, max-age=600, must-revalidate"
+    
+    # Enable CORS for widget embedding
+    Access-Control-Allow-Origin "*"
+    Access-Control-Allow-Methods "GET, OPTIONS"
+    Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    
+    # Remove Server header
+    -Server
+  }
+
+  # Rate limiting 
+  rate_limit {
+    zone global {
+      key {remote_host}
+      events 100
+      window 10s
+    }
+  }
+
+  # Logging
+  log {
+    output file /var/log/caddy/access.log
+    format json
+  }
+
+  # Handle errors
+  handle_errors {
+    respond "{http.error.status_code} {http.error.status_text}" {http.error.status_code}
+  }
+}
+
+# Redirect www to non-www
+www.{$DOMAIN} {
+  redir https://{$DOMAIN}{uri} permanent
+}
+
+# Health check endpoint for monitoring
+:80/health {
+  respond "Healthy" 200
+}

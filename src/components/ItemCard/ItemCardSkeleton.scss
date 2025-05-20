@@ -1,0 +1,271 @@
+// src/components/ItemCard/ItemCardSkeleton.scss
+
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
+
+.stylist-item-card-skeleton {
+  @include mixins.card;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid variables.$border-color;
+  height: 100%;
+  position: relative;
+  background-color: variables.$background-color;
+  @include mixins.respect-motion-preferences;
+  
+  &__image-container {
+    position: relative;
+    aspect-ratio: 3/4;
+    background-color: variables.$background-color-light;
+    overflow: hidden;
+    
+    // Shimmer animation
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: item-card-shimmer 2s infinite;
+    }
+  }
+  
+  &__discount {
+    position: absolute;
+    top: variables.$spacing-sm;
+    right: variables.$spacing-sm;
+    width: 40px;
+    height: 20px;
+    background-color: rgba(variables.$secondary-color, 0.3);
+    border-radius: variables.$border-radius-sm;
+    z-index: 2;
+  }
+  
+  &__content {
+    padding: variables.$spacing-md;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: variables.$spacing-xs;
+  }
+  
+  &__brand {
+    height: 12px;
+    width: 50%;
+    background-color: variables.$background-color-light;
+    border-radius: variables.$border-radius-sm;
+    margin-bottom: 8px;
+    position: relative;
+    overflow: hidden;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: item-card-shimmer 2s infinite;
+    }
+  }
+  
+  &__name {
+    height: 14px;
+    width: 90%;
+    background-color: variables.$background-color-light;
+    border-radius: variables.$border-radius-sm;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: item-card-shimmer 2s infinite 0.2s;
+    }
+  }
+  
+  &__price {
+    height: 14px;
+    width: 40%;
+    background-color: variables.$background-color-light;
+    border-radius: variables.$border-radius-sm;
+    margin-bottom: 8px;
+    position: relative;
+    overflow: hidden;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: item-card-shimmer 2s infinite 0.4s;
+    }
+  }
+  
+  &__match-reasons {
+    padding: 0 variables.$spacing-sm variables.$spacing-sm;
+    border-top: 1px solid variables.$border-color;
+  }
+  
+  &__match-score {
+    height: 14px;
+    width: 60%;
+    background-color: variables.$background-color-light;
+    border-radius: variables.$border-radius-sm;
+    margin: variables.$spacing-xs 0;
+    position: relative;
+    overflow: hidden;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: item-card-shimmer 2s infinite 0.6s;
+    }
+  }
+  
+  &__reason {
+    height: 10px;
+    width: 80%;
+    background-color: variables.$background-color-light;
+    border-radius: variables.$border-radius-sm;
+    margin-bottom: 6px;
+    position: relative;
+    overflow: hidden;
+    
+    &:last-child {
+      width: 70%;
+    }
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: item-card-shimmer 2s infinite 0.8s;
+    }
+  }
+  
+  &__actions {
+    padding: variables.$spacing-sm;
+    border-top: 1px solid variables.$border-color;
+    @include mixins.flex-between;
+  }
+  
+  &__action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: variables.$border-radius-round;
+    background-color: variables.$background-color-light;
+    position: relative;
+    overflow: hidden;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: item-card-shimmer 2s infinite;
+    }
+  }
+}
+
+// Staggered animation to make multiple skeletons look more natural
+@for $i from 1 through 8 {
+  .stylist-item-card-skeleton:nth-child(#{$i}) {
+    .stylist-item-card-skeleton__image-container::after {
+      animation-delay: #{$i * 0.1}s;
+    }
+  }
+}
+
+// Animation for the shimmer effect
+@keyframes item-card-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+// Respect motion preferences
+@media (prefers-reduced-motion: reduce) {
+  .stylist-item-card-skeleton {
+    &__image-container::after,
+    &__brand::after,
+    &__name::after,
+    &__price::after,
+    &__match-score::after,
+    &__reason::after,
+    &__action-btn::after {
+      animation: none;
+      opacity: 0;
+    }
+  }
+}

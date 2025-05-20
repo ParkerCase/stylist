@@ -1,0 +1,78 @@
+// src/components/common/FallbackImage.scss
+
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
+
+.stylist-fallback-image-container {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.stylist-fallback-image {
+  display: block;
+  transition: opacity variables.$animation-duration ease-in-out;
+  @include mixins.respect-motion-preferences;
+  
+  &--loading {
+    opacity: 0.6;
+    filter: blur(2px);
+  }
+  
+  &--error {
+    opacity: 0.8;
+  }
+  
+  &__loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    border: 2px solid rgba(variables.$primary-color, 0.2);
+    border-top-color: variables.$primary-color;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 1;
+  }
+  
+  &--error-placeholder {
+    @include mixins.flex-center;
+    flex-direction: column;
+    background-color: variables.$background-color-light;
+    border-radius: variables.$border-radius-sm;
+    color: variables.$text-tertiary;
+    padding: variables.$spacing-md;
+    font-size: variables.$font-size-xs;
+    text-align: center;
+  }
+  
+  &__error-icon {
+    margin-bottom: variables.$spacing-xs;
+    opacity: 0.7;
+    
+    svg {
+      color: inherit;
+    }
+  }
+  
+  &__error-text {
+    max-width: 80%;
+    display: block;
+    font-size: 0.8em;
+  }
+}
+
+@keyframes spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+// Responsive adjustments
+@include mixins.mobile-only {
+  .stylist-fallback-image {
+    &--error-placeholder {
+      padding: variables.$spacing-sm;
+    }
+  }
+}

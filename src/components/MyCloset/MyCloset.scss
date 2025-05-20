@@ -1,35 +1,57 @@
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use '../../styles/variables.scss' as variables;
+@use '../../styles/mixins.scss' as mixins;
 
 .stylist-my-closet {
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100%;
   padding: 1rem;
-  background-color: $light-bg-color;
-  border-radius: $card-border-radius;
-  
+  background-color: variables.$background-color-light;
+  border-radius: variables.$border-radius-md;
+  overflow-y: auto;
+  @include mixins.scrollbar-custom;
+
   &__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
-    
+
     h2 {
       font-size: 1.5rem;
       font-weight: 600;
       margin: 0;
-      color: $primary-text-color;
+      color: variables.$text-primary;
     }
   }
-  
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &__import-export {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  &__export-btn,
+  &__import-btn {
+    @include mixins.button-secondary;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+
   &__add-btn {
-    @include button-primary;
+    @include mixins.button-primary;
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
     display: flex;
     align-items: center;
-    
+
     &::before {
       content: '+';
       margin-right: 0.5rem;
@@ -37,80 +59,175 @@
       line-height: 1;
     }
   }
-  
+
+  // View selector tabs
+  &__view-selector {
+    display: flex;
+    border-bottom: 1px solid variables.$border-color;
+    margin-bottom: 1.5rem;
+  }
+
+  &__view-btn {
+    background: none;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    color: variables.$text-secondary;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: variables.$primary-color;
+    }
+
+    &.active {
+      color: variables.$primary-color;
+      font-weight: 600;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background-color: variables.$primary-color;
+      }
+    }
+  }
+
+  // Filters
+  &__filters {
+    margin-bottom: 1.5rem;
+  }
+
   &__categories {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid $border-color;
+    border-bottom: 1px solid variables.$border-color-light;
   }
-  
+
   &__category-btn {
     background: none;
-    border: 1px solid $border-color;
+    border: 1px solid variables.$border-color;
     border-radius: 20px;
     padding: 0.5rem 1.25rem;
     font-size: 0.9rem;
-    color: $secondary-text-color;
+    color: variables.$text-secondary;
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     &:hover {
-      background-color: rgba($primary-color, 0.05);
-      border-color: $primary-color;
+      background-color: rgba(variables.$primary-color, 0.05);
+      border-color: variables.$primary-color;
     }
-    
+
     &.active {
-      background-color: $primary-color;
-      border-color: $primary-color;
+      background-color: variables.$primary-color;
+      border-color: variables.$primary-color;
       color: white;
     }
   }
-  
-  &__grid {
+
+  &__filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  &__filter-input {
+    flex: 1;
+    min-width: 150px;
+    padding: 0.6rem 1rem;
+    border: 1px solid variables.$border-color;
+    border-radius: variables.$border-radius-sm;
+    font-size: 0.9rem;
+
+    &:focus {
+      outline: none;
+      border-color: variables.$primary-color;
+    }
+  }
+
+  // Grid layouts
+  &__grid,
+  &__wishlist-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1.5rem;
     margin-top: 1rem;
+    transition: opacity 0.3s ease;
   }
-  
+
   &__item {
     display: flex;
     flex-direction: column;
-    border-radius: $card-border-radius;
+    border-radius: variables.$border-radius-md;
     overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.2s ease;
     background-color: white;
-    box-shadow: $card-box-shadow;
-    
+    box-shadow: variables.$shadow-md;
+    cursor: grab;
+
     &:hover {
       transform: translateY(-5px);
-      box-shadow: $card-hover-box-shadow;
+      box-shadow: variables.$shadow-lg;
+    }
+
+    &:active {
+      cursor: grabbing;
     }
   }
-  
+
+  &__item-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-top: 1px solid variables.$border-color-light;
+  }
+
+  &__edit-btn {
+    flex: 1;
+    padding: 0.4rem;
+    background-color: variables.$background-color-light;
+    border: 1px solid variables.$border-color;
+    border-radius: variables.$border-radius-sm;
+    color: variables.$text-secondary;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: variables.$background-color;
+      color: variables.$text-primary;
+    }
+  }
+
   &__item-details {
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
   }
-  
+
   &__item-category {
     font-weight: 500;
     margin-bottom: 0.5rem;
-    color: $primary-text-color;
+    color: variables.$text-primary;
     text-transform: capitalize;
   }
-  
+
   &__item-color {
     display: flex;
     align-items: center;
     margin-bottom: 0.25rem;
-    color: $secondary-text-color;
+    color: variables.$text-secondary;
     text-transform: capitalize;
   }
-  
+
   &__color-swatch {
     display: inline-block;
     width: 12px;
@@ -119,32 +236,34 @@
     margin-right: 0.5rem;
     border: 1px solid rgba(0, 0, 0, 0.1);
   }
-  
+
   &__item-brand {
     margin-bottom: 0.25rem;
-    color: $secondary-text-color;
+    color: variables.$text-secondary;
     font-weight: 500;
   }
-  
+
   &__item-size {
-    color: $tertiary-text-color;
+    color: variables.$text-tertiary;
     font-size: 0.8rem;
   }
-  
+
   &__add-to-outfit-btn {
-    width: 100%;
-    padding: 0.5rem;
-    background-color: $secondary-color;
+    flex: 1;
+    padding: 0.4rem;
+    background-color: variables.$secondary-color;
     color: white;
     border: none;
+    border-radius: variables.$border-radius-sm;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    
+
     &:hover {
-      background-color: darken($secondary-color, 5%);
+      background-color: variables.$secondary-color-dark;
     }
   }
-  
+
   &__empty {
     grid-column: 1 / -1;
     display: flex;
@@ -153,142 +272,266 @@
     justify-content: center;
     padding: 3rem;
     background-color: white;
-    border-radius: $card-border-radius;
-    border: 1px dashed $border-color;
-    
+    border-radius: variables.$border-radius-md;
+    border: 1px dashed variables.$border-color;
+
     p {
       font-size: 1.1rem;
-      color: $secondary-text-color;
-      margin-bottom: 1.5rem;
+      color: variables.$text-secondary;
+      margin-bottom: 1rem;
+
+      &:last-child {
+        margin-bottom: 1.5rem;
+      }
     }
   }
-  
+
   &__add-first-btn {
-    @include button-primary;
+    @include mixins.button-primary;
     padding: 0.75rem 1.5rem;
   }
-  
+
+  // Uploader
   &__uploader {
     background-color: white;
-    border-radius: $card-border-radius;
+    border-radius: variables.$border-radius-md;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
-    
+    box-shadow: variables.$shadow-md;
+
     h3 {
       font-size: 1.2rem;
       font-weight: 600;
       margin-top: 0;
       margin-bottom: 1.5rem;
-      color: $primary-text-color;
+      color: variables.$text-primary;
+      text-align: center;
     }
   }
-  
+
   &__new-item-form {
     display: grid;
     grid-template-columns: 1fr 2fr;
     gap: 2rem;
-    
-    @media (max-width: $breakpoint-md) {
+
+    @media (max-width: 768px) {
       grid-template-columns: 1fr;
     }
   }
-  
+
   &__preview {
-    background-color: $light-bg-color;
-    border-radius: $card-border-radius;
+    background-color: variables.$background-color-light;
+    border-radius: variables.$border-radius-md;
     overflow: hidden;
     aspect-ratio: 3/4;
     max-height: 400px;
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
     img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
     }
   }
-  
+
   &__form-fields {
     display: flex;
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   &__form-group {
     display: flex;
     flex-direction: column;
-    
+
     label {
       font-size: 0.9rem;
       margin-bottom: 0.5rem;
-      color: $secondary-text-color;
+      color: variables.$text-secondary;
     }
-    
+
     input, select {
       padding: 0.75rem;
-      border: 1px solid $border-color;
-      border-radius: $input-border-radius;
+      border: 1px solid variables.$border-color;
+      border-radius: variables.$border-radius-sm;
       font-size: 1rem;
-      
+
       &:focus {
         outline: none;
-        border-color: $primary-color;
+        border-color: variables.$primary-color;
       }
     }
   }
-  
+
   &__tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-top: 0.5rem;
   }
-  
+
   &__tag {
     display: inline-flex;
     align-items: center;
-    background-color: rgba($primary-color, 0.1);
-    color: $primary-color;
+    background-color: rgba(variables.$primary-color, 0.1);
+    color: variables.$primary-color;
     border-radius: 20px;
     padding: 0.25rem 0.75rem;
     font-size: 0.9rem;
   }
-  
+
   &__tag-remove {
     background: none;
     border: none;
-    color: $primary-color;
+    color: variables.$primary-color;
     font-size: 1.2rem;
     margin-left: 0.25rem;
     cursor: pointer;
     padding: 0 0.25rem;
-    
+
     &:hover {
-      color: darken($primary-color, 10%);
+      color: variables.$primary-color-dark;
     }
   }
-  
+
   &__form-actions {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
     margin-top: 1.5rem;
   }
-  
+
+  &__back-btn {
+    @include mixins.button-secondary;
+    padding: 0.75rem 1.5rem;
+    background-color: variables.$background-color;
+  }
+
   &__cancel-btn {
-    @include button-secondary;
+    @include mixins.button-secondary;
     padding: 0.75rem 1.5rem;
   }
-  
+
   &__save-btn {
-    @include button-primary;
+    @include mixins.button-primary;
     padding: 0.75rem 1.5rem;
-    
+
     &:disabled {
-      background-color: $tertiary-text-color;
+      background-color: variables.$text-tertiary;
       cursor: not-allowed;
     }
+  }
+
+  // Add item flow steps
+  &__item-type-selector,
+  &__color-selector,
+  &__pattern-selector,
+  &__image-uploader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 600px;
+    margin: 0 auto;
+
+    h3 {
+      margin-bottom: 2rem;
+    }
+  }
+
+  &__type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  &__type-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border: 1px solid variables.$border-color;
+    border-radius: variables.$border-radius-md;
+    background-color: white;
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      border-color: variables.$primary-color;
+      transform: translateY(-5px);
+      box-shadow: variables.$shadow-sm;
+    }
+  }
+
+  &__type-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: variables.$primary-color-light;
+    color: variables.$primary-color;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  &__color-palette {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  &__color-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 1px variables.$border-color;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 0 2px variables.$primary-color;
+    }
+  }
+
+  &__pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  &__pattern-btn {
+    padding: 1rem;
+    border: 1px solid variables.$border-color;
+    border-radius: variables.$border-radius-md;
+    background-color: white;
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &:hover {
+      border-color: variables.$primary-color;
+      color: variables.$primary-color;
+      transform: translateY(-3px);
+      box-shadow: variables.$shadow-sm;
+    }
+  }
+
+  &__step-nav {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 1rem;
   }
 }

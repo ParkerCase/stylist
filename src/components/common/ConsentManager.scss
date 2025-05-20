@@ -1,0 +1,313 @@
+// Consent Manager Component Styles
+
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+// Variables
+$consent-z-index: 9999;
+$consent-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+$consent-border-radius: 8px;
+$consent-padding: 24px;
+$consent-max-width: 640px;
+$consent-background-light: #ffffff;
+$consent-background-dark: #222222;
+$consent-text-light: #333333;
+$consent-text-dark: #f1f1f1;
+
+$consent-primary-color: var(--stylist-primary-color, #4361ee);
+$consent-danger-color: var(--stylist-danger-color, #ef476f);
+$consent-secondary-color: var(--stylist-secondary-color, #8b8b8b);
+
+// Main container
+.consent-manager {
+  position: fixed;
+  z-index: $consent-z-index;
+  width: 100%;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  
+  &--bottom {
+    bottom: 0;
+    left: 0;
+  }
+  
+  &--top {
+    top: 0;
+    left: 0;
+  }
+  
+  &--center {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  // Inner container
+  &__container {
+    pointer-events: auto;
+    background-color: $consent-background-light;
+    color: $consent-text-light;
+    box-shadow: $consent-shadow;
+    border-radius: $consent-border-radius;
+    padding: $consent-padding;
+    max-width: $consent-max-width;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slide-up 0.3s ease-out;
+  }
+  
+  // Theme variants
+  &--dark &__container {
+    background-color: $consent-background-dark;
+    color: $consent-text-dark;
+  }
+  
+  // Content section
+  &__content {
+    margin-bottom: 20px;
+  }
+  
+  &__title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+  }
+  
+  &__description {
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0 0 16px 0;
+    color: rgba($consent-text-light, 0.85);
+  }
+  
+  &--dark &__description {
+    color: rgba($consent-text-dark, 0.85);
+  }
+  
+  // Actions section
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  
+  // Buttons
+  &__button {
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    
+    &--accept {
+      background-color: $consent-primary-color;
+      color: white;
+      
+      &:hover {
+        background-color: darken($consent-primary-color, 8%);
+      }
+    }
+    
+    &--decline {
+      background-color: transparent;
+      color: $consent-danger-color;
+      border: 1px solid currentColor;
+      
+      &:hover {
+        background-color: rgba($consent-danger-color, 0.05);
+      }
+    }
+    
+    &--secondary {
+      background-color: transparent;
+      color: $consent-secondary-color;
+      border: 1px solid currentColor;
+      
+      &:hover {
+        background-color: rgba($consent-secondary-color, 0.05);
+      }
+    }
+    
+    &--save {
+      background-color: $consent-primary-color;
+      color: white;
+      
+      &:hover {
+        background-color: darken($consent-primary-color, 8%);
+      }
+    }
+  }
+  
+  &--dark &__button {
+    &--decline, &--secondary {
+      color: rgba($consent-text-dark, 0.85);
+      
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+  }
+  
+  // Footer
+  &__footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    color: $consent-secondary-color;
+    
+    a {
+      color: $consent-secondary-color;
+      text-decoration: none;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+  
+  &__separator {
+    margin: 0 8px;
+  }
+  
+  // Preferences section
+  &__preferences {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  &__preference {
+    border-bottom: 1px solid rgba($consent-text-light, 0.1);
+    padding-bottom: 16px;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+  
+  &--dark &__preference {
+    border-bottom-color: rgba($consent-text-dark, 0.1);
+  }
+  
+  &__preference-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  &__preference-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+  }
+  
+  &__preference-description {
+    font-size: 13px;
+    line-height: 1.4;
+    color: rgba($consent-text-light, 0.75);
+    margin: 0;
+  }
+  
+  &--dark &__preference-description {
+    color: rgba($consent-text-dark, 0.75);
+  }
+  
+  // Toggle switch
+  &__toggle {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 24px;
+    
+    input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    &--disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+  
+  &__toggle-label {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+    
+    .consent-manager__toggle input:checked + & {
+      background-color: $consent-primary-color;
+    }
+    
+    .consent-manager__toggle input:focus + & {
+      box-shadow: 0 0 1px $consent-primary-color;
+    }
+  }
+  
+  &__toggle-dot {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+    
+    .consent-manager__toggle input:checked + .consent-manager__toggle-label & {
+      transform: translateX(22px);
+    }
+  }
+}
+
+// Animation
+@keyframes slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 600px) {
+  .consent-manager {
+    padding: 10px;
+    
+    &__container {
+      padding: 16px;
+    }
+    
+    &__actions {
+      flex-direction: column;
+      
+      button {
+        width: 100%;
+      }
+    }
+  }
+}

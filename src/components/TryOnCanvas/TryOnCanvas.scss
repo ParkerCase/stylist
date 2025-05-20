@@ -17,6 +17,15 @@
     object-fit: contain;
     background-color: variables.$surface-color;
     box-shadow: variables.$shadow-md;
+    
+    &--rendering {
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+    }
+    
+    &--dragging {
+      cursor: grabbing;
+    }
   }
   
   &__placeholder {
@@ -41,4 +50,96 @@
     border-radius: variables.$border-radius-md;
     background-color: rgba(variables.$surface-color, 0.8);
   }
+  
+  &__loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(variables.$background-color, 0.7);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    z-index: 10;
+    @include mixins.animation-complexity('high');
+  }
+  
+  &__loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(variables.$primary-color, 0.3);
+    border-radius: 50%;
+    border-top-color: variables.$primary-color;
+    animation: spin 1s linear infinite;
+    margin-bottom: variables.$spacing-md;
+    will-change: transform;
+  }
+  
+  &__loading-text {
+    font-size: variables.$font-size-md;
+    color: variables.$text-primary;
+    text-align: center;
+    font-weight: variables.$font-weight-medium;
+  }
+  
+  &__drag-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(variables.$primary-color, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 5;
+    
+    &::after {
+      content: "";
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: variables.$primary-color;
+    }
+  }
+  
+  &__debug {
+    position: absolute;
+    bottom: variables.$spacing-sm;
+    right: variables.$spacing-sm;
+    z-index: 20;
+    pointer-events: none;
+  }
+  
+  &__debug-indicator {
+    padding: variables.$spacing-xs variables.$spacing-sm;
+    border-radius: variables.$border-radius-sm;
+    font-size: variables.$font-size-xs;
+    color: variables.$text-inverse;
+    background-color: rgba(0, 0, 0, 0.5);
+    
+    &.high {
+      background-color: rgba(0, 128, 0, 0.7);
+    }
+    
+    &.medium {
+      background-color: rgba(255, 165, 0, 0.7);
+    }
+    
+    &.low {
+      background-color: rgba(255, 0, 0, 0.7);
+    }
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

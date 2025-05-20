@@ -23,6 +23,7 @@ interface ChatState {
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   setCurrentView: (view: 'chat' | 'lookbook') => void;
+  setIsOpen: (isOpen: boolean) => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -100,5 +101,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
   
   setCurrentView: (view) => {
     set({ currentView: view });
+  },
+  
+  setIsOpen: (isOpen) => {
+    set({ isOpen });
   }
 }));

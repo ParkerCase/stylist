@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkStylistWidget=self.webpackChunkStylistWidget||[]).push([[2568],{15685:function(t,i,n){n.d(i,{i:function(){return e}});const e={float32:4,float16:2,int32:4,uint16:2,uint8:1,bool:1,complex64:8}}}]);
+//# sourceMappingURL=stylist-vendors-906d0b9a.7e8fa824998e6afc476e.js.map

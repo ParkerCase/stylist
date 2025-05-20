@@ -1,0 +1,232 @@
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
+
+.stylist-complete-look-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &__backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  &__content {
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background-color: variables.$background-color;
+    border-radius: variables.$border-radius-lg;
+    box-shadow: variables.$shadow-lg;
+    padding: variables.$spacing-lg;
+    animation: zoomIn 0.3s ease-in-out;
+    
+    @include mixins.scrollbar;
+  }
+  
+  &__close {
+    position: absolute;
+    top: variables.$spacing-md;
+    right: variables.$spacing-md;
+    width: 36px;
+    height: 36px;
+    border-radius: variables.$border-radius-round;
+    background-color: variables.$surface-color;
+    border: none;
+    cursor: pointer;
+    @include mixins.flex-center;
+    z-index: 5;
+    
+    &:hover {
+      background-color: variables.$surface-light;
+    }
+  }
+  
+  &__header {
+    text-align: center;
+    margin-bottom: variables.$spacing-lg;
+  }
+  
+  &__title {
+    font-size: variables.$font-size-xl;
+    font-weight: variables.$font-weight-bold;
+    color: variables.$primary-color;
+    margin-bottom: variables.$spacing-xs;
+  }
+  
+  &__subtitle {
+    font-size: variables.$font-size-md;
+    color: variables.$text-secondary;
+  }
+  
+  &__selected-item {
+    max-width: 200px;
+    margin: 0 auto variables.$spacing-lg;
+  }
+  
+  &__complementary-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: variables.$spacing-md;
+    margin-bottom: variables.$spacing-lg;
+  }
+
+  &__item {
+    position: relative;
+    border: 2px solid transparent;
+    border-radius: variables.$border-radius-md;
+    transition: all variables.$transition-normal ease;
+    cursor: pointer;
+    padding-bottom: variables.$spacing-lg;
+
+    &--selected {
+      border-color: variables.$primary-color;
+
+      .stylist-complete-look-modal__checkbox {
+        background-color: variables.$primary-color;
+        border-color: variables.$primary-color;
+        color: variables.$text-inverse;
+      }
+    }
+
+    &:hover {
+      border-color: variables.$border-color;
+      box-shadow: variables.$shadow-md;
+    }
+  }
+
+  &__match-badge {
+    position: absolute;
+    top: variables.$spacing-sm;
+    left: variables.$spacing-sm;
+    z-index: 10;
+    background-color: #2C9E3F;
+    color: #fff;
+    font-size: variables.$font-size-sm;
+    font-weight: variables.$font-weight-bold;
+    padding: 4px 8px;
+    border-radius: variables.$border-radius-sm;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+
+  &__style-details {
+    padding: variables.$spacing-sm;
+    margin-top: variables.$spacing-sm;
+  }
+
+  &__style-reason {
+    font-size: variables.$font-size-sm;
+    font-weight: variables.$font-weight-bold;
+    margin-bottom: variables.$spacing-xs;
+    text-align: center;
+  }
+
+  &__style-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: variables.$spacing-xs;
+  }
+
+  &__style-metric {
+    display: flex;
+    align-items: center;
+    gap: variables.$spacing-xs;
+    font-size: variables.$font-size-xs;
+
+    span:first-child {
+      min-width: 60px;
+    }
+  }
+
+  &__metric-bar {
+    height: 6px;
+    background-color: variables.$border-color;
+    border-radius: 3px;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  &__metric-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background-color: variables.$primary-color;
+    border-radius: 3px;
+  }
+
+  &__item-select {
+    position: absolute;
+    top: variables.$spacing-sm;
+    right: variables.$spacing-sm;
+    z-index: 10;
+  }
+
+  &__checkbox {
+    width: 24px;
+    height: 24px;
+    border-radius: variables.$border-radius-sm;
+    border: 2px solid variables.$border-color;
+    background-color: variables.$surface-color;
+    @include mixins.flex-center;
+    transition: all variables.$transition-normal ease;
+  }
+  
+  &__actions {
+    display: flex;
+    justify-content: center;
+  }
+  
+  &__add-all {
+    display: flex;
+    align-items: center;
+    gap: variables.$spacing-sm;
+    padding: variables.$spacing-md variables.$spacing-lg;
+    border-radius: variables.$border-radius-md;
+    background-color: variables.$primary-color;
+    color: variables.$text-inverse;
+    font-weight: variables.$font-weight-bold;
+    border: none;
+    cursor: pointer;
+    transition: all variables.$transition-normal ease;
+    
+    &:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from { 
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: scale(1);
+  }
+}

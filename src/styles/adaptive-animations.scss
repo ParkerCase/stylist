@@ -1,0 +1,359 @@
+/* 
+ * Adaptive animations for different device capabilities
+ * These animations will be used with the animationUtils to provide
+ * appropriate complexity based on device capabilities
+ */
+
+// Base keyframes for all animation types
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(var(--fade-distance, 10px)); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInNoTransform {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOutLeft {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideOutUp {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+}
+
+@keyframes slideInDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideOutDown {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+
+@keyframes scale {
+  from { transform: scale(var(--scale-from, 0.9)); }
+  to { transform: scale(var(--scale-to, 1)); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(var(--pulse-intensity, 1.05)); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(calc(-1 * var(--shake-intensity, 5px))); }
+  20%, 40%, 60%, 80% { transform: translateX(var(--shake-intensity, 5px)); }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(calc(-1 * var(--bounce-height, 20px))); }
+}
+
+// Adaptive animation classes with different complexity levels
+.fade {
+  &--high {
+    transition: opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+    will-change: opacity, transform;
+  }
+  
+  &--medium {
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    will-change: opacity;
+  }
+  
+  &--low {
+    transition: opacity 0.25s ease;
+  }
+  
+  &--none {
+    // No transition at all for very low-end devices
+    transition: none;
+  }
+  
+  &-in {
+    animation: fadeIn 0.35s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+    
+    &--fast {
+      animation-duration: 0.25s;
+    }
+    
+    &--slow {
+      animation-duration: 0.5s;
+    }
+    
+    &--no-transform {
+      animation-name: fadeInNoTransform;
+    }
+  }
+}
+
+.slide {
+  &--high {
+    transition: transform 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+  
+  &--medium {
+    transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+  }
+  
+  &--low {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  
+  &--none {
+    transition: none;
+  }
+}
+
+.scale {
+  &--high {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); // Bouncy effect
+  }
+  
+  &--medium {
+    transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94); // Less bouncy
+  }
+  
+  &--low {
+    transition: transform 0.2s ease; // Simple ease
+  }
+  
+  &--none {
+    transition: none;
+  }
+}
+
+// Animation modifiers to adjust animation properties based on device capabilities
+.animation-container {
+  &--high {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    will-change: transform, opacity;
+  }
+  
+  &--medium {
+    will-change: transform, opacity;
+  }
+  
+  &--low {
+    // No additional properties for low-end devices
+  }
+  
+  &--none {
+    // Remove all animation-related properties
+    perspective: none;
+    transform-style: flat;
+    backface-visibility: visible;
+    will-change: auto;
+  }
+}
+
+// Interactive element scale effects
+.scale-on-interaction {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  &:active {
+    transform: scale(0.97);
+  }
+  
+  &--xs {
+    &:hover {
+      transform: scale(1.02);
+    }
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+  
+  &--sm {
+    &:hover {
+      transform: scale(1.05);
+    }
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+  
+  &--md {
+    &:hover {
+      transform: scale(1.08);
+    }
+    &:active {
+      transform: scale(0.96);
+    }
+  }
+  
+  &--lg {
+    &:hover {
+      transform: scale(1.12);
+    }
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+// Animated elements with different complexity levels
+.animated-item {
+  &--high {
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    
+    &:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  &--medium {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  &--low {
+    transition: transform 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-1px);
+    }
+  }
+  
+  &--none {
+    transition: none;
+    
+    &:hover {
+      // No hover animation
+    }
+  }
+}
+
+// Staggered animation helper
+.staggered-item {
+  opacity: 0;
+  
+  &.animate {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+  
+  @for $i from 1 through 20 {
+    &:nth-child(#{$i}) {
+      &.animate {
+        animation-delay: #{$i * 50}ms;
+      }
+    }
+  }
+  
+  // Apply different delays based on animation complexity
+  &--high {
+    @for $i from 1 through 20 {
+      &:nth-child(#{$i}) {
+        &.animate {
+          animation-delay: #{$i * 50}ms;
+        }
+      }
+    }
+  }
+  
+  &--medium {
+    @for $i from 1 through 20 {
+      &:nth-child(#{$i}) {
+        &.animate {
+          animation-delay: #{$i * 30}ms;
+        }
+      }
+    }
+  }
+  
+  &--low {
+    @for $i from 1 through 20 {
+      &:nth-child(#{$i}) {
+        &.animate {
+          animation-delay: #{$i * 15}ms;
+        }
+      }
+    }
+  }
+  
+  &--none {
+    opacity: 1; // No animation, make immediately visible
+    animation: none !important;
+    animation-delay: 0 !important;
+  }
+}
+
+// Reduced motion preference support
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .animated-item {
+    &--high, &--medium, &--low {
+      transition: none !important;
+      
+      &:hover {
+        transform: none !important;
+        box-shadow: none !important;
+      }
+    }
+  }
+  
+  .staggered-item {
+    opacity: 1 !important;
+    animation: none !important;
+    animation-delay: 0 !important;
+  }
+}

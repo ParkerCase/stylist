@@ -21,58 +21,111 @@ if (typeof window !== 'undefined' && (window as any).STYLIST_CONFIG) {
 }
 
 // Initialize the widget with all features enabled
-function init(config: StylistWidgetConfig): void {
-  // Store configuration
-  (window as any).__StylistWidgetConfig = config;
-  
-  // Set widget to automatically open
-  const store = useChatStore.getState();
-  store.setCurrentView('chat');
+function init(config: StylistWidgetConfig): { success: boolean; message: string } {
+  try {
+    // Store configuration
+    (window as any).__StylistWidgetConfig = config;
 
-  // Log initialization
-  console.log('The Stylist widget initialized successfully with all features.');
+    // Set widget to automatically open
+    const store = useChatStore.getState();
+    store.setCurrentView('chat');
+
+    // Log initialization
+    console.log('The Stylist widget initialized successfully with all features.');
+
+    return {
+      success: true,
+      message: 'The Stylist widget initialized successfully with all features.'
+    };
+  } catch (error) {
+    console.error('Error initializing widget:', error);
+    return {
+      success: false,
+      message: `Initialization failed: ${error instanceof Error ? error.message : String(error)}`
+    };
+  }
 }
 
 // Open the widget
-function open(): void {
-  useChatStore.getState().toggleOpen();
+function open(): boolean {
+  try {
+    useChatStore.getState().toggleOpen();
+    return true;
+  } catch (error) {
+    console.error('Error opening widget:', error);
+    return false;
+  }
 }
 
 // Close the widget
-function close(): void {
-  const { isOpen } = useChatStore.getState();
-  if (isOpen) {
-    useChatStore.getState().toggleOpen();
+function close(): boolean {
+  try {
+    const { isOpen } = useChatStore.getState();
+    if (isOpen) {
+      useChatStore.getState().toggleOpen();
+    }
+    return true;
+  } catch (error) {
+    console.error('Error closing widget:', error);
+    return false;
   }
 }
 
 // Minimize the widget
-function minimize(): void {
-  useChatStore.getState().toggleMinimize();
+function minimize(): boolean {
+  try {
+    useChatStore.getState().toggleMinimize();
+    return true;
+  } catch (error) {
+    console.error('Error minimizing widget:', error);
+    return false;
+  }
 }
 
 // Switch view between chat and lookbook
-function switchView(view: 'chat' | 'lookbook'): void {
-  useChatStore.getState().setCurrentView(view);
+function switchView(view: 'chat' | 'lookbook'): boolean {
+  try {
+    useChatStore.getState().setCurrentView(view);
+    return true;
+  } catch (error) {
+    console.error('Error switching view:', error);
+    return false;
+  }
 }
 
 // Start the style quiz
-function openStyleQuiz(): void {
-  // This function will be used by the ChatWidget component to show the quiz
-  (window as any).__StylistShowStyleQuiz = true;
-  // Reset after a delay
-  setTimeout(() => {
-    (window as any).__StylistShowStyleQuiz = false;
-  }, 100);
+function openStyleQuiz(): boolean {
+  try {
+    // This function will be used by the ChatWidget component to show the quiz
+    // Set the flag without resetting it - the component will handle state
+    (window as any).__StylistShowStyleQuiz = true;
+
+    // Emit an event if the event system is available
+    if ((window as any).__StylistWidgetEvents) {
+      (window as any).__StylistWidgetEvents.emit('styleQuiz:open');
+    }
+    return true;
+  } catch (error) {
+    console.error('Error opening style quiz:', error);
+    return false;
+  }
 }
 
 // Open virtual try-on
-function openVirtualTryOn(): void {
-  (window as any).__StylistShowVirtualTryOn = true;
-  // Reset after a delay
-  setTimeout(() => {
-    (window as any).__StylistShowVirtualTryOn = false;
-  }, 100);
+function openVirtualTryOn(): boolean {
+  try {
+    // Set the flag without resetting it - the component will handle state
+    (window as any).__StylistShowVirtualTryOn = true;
+
+    // Emit an event if the event system is available
+    if ((window as any).__StylistWidgetEvents) {
+      (window as any).__StylistWidgetEvents.emit('virtualTryOn:open');
+    }
+    return true;
+  } catch (error) {
+    console.error('Error opening virtual try-on:', error);
+    return false;
+  }
 }
 
 // Export the API
@@ -83,7 +136,27 @@ const widgetAPI: StylistWidgetAPI = {
   minimize,
   switchView,
   openStyleQuiz,
-  openVirtualTryOn
+  openVirtualTryOn,
+  __debug: {
+    addMockItems: () => ({
+      success: false,
+      message: 'Mock items not available in embed version'
+    }),
+    getDiagnostics: () => ({
+      logs: [],
+      flags: {
+        initialized: false,
+        mounted: false,
+        renderComplete: false,
+        storesInitialized: false,
+        backgroundInitComplete: false
+      }
+    }),
+    clearDiagnostics: () => ({
+      success: false,
+      message: 'Diagnostics not available in embed version'
+    })
+  }
 };
 
 // Add to window object

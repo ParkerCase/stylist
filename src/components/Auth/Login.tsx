@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useUserStore } from '../../store/userStore';
 import { getAuthService, LoginParams } from '../../services/auth/authService';
 import { ApiClient } from '../../api/apiClient';
+import { UserProfile } from '../../types/user';
 import './Auth.scss';
 
 interface LoginProps {
@@ -39,8 +40,31 @@ const Login: React.FC<LoginProps> = ({
       const authToken = await authService.signIn(loginParams);
       
       // Fetch user profile
-      const userResponse = await apiClient.get(`/api/v1/users/me`);
-      setUser(userResponse);
+      const userResponse = await apiClient.get<UserProfile>(`/api/v1/users/me`);
+      
+      // Create a properly shaped UserProfile object to satisfy TypeScript
+      const userProfile: UserProfile = {
+        userId: userResponse.userId || 'unknown',
+        isAnonymous: false,
+        preferences: userResponse.preferences || {
+          stylePreferences: [],
+          colorPreferences: [],
+          sizePreferences: []
+        },
+        closet: userResponse.closet || [],
+        feedback: userResponse.feedback || {
+          likedItems: [],
+          dislikedItems: [],
+          savedOutfits: [],
+          viewedItems: [],
+          lastInteraction: new Date()
+        },
+        createdAt: userResponse.createdAt || new Date(),
+        lastActive: userResponse.lastActive || new Date(),
+        email: userResponse.email
+      };
+      
+      setUser(userProfile);
       
       // Clear form
       setEmail('');

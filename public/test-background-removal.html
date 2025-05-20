@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Background Removal Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .test-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .image-container {
+      display: flex;
+      gap: 20px;
+    }
+    .image-box {
+      border: 1px solid #ccc;
+      padding: 10px;
+      flex: 1;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+    .controls {
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #0078d4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0065b3;
+    }
+    select, input[type="file"] {
+      padding: 8px;
+      margin-right: 10px;
+    }
+    .log {
+      background-color: #f0f0f0;
+      padding: 10px;
+      border-radius: 4px;
+      height: 150px;
+      overflow-y: auto;
+      font-family: monospace;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Background Removal Test</h1>
+  <p>This page tests the background removal functionality using TensorFlow.js BodyPix.</p>
+  
+  <div class="test-container">
+    <div class="controls">
+      <label for="method">Method:</label>
+      <select id="method">
+        <option value="tensorflow">TensorFlow.js</option>
+        <option value="remove_bg_api">Remove.bg API</option>
+      </select>
+      
+      <input type="file" id="imageUpload" accept="image/*">
+      <button id="processButton">Process Image</button>
+    </div>
+    
+    <div class="image-container">
+      <div class="image-box">
+        <h3>Original Image</h3>
+        <img id="originalImage" src="#" alt="Please select an image">
+      </div>
+      <div class="image-box">
+        <h3>Processed Image</h3>
+        <img id="processedImage" src="#" alt="Processed image will appear here">
+      </div>
+    </div>
+    
+    <div class="log" id="logOutput"></div>
+  </div>
+
+  <!-- Load TensorFlow.js and BodyPix model -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.6.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@3.6.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.2.0"></script>
+  
+  <script>
+    // Log function with timestamps
+    function log(message) {
+      const logElem = document.getElementById('logOutput');
+      const timestamp = new Date().toLocaleTimeString();
+      logElem.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+      logElem.scrollTop = logElem.scrollHeight;
+    }
+    
+    // Handle errors
+    function handleError(error) {
+      log(`ERROR: ${error.message || error}`);
+      console.error(error);
+    }
+    
+    // Initialize BodyPix model
+    let bodyPixModel = null;
+    
+    async function loadModel() {
+      try {
+        log('Loading BodyPix model...');
+        bodyPixModel = await bodyPix.load({
+          architecture: 'MobileNetV1',
+          outputStride: 16,
+          multiplier: 0.75,
+          quantBytes: 2,
+          modelUrl: '/models/body-pix/model.json'
+        });
+        log('BodyPix model loaded successfully!');
+      } catch (error) {
+        handleError(error);
+        log('Trying with CDN model...');
+        
+        try {
+          bodyPixModel = await bodyPix.load({
+            architecture: 'MobileNetV1',
+            outputStride: 16,
+            multiplier: 0.75,
+            quantBytes: 2
+          });
+          log('BodyPix model loaded from CDN successfully!');
+        } catch (cdnError) {
+          handleError(cdnError);
+          log('Failed to load model from all sources. Background removal might not work.');
+        }
+      }
+    }
+    
+    // Process image with TensorFlow.js
+    async function processTensorflow(imageElement) {
+      try {
+        log('Processing with TensorFlow.js...');
+        
+        if (!bodyPixModel) {
+          await loadModel();
+        }
+        
+        if (!bodyPixModel) {
+          throw new Error('BodyPix model failed to load');
+        }
+        
+        // Segment the person
+        log('Segmenting person...');
+        const segmentation = await bodyPixModel.segmentPerson(imageElement, {
+          flipHorizontal: false,
+          internalResolution: 'medium',
+          segmentationThreshold: 0.7
+        });
+        
+        log('Creating transparent background...');
+        const canvas = document.createElement('canvas');
+        canvas.width = imageElement.width;
+        canvas.height = imageElement.height;
+        const ctx = canvas.getContext('2d');
+        
+        // Draw the original image
+        ctx.drawImage(imageElement, 0, 0);
+        
+        // Get image data
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const { data } = imageData;
+        
+        // For each pixel
+        for (let i = 0; i < data.length; i += 4) {
+          // Get pixel position
+          const pixelIndex = i / 4;
+          const x = pixelIndex % canvas.width;
+          const y = Math.floor(pixelIndex / canvas.width);
+          
+          // Check if this pixel is part of a person
+          if (!segmentation.data[pixelIndex]) {
+            // Make pixel transparent
+            data[i + 3] = 0;
+          }
+        }
+        
+        // Put the modified image data back
+        ctx.putImageData(imageData, 0, 0);
+        
+        // Return data URL
+        log('Background removal completed!');
+        return canvas.toDataURL('image/png');
+      } catch (error) {
+        handleError(error);
+        log('Returning original image due to error');
+        return imageElement.src;
+      }
+    }
+    
+    // Process image with Remove.bg API
+    async function processRemoveBg(file) {
+      try {
+        log('This is a test page. Remove.bg API is not implemented here.');
+        log('In a real implementation, we would call the API with the image file.');
+        log('Returning original image as fallback.');
+        
+        return URL.createObjectURL(file);
+      } catch (error) {
+        handleError(error);
+        return URL.createObjectURL(file);
+      }
+    }
+    
+    // Main process function
+    async function processImage() {
+      const fileInput = document.getElementById('imageUpload');
+      const methodSelect = document.getElementById('method');
+      const originalImg = document.getElementById('originalImage');
+      const processedImg = document.getElementById('processedImage');
+      
+      if (!fileInput.files || !fileInput.files[0]) {
+        log('Please select an image first');
+        return;
+      }
+      
+      const file = fileInput.files[0];
+      const method = methodSelect.value;
+      
+      log(`Starting processing with method: ${method}`);
+      
+      // Display original image
+      originalImg.src = URL.createObjectURL(file);
+      
+      // Wait for image to load
+      await new Promise(resolve => {
+        originalImg.onload = resolve;
+      });
+      
+      // Process based on selected method
+      let resultUrl;
+      if (method === 'tensorflow') {
+        resultUrl = await processTensorflow(originalImg);
+      } else {
+        resultUrl = await processRemoveBg(file);
+      }
+      
+      // Display processed image
+      processedImg.src = resultUrl;
+      log('Processing complete');
+    }
+    
+    // Set up event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('processButton').addEventListener('click', processImage);
+      
+      // Preload model
+      loadModel().catch(error => {
+        handleError(error);
+      });
+    });
+  </script>
+</body>
+</html>

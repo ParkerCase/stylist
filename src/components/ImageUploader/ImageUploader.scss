@@ -7,24 +7,24 @@
   width: 100%;
   height: 100%;
   padding: variables.$spacing-md;
-  
+
   &__header {
     margin-bottom: variables.$spacing-md;
     text-align: center;
   }
-  
+
   &__title {
     font-size: variables.$font-size-lg;
     font-weight: variables.$font-weight-bold;
     color: variables.$text-primary;
     margin-bottom: variables.$spacing-xs;
   }
-  
+
   &__description {
     font-size: variables.$font-size-md;
     color: variables.$text-secondary;
   }
-  
+
   &__dropzone {
     @include mixins.flex-center;
     flex-direction: column;
@@ -37,101 +37,123 @@
     transition: all variables.$transition-normal ease;
     cursor: pointer;
     min-height: 300px;
-    
+
     &--active {
       border-color: variables.$primary-color;
       background-color: rgba(variables.$primary-color, 0.05);
     }
-    
+
     &--has-preview {
       padding: variables.$spacing-sm;
     }
   }
-  
+
   &__placeholder {
     @include mixins.flex-center;
     flex-direction: column;
     text-align: center;
     max-width: 320px;
   }
-  
+
   &__icon {
     margin-bottom: variables.$spacing-md;
     color: variables.$text-tertiary;
   }
-  
+
   &__message {
     font-size: variables.$font-size-md;
     color: variables.$text-secondary;
     margin-bottom: variables.$spacing-sm;
   }
-  
+
   &__browse {
     color: variables.$primary-color;
     font-weight: variables.$font-weight-bold;
     cursor: pointer;
   }
-  
+
   &__info {
     font-size: variables.$font-size-sm;
     color: variables.$text-tertiary;
     text-align: center;
   }
-  
+
   &__input {
     display: none;
   }
-  
+
   &__preview {
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    
+
     img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
     }
   }
-  
+
   &__error {
     color: variables.$error-color;
     font-size: variables.$font-size-sm;
     margin-bottom: variables.$spacing-md;
     text-align: center;
   }
-  
+
+  &__permission-message {
+    background-color: rgba(variables.$warning-color, 0.1);
+    border: 1px solid rgba(variables.$warning-color, 0.3);
+    border-radius: variables.$border-radius-sm;
+    padding: variables.$spacing-md;
+    margin-bottom: variables.$spacing-md;
+
+    p {
+      color: variables.$warning-color;
+      font-weight: variables.$font-weight-medium;
+      margin-bottom: variables.$spacing-sm;
+      font-size: variables.$font-size-sm;
+    }
+
+    ul {
+      padding-left: variables.$spacing-lg;
+      margin: 0;
+      font-size: variables.$font-size-sm;
+      color: variables.$text-secondary;
+
+      li {
+        margin-bottom: variables.$spacing-xs;
+      }
+    }
+  }
+
   &__actions {
     @include mixins.flex-center;
     gap: variables.$spacing-md;
   }
-  
+
   &__upload-btn {
     @include mixins.button-primary;
     padding: variables.$spacing-sm variables.$spacing-lg;
     font-size: variables.$font-size-md;
     min-width: 160px;
-    
+
     &:disabled {
       opacity: 0.6;
       cursor: not-allowed;
     }
   }
-  
-  &__change-btn {
+
+  &__change-btn,
+  &__webcam-btn,
+  &__reset-btn {
     @include mixins.button-secondary;
     padding: variables.$spacing-sm variables.$spacing-lg;
     font-size: variables.$font-size-md;
   }
-  
-  &__webcam-btn {
-    @include mixins.button-secondary;
-    padding: variables.$spacing-sm variables.$spacing-lg;
-    font-size: variables.$font-size-md;
-  }
-  
+
   // Webcam container
   &__webcam {
     display: flex;
@@ -146,31 +168,121 @@
     min-height: 300px;
     position: relative;
   }
-  
+
   &__video {
     width: 100%;
     height: 100%;
     object-fit: contain;
     border-radius: variables.$border-radius-md;
+
+    &--mirror {
+      transform: scaleX(-1);
+    }
   }
-  
+
   &__webcam-controls {
     position: absolute;
     bottom: variables.$spacing-md;
     display: flex;
     gap: variables.$spacing-md;
-    z-index: 1;
+    z-index: 10;
   }
-  
+
+  &__camera-selector {
+    position: absolute;
+    top: variables.$spacing-md;
+    right: variables.$spacing-md;
+    z-index: 10;
+  }
+
+  &__camera-select {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid variables.$border-color;
+    border-radius: variables.$border-radius-sm;
+    padding: variables.$spacing-xs variables.$spacing-sm;
+    font-size: variables.$font-size-sm;
+    color: variables.$text-primary;
+
+    &:focus {
+      outline: none;
+      border-color: variables.$primary-color;
+    }
+  }
+
+  &__countdown {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 5;
+
+    &-number {
+      font-size: 5rem;
+      font-weight: variables.$font-weight-bold;
+      color: white;
+      text-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+      animation: countdown-pulse 1s infinite;
+    }
+  }
+
   &__capture-btn {
     @include mixins.button-primary;
     padding: variables.$spacing-sm variables.$spacing-lg;
     font-size: variables.$font-size-md;
   }
-  
+
   &__cancel-btn {
     @include mixins.button-secondary;
     padding: variables.$spacing-sm variables.$spacing-lg;
     font-size: variables.$font-size-md;
+  }
+
+  &__switch-camera-btn {
+    @include mixins.button-secondary;
+    padding: variables.$spacing-sm variables.$spacing-lg;
+    font-size: variables.$font-size-md;
+    display: flex;
+    align-items: center;
+
+    &::before {
+      content: '↺';
+      margin-right: variables.$spacing-xs;
+      font-size: 1.1em;
+    }
+  }
+
+  &__cancel-countdown-btn {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: variables.$error-color;
+    border: 1px solid variables.$error-color;
+    border-radius: variables.$border-radius-sm;
+    padding: variables.$spacing-sm variables.$spacing-lg;
+    font-size: variables.$font-size-md;
+    font-weight: variables.$font-weight-medium;
+    transition: all variables.$transition-normal ease;
+
+    &:hover {
+      background-color: rgba(variables.$error-color, 0.1);
+    }
+  }
+}
+
+@keyframes countdown-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }

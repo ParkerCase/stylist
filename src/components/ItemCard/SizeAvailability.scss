@@ -1,0 +1,147 @@
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
+
+.stylist-size-availability {
+  padding: variables.$spacing-md 0;
+  
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: variables.$spacing-sm;
+  }
+  
+  &__title {
+    font-size: variables.$font-size-md;
+    font-weight: variables.$font-weight-medium;
+    color: variables.$text-primary;
+    margin: 0;
+  }
+  
+  &__user-sizes {
+    font-size: variables.$font-size-xs;
+    color: variables.$text-secondary;
+  }
+  
+  &__sizes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: variables.$spacing-xs;
+    margin-bottom: variables.$spacing-md;
+  }
+  
+  &__size-btn {
+    position: relative;
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid variables.$border-color;
+    border-radius: variables.$border-radius-sm;
+    background-color: variables.$surface-color;
+    color: variables.$text-primary;
+    font-size: variables.$font-size-sm;
+    padding: 0 variables.$spacing-sm;
+    cursor: pointer;
+    transition: all variables.$transition-normal ease;
+    
+    &:hover:not(:disabled) {
+      border-color: variables.$text-primary;
+    }
+    
+    &--selected {
+      border-color: variables.$primary-color;
+      color: variables.$primary-color;
+      border-width: 2px;
+    }
+    
+    &--unavailable {
+      color: variables.$text-tertiary;
+      background-color: variables.$surface-light;
+      text-decoration: line-through;
+      cursor: pointer;
+      
+      &:hover {
+        border-color: variables.$border-color;
+      }
+    }
+    
+    &--user-size {
+      font-weight: variables.$font-weight-medium;
+    }
+    
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+  
+  &__your-size-indicator {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: variables.$primary-color;
+    color: variables.$text-inverse;
+    font-size: variables.$font-size-xs;
+    @include mixins.flex-center;
+  }
+  
+  &__notify-form {
+    background-color: variables.$surface-light;
+    border-radius: variables.$border-radius-md;
+    padding: variables.$spacing-md;
+    margin-top: variables.$spacing-md;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  &__notify-text {
+    font-size: variables.$font-size-sm;
+    color: variables.$text-secondary;
+    margin-top: 0;
+    margin-bottom: variables.$spacing-md;
+  }
+  
+  &__notify-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: variables.$spacing-md;
+  }
+  
+  &__cancel-btn {
+    padding: variables.$spacing-xs variables.$spacing-md;
+    border-radius: variables.$border-radius-md;
+    background-color: variables.$surface-color;
+    color: variables.$text-primary;
+    border: 1px solid variables.$border-color;
+    cursor: pointer;
+    font-size: variables.$font-size-sm;
+    
+    &:hover {
+      background-color: variables.$surface-light;
+    }
+  }
+  
+  &__notify-btn {
+    padding: variables.$spacing-xs variables.$spacing-md;
+    border-radius: variables.$border-radius-md;
+    background-color: variables.$primary-color;
+    color: variables.$text-inverse;
+    border: none;
+    cursor: pointer;
+    font-size: variables.$font-size-sm;
+    font-weight: variables.$font-weight-medium;
+    
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

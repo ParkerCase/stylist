@@ -1,0 +1,215 @@
+// src/components/StyleQuiz/StyleQuizResults.scss
+
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
+
+.stylist-style-quiz-results {
+  @include mixins.card;
+  margin: variables.$spacing-md 0;
+  padding: variables.$spacing-lg;
+  border: 1px solid variables.$border-color;
+  max-height: 80vh;
+  overflow-y: auto;
+  
+  // Loading state
+  &--loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+  }
+  
+  &__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    
+    &-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(variables.$primary-color, 0.2);
+      border-radius: 50%;
+      border-top-color: variables.$primary-color;
+      animation: spin 1s linear infinite;
+      margin-bottom: variables.$spacing-md;
+    }
+    
+    &-text {
+      font-size: variables.$font-size-md;
+      color: variables.$text-secondary;
+      max-width: 300px;
+    }
+  }
+  
+  // Header section
+  &__header {
+    margin-bottom: variables.$spacing-xl;
+    text-align: center;
+  }
+  
+  &__title {
+    font-size: variables.$font-size-xl;
+    font-weight: variables.$font-weight-bold;
+    color: variables.$text-primary;
+    margin-bottom: variables.$spacing-md;
+  }
+  
+  &__completion {
+    font-size: variables.$font-size-sm;
+    color: variables.$text-secondary;
+    
+    &-bar {
+      height: 6px;
+      background-color: variables.$border-color;
+      border-radius: 3px;
+      margin-top: variables.$spacing-xs;
+      overflow: hidden;
+      
+      &-fill {
+        height: 100%;
+        background-color: variables.$primary-color;
+        border-radius: 3px;
+        transition: width 0.5s ease;
+      }
+    }
+  }
+  
+  // Content section
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: variables.$spacing-xl;
+    margin-bottom: variables.$spacing-xl;
+    
+    @include mixins.responsive('md') {
+      flex-direction: row;
+      align-items: flex-start;
+    }
+  }
+  
+  // Profile section
+  &__profile {
+    flex: 1;
+    
+    h3 {
+      font-size: variables.$font-size-lg;
+      font-weight: variables.$font-weight-medium;
+      color: variables.$text-primary;
+      margin-bottom: variables.$spacing-md;
+      border-bottom: 1px solid variables.$border-color;
+      padding-bottom: variables.$spacing-xs;
+    }
+    
+    &-summary {
+      font-size: variables.$font-size-md;
+      color: variables.$text-primary;
+      line-height: 1.5;
+      
+      p {
+        margin-bottom: variables.$spacing-md;
+      }
+    }
+  }
+  
+  // Recommendations section
+  &__recommendations {
+    flex: 1;
+    
+    h3 {
+      font-size: variables.$font-size-lg;
+      font-weight: variables.$font-weight-medium;
+      color: variables.$text-primary;
+      margin-bottom: variables.$spacing-md;
+      border-bottom: 1px solid variables.$border-color;
+      padding-bottom: variables.$spacing-xs;
+    }
+  }
+  
+  // Recommendation categories
+  &__categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: variables.$spacing-sm;
+  }
+  
+  &__category {
+    padding: variables.$spacing-xs variables.$spacing-sm;
+    background-color: rgba(variables.$primary-color, 0.1);
+    border: 1px solid variables.$primary-color;
+    border-radius: variables.$border-radius-md;
+    font-size: variables.$font-size-sm;
+    color: variables.$text-primary;
+    transition: all variables.$transition-normal ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  // Actions section
+  &__actions {
+    display: flex;
+    justify-content: center;
+    gap: variables.$spacing-md;
+    margin-bottom: variables.$spacing-xl;
+  }
+  
+  &__button {
+    @include mixins.button-base;
+    padding: variables.$spacing-sm variables.$spacing-lg;
+    font-size: variables.$font-size-sm;
+    cursor: pointer;
+    
+    &--primary {
+      @include mixins.button-primary;
+      min-width: 180px;
+      transition: all variables.$transition-normal ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+    }
+    
+    &--secondary {
+      @include mixins.button-secondary;
+      min-width: 120px;
+      transition: all variables.$transition-normal ease;
+      
+      &:hover {
+        background-color: variables.$surface-color;
+      }
+    }
+  }
+  
+  // Note section
+  &__note {
+    font-size: variables.$font-size-sm;
+    color: variables.$text-secondary;
+    text-align: center;
+    padding: variables.$spacing-md;
+    background-color: variables.$surface-color;
+    border-radius: variables.$border-radius-md;
+    
+    p {
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+  }
+  
+  // Animation
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  // Apply animations
+  animation: fadeIn 0.5s ease;
+}

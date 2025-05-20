@@ -8,10 +8,24 @@ export interface RecommendationRequest {
     limit?: number;
     includeOutfits?: boolean;
     filterByRetailers?: string[];
+    trending?: boolean; // Flag to get trending items
+    deepSearch?: boolean; // Flag to perform an inventory-wide search
     priceRange?: {
       min?: number;
       max?: number;
     };
+    filters?: {
+      trending?: boolean; // For backward compatibility
+      size?: string;
+      style?: string;
+      age?: string;
+      gender?: string;
+      season?: string;
+      isNewArrival?: boolean;
+      [key: string]: any;
+    };
+    layout?: string; // Layout configuration (e.g., "2x50 grid")
+    message?: string; // For error messages in response
   }
   
   export interface RecommendationResponse {
@@ -20,6 +34,7 @@ export interface RecommendationRequest {
     items: RecommendationItem[];
     outfits: Outfit[];
     context?: string;
+    message?: string; // For error messages
   }
   
   export interface RecommendationItem {
@@ -40,6 +55,25 @@ export interface RecommendationRequest {
     matchReasons: string[];
     complementaryItems?: string[];
     inStock: boolean;
+    trending?: boolean;
+    trendingScore?: number; // Score used for trending ranking algorithm
+    trendingRank?: number; // Position in trending items
+    likeCount?: number; // Number of likes for trending calculation
+    dislikeCount?: number; // Number of dislikes for trending calculation
+    recentViews?: number; // Number of recent views for activity weight
+    releaseDate?: Date; // Date when item was added to inventory
+    seasonality?: string; // Season the item is most relevant for
+    targetDemographics?: {
+      age?: string[];
+      gender?: string[];
+    };
+    isNewArrival?: boolean;
+    imageUrl?: string; // For backward compatibility
+    materials?: string[]; // Materials used in the item
+    patterns?: string[]; // Patterns on the item
+    isRealTimeUpdate?: boolean; // For trending items that are updated in real-time
+    isNewTrend?: boolean; // For newly trending items
+    lastUpdated?: Date; // When the item was last updated
   }
   
   export interface Outfit {

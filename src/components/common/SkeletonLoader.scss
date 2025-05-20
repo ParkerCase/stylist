@@ -1,0 +1,331 @@
+// src/components/common/SkeletonLoader.scss
+
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
+
+// Base skeleton style
+.stylist-skeleton {
+  background-color: variables.$background-color-light;
+  position: relative;
+  overflow: hidden;
+  border-radius: variables.$border-radius-sm;
+  @include mixins.respect-motion-preferences;
+  
+  // Animation for loading effect
+  &--animated::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    animation: shimmer 2s cubic-bezier(0.4, 0.0, 0.2, 1) infinite;
+    will-change: transform;
+  }
+  
+  // Text skeleton - adaptive height for different text styles
+  &--text {
+    height: 1em;
+    margin-bottom: 0.6em;
+    width: 100%;
+    
+    &:last-child {
+      width: 75%;
+    }
+  }
+  
+  // Circle skeleton for avatars, icons, etc.
+  &--circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+  }
+  
+  // Rectangle for general purpose blocks
+  &--rectangle {
+    width: 100%;
+    height: 100px;
+    border-radius: variables.$border-radius-md;
+  }
+  
+  // Image placeholder
+  &--image {
+    width: 100%;
+    height: 0;
+    padding-bottom: 75%; // 4:3 aspect ratio
+    border-radius: variables.$border-radius-md;
+  }
+  
+  // Button placeholders
+  &--button {
+    width: 100px;
+    height: 36px;
+    border-radius: variables.$border-radius-md;
+  }
+}
+
+// Product skeleton layout
+.stylist-skeleton-product {
+  display: flex;
+  flex-direction: column;
+  border-radius: variables.$border-radius-md;
+  overflow: hidden;
+  border: 1px solid variables.$border-color;
+  background-color: variables.$background-color;
+  height: 100%;
+  
+  &__image {
+    width: 100%;
+    height: 0;
+    padding-bottom: 133%; // 3:4 aspect ratio for product images
+    background-color: variables.$background-color-light;
+    position: relative;
+    overflow: hidden;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: shimmer 2s infinite;
+    }
+  }
+  
+  &__content {
+    padding: variables.$spacing-sm;
+  }
+  
+  &__title {
+    height: 1em;
+    margin-bottom: 0.8em;
+    background-color: variables.$background-color-light;
+    border-radius: variables.$border-radius-sm;
+    width: 90%;
+    position: relative;
+    overflow: hidden;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: shimmer 2s infinite;
+    }
+  }
+  
+  &__price {
+    height: 1em;
+    background-color: variables.$background-color-light;
+    border-radius: variables.$border-radius-sm;
+    width: 40%;
+    position: relative;
+    overflow: hidden;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: shimmer 2s infinite;
+    }
+  }
+}
+
+// Card skeleton layout
+.stylist-skeleton-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: variables.$border-radius-md;
+  overflow: hidden;
+  border: 1px solid variables.$border-color;
+  background-color: variables.$background-color;
+  
+  &__image {
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%; // 16:9 aspect ratio
+    background-color: variables.$background-color-light;
+    position: relative;
+    overflow: hidden;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: shimmer 2s infinite;
+    }
+  }
+  
+  &__content {
+    padding: variables.$spacing-md;
+  }
+  
+  &__title {
+    height: 1.5em;
+    margin-bottom: 1em;
+    background-color: variables.$background-color-light;
+    border-radius: variables.$border-radius-sm;
+    width: 90%;
+    position: relative;
+    overflow: hidden;
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: shimmer 2s infinite;
+    }
+  }
+  
+  &__text {
+    height: 1em;
+    margin-bottom: 0.8em;
+    background-color: variables.$background-color-light;
+    border-radius: variables.$border-radius-sm;
+    position: relative;
+    overflow: hidden;
+    
+    &:nth-child(2) {
+      width: 100%;
+    }
+    
+    &:nth-child(3) {
+      width: 80%;
+    }
+    
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      transform: translateX(-100%);
+      background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: shimmer 2s infinite;
+    }
+  }
+}
+
+// Avatar skeleton
+.stylist-skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: variables.$background-color-light;
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    animation: shimmer 2s infinite;
+  }
+}
+
+// Animation for the shimmer effect
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+// Responsive adjustments
+@include mixins.mobile-only {
+  .stylist-skeleton-product,
+  .stylist-skeleton-card {
+    &__content {
+      padding: variables.$spacing-sm;
+    }
+  }
+}
+
+// Respect motion preferences
+@media (prefers-reduced-motion: reduce) {
+  .stylist-skeleton,
+  .stylist-skeleton-product__image,
+  .stylist-skeleton-product__title,
+  .stylist-skeleton-product__price,
+  .stylist-skeleton-card__image,
+  .stylist-skeleton-card__title,
+  .stylist-skeleton-card__text,
+  .stylist-skeleton-avatar {
+    &::after {
+      animation: none;
+      opacity: 0;
+    }
+  }
+}

@@ -43,6 +43,8 @@ export interface Point {
     processingStatus: ProcessingStatus;
     backgroundRemoved?: boolean;
     processingError?: string;
+    processingWarning?: string;
+    bodyMeasurements?: BodyMeasurements;
   }
   
   export interface OutfitTryOn {
@@ -102,6 +104,7 @@ export interface Point {
     success: boolean;
     imageUrl?: string;
     error?: string;
+    warning?: string; // Non-critical errors/warnings that don't prevent operation
     method: BackgroundRemovalMethod;
     bodyMeasurements?: BodyMeasurements;
   }

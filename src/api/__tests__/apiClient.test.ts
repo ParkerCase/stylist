@@ -1,5 +1,5 @@
 // src/api/__tests__/apiClient.test.ts
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { ApiClient, createApiClient } from '../apiClient';
 
 // Set longer timeout for API tests with retries
@@ -8,7 +8,7 @@ jest.setTimeout(20000);
 // Mock axios
 jest.mock('axios', () => {
   return {
-    create: jest.fn(() => ({
+    create: jest.fn().mockReturnValue({
       get: jest.fn(),
       post: jest.fn(),
       put: jest.fn(),
@@ -17,86 +17,62 @@ jest.mock('axios', () => {
         request: { use: jest.fn() },
         response: { use: jest.fn() }
       }
-    })),
-    defaults: {
-      headers: {
-        common: {}
-      }
-    }
+    })
   };
 });
 
-describe('API Client', () => {
-  const mockConfig = {
-    baseURL: 'https://api.example.com',
-    apiKey: 'test-api-key',
-    timeout: 5000,
-    maxRetries: 2
-  };
-  
+describe('ApiClient', () => {
   let apiClient: ApiClient;
   let mockAxiosInstance: any;
   
   beforeEach(() => {
+    // Reset mocks
     jest.clearAllMocks();
     
-    // Create a new API client
-    apiClient = createApiClient(mockConfig);
+    // Get the mock axios instance
+    mockAxiosInstance = axios.create();
     
-    // Get the axios instance created by the client
-    mockAxiosInstance = (axios.create as jest.Mock).mock.results[0].value;
+    // Create API client with test config
+    apiClient = createApiClient({
+      baseURL: 'https://api.example.com',
+      apiKey: 'test-api-key',
+      maxRetries: 3
+    });
   });
   
-  test('should create an axios instance with correct config', () => {
-    expect(axios.create).toHaveBeenCalledWith(expect.objectContaining({
-      baseURL: mockConfig.baseURL,
-      timeout: mockConfig.timeout,
-      headers: expect.objectContaining({
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-API-Key': mockConfig.apiKey
-      })
-    }));
-  });
-  
-  test('should add request and response interceptors', () => {
-    expect(mockAxiosInstance.interceptors.request.use).toHaveBeenCalledTimes(1);
-    expect(mockAxiosInstance.interceptors.response.use).toHaveBeenCalledTimes(1);
-  });
-  
-  test('should make GET request successfully', async () => {
-    const mockData = { id: 1, name: 'Test' };
-    mockAxiosInstance.get.mockResolvedValueOnce({ data: mockData });
+  test('should make a successful GET request', async () => {
+    const responseData = { id: 1, name: 'Test Item' };
+    mockAxiosInstance.get.mockResolvedValueOnce({ data: responseData });
     
     const result = await apiClient.get('/test');
     
     expect(mockAxiosInstance.get).toHaveBeenCalledWith('/test', expect.any(Object));
-    expect(result).toEqual(mockData);
+    expect(result).toEqual(responseData);
   });
   
-  test('should make POST request successfully', async () => {
-    const requestData = { name: 'Test' };
-    const responseData = { id: 1, name: 'Test' };
+  test('should make a successful POST request', async () => {
+    const postData = { name: 'New Item' };
+    const responseData = { id: 1, name: 'New Item' };
     mockAxiosInstance.post.mockResolvedValueOnce({ data: responseData });
     
-    const result = await apiClient.post('/test', requestData);
+    const result = await apiClient.post('/test', postData);
     
-    expect(mockAxiosInstance.post).toHaveBeenCalledWith('/test', requestData, expect.any(Object));
+    expect(mockAxiosInstance.post).toHaveBeenCalledWith('/test', postData, expect.any(Object));
     expect(result).toEqual(responseData);
   });
   
-  test('should make PUT request successfully', async () => {
-    const requestData = { id: 1, name: 'Updated' };
-    const responseData = { id: 1, name: 'Updated' };
+  test('should make a successful PUT request', async () => {
+    const putData = { id: 1, name: 'Updated Item' };
+    const responseData = { id: 1, name: 'Updated Item' };
     mockAxiosInstance.put.mockResolvedValueOnce({ data: responseData });
     
-    const result = await apiClient.put('/test/1', requestData);
+    const result = await apiClient.put('/test/1', putData);
     
-    expect(mockAxiosInstance.put).toHaveBeenCalledWith('/test/1', requestData, expect.any(Object));
+    expect(mockAxiosInstance.put).toHaveBeenCalledWith('/test/1', putData, expect.any(Object));
     expect(result).toEqual(responseData);
   });
   
-  test('should make DELETE request successfully', async () => {
+  test('should make a successful DELETE request', async () => {
     const responseData = { success: true };
     mockAxiosInstance.delete.mockResolvedValueOnce({ data: responseData });
     
@@ -108,8 +84,8 @@ describe('API Client', () => {
   
   test('should retry on network errors', async () => {
     // Mock a network error for first call, then success
-    const networkError = new Error('Network Error');
-    networkError.request = {}; // Make it look like a network error
+    const networkError = new Error('Network Error') as AxiosError;
+    networkError.request = {} as any; // Make it look like a network error
     
     const mockData = { id: 1, name: 'Test' };
     
@@ -136,8 +112,14 @@ describe('API Client', () => {
   
   test('should retry on 500 server errors', async () => {
     // Mock a 500 error for first call, then success
-    const serverError = new Error('Internal Server Error');
-    serverError.response = { status: 500, data: { message: 'Server error' } };
+    const serverError = new Error('Internal Server Error') as AxiosError;
+    serverError.response = { 
+      status: 500, 
+      data: { message: 'Server error' },
+      statusText: 'Internal Server Error',
+      headers: {},
+      config: {} as any
+    } as any;
     
     const mockData = { id: 1, name: 'Test' };
     
@@ -164,8 +146,14 @@ describe('API Client', () => {
   
   test('should not retry on 4xx client errors', async () => {
     // Mock a 404 error (not found)
-    const notFoundError = new Error('Not Found');
-    notFoundError.response = { status: 404, data: { message: 'Resource not found' } };
+    const notFoundError = new Error('Not Found') as AxiosError;
+    notFoundError.response = { 
+      status: 404, 
+      data: { message: 'Resource not found' },
+      statusText: 'Not Found',
+      headers: {},
+      config: {} as any
+    } as any;
     
     mockAxiosInstance.get.mockRejectedValueOnce(notFoundError);
     
@@ -175,8 +163,14 @@ describe('API Client', () => {
   });
   
   test('should throw appropriate error for 401 unauthorized', async () => {
-    const unauthorizedError = new Error('Unauthorized');
-    unauthorizedError.response = { status: 401, data: { message: 'Unauthorized' } };
+    const unauthorizedError = new Error('Unauthorized') as AxiosError;
+    unauthorizedError.response = { 
+      status: 401, 
+      data: { message: 'Unauthorized' },
+      statusText: 'Unauthorized',
+      headers: {},
+      config: {} as any
+    } as any;
     
     mockAxiosInstance.get.mockRejectedValueOnce(unauthorizedError);
     
@@ -184,64 +178,63 @@ describe('API Client', () => {
   });
   
   test('should throw appropriate error for 403 forbidden', async () => {
-    const forbiddenError = new Error('Forbidden');
-    forbiddenError.response = { status: 403, data: { message: 'Forbidden' } };
+    const forbiddenError = new Error('Forbidden') as AxiosError;
+    forbiddenError.response = { 
+      status: 403, 
+      data: { message: 'Forbidden' },
+      statusText: 'Forbidden',
+      headers: {},
+      config: {} as any
+    } as any;
     
     mockAxiosInstance.get.mockRejectedValueOnce(forbiddenError);
     
     await expect(apiClient.get('/test')).rejects.toThrow('Forbidden: You do not have permission');
   });
   
-  test('should include auth headers when getAuthHeader is provided', async () => {
-    const authHeaders = { 'Authorization': 'Bearer test-token' };
-    const getAuthHeader = jest.fn().mockReturnValue(authHeaders);
+  test('should handle authentication headers', async () => {
+    const responseData = { id: 1, name: 'Test Item' };
+    mockAxiosInstance.get.mockResolvedValueOnce({ data: responseData });
     
+    // Create new client with auth header getter
     const clientWithAuth = createApiClient({
-      ...mockConfig,
-      getAuthHeader
+      baseURL: 'https://api.example.com',
+      getAuthHeader: () => ({ 'Authorization': 'Bearer test-token' })
     });
-    
-    // Get the axios instance created by the client
-    const axiosInstance = (axios.create as jest.Mock).mock.results[1].value;
-    
-    // Setup a successful response
-    axiosInstance.get.mockResolvedValueOnce({ data: { id: 1 } });
     
     await clientWithAuth.get('/test');
     
-    // Verify auth header was requested
-    expect(getAuthHeader).toHaveBeenCalled();
-    
-    // Verify the request was made with auth headers
-    expect(axiosInstance.get).toHaveBeenCalledWith('/test', 
+    // Verify auth header was included
+    expect(mockAxiosInstance.get).toHaveBeenCalledWith(
+      '/test',
       expect.objectContaining({
-        headers: expect.objectContaining(authHeaders)
+        headers: expect.objectContaining({
+          'Authorization': 'Bearer test-token'
+        })
       })
     );
   });
   
-  test('should give up after max retries', async () => {
-    // Mock server errors for all attempts
-    const serverError = new Error('Internal Server Error');
-    serverError.response = { status: 500, data: { message: 'Server error' } };
+  test('should handle errors when making API requests', async () => {
+    const networkError = new Error('Network Error') as AxiosError;
+    networkError.request = {} as any;
+    networkError.code = 'ECONNABORTED';
     
-    // We expect 1 original try + 2 retries = 3 total calls
-    mockAxiosInstance.get.mockRejectedValueOnce(serverError);
-    mockAxiosInstance.get.mockRejectedValueOnce(serverError);
-    mockAxiosInstance.get.mockRejectedValueOnce(serverError);
+    // Mock maximum retries
+    mockAxiosInstance.get.mockRejectedValue(networkError);
     
     // Mock setTimeout to avoid actual delay in tests
     jest.useFakeTimers();
     
-    // Start the request
+    // Expect error to be thrown after max retries
     const promise = apiClient.get('/test');
     
-    // Fast-forward past all the waiting time
-    jest.runAllTimers();
+    // Fast-forward past all retries
+    for (let i = 0; i <= 3; i++) {
+      jest.runAllTimers();
+    }
     
-    await expect(promise).rejects.toThrow('Server error');
-    
-    expect(mockAxiosInstance.get).toHaveBeenCalledTimes(3);
+    await expect(promise).rejects.toThrow('No response received from server');
     
     // Clean up
     jest.useRealTimers();

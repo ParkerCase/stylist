@@ -1,11 +1,88 @@
 @use "../../styles/variables.scss" as variables;
 @use "../../styles/mixins.scss" as mixins;
 
-.stylist-chat-input {
-  @include mixins.flex-between;
-  padding: variables.$spacing-sm variables.$spacing-md;
+// Enhanced chat input container
+.stylist-chat-input-container {
+  display: flex;
+  flex-direction: column;
   background-color: variables.$background-color;
   border-top: 1px solid variables.$border-color;
+}
+
+// Input toolbar for advanced input options
+.stylist-chat-input-toolbar {
+  display: flex;
+  align-items: center;
+  @include mixins.inner-spacing;
+  padding-left: variables.$spacing-md;
+  padding-right: variables.$spacing-md;
+  border-bottom: 1px dashed variables.$border-color;
+  gap: variables.$spacing-sm;
+  position: relative;
+  
+  &__button {
+    @include mixins.flex-center;
+    width: 36px;
+    height: 36px;
+    border-radius: variables.$border-radius-round;
+    color: variables.$text-secondary;
+    background-color: transparent;
+    border: 1px solid variables.$border-color;
+    flex-shrink: 0;
+    transition: all variables.$transition-normal ease;
+    
+    &:hover {
+      background-color: rgba(variables.$primary-color, 0.05);
+      color: variables.$primary-color;
+      border-color: rgba(variables.$primary-color, 0.3);
+    }
+    
+    &.active {
+      background-color: rgba(variables.$primary-color, 0.1);
+      color: variables.$primary-color;
+      border-color: variables.$primary-color;
+    }
+    
+    &.recording {
+      background-color: #f44336;
+      color: white;
+      border-color: #f44336;
+      animation: pulse 1.5s infinite;
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      &:hover {
+        background-color: transparent;
+        color: variables.$text-secondary;
+        border-color: variables.$border-color;
+      }
+    }
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// Help text
+.stylist-chat-input__help {
+  font-size: 12px;
+  color: variables.$text-secondary;
+  margin-left: variables.$spacing-md;
+  display: none;
+  
+  @media (min-width: 768px) {
+    display: block;
+  }
+}
+
+// Regular chat input
+.stylist-chat-input {
+  @include mixins.flex-between;
+  @include mixins.container-spacing;
   min-height: variables.$input-height;
   
   &__container {
@@ -57,5 +134,18 @@
       width: 20px;
       height: 20px;
     }
+  }
+}
+
+// Animation for recording button
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(244, 67, 54, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
   }
 }

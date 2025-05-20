@@ -1,0 +1,67 @@
+
+Build Report - 2025-05-16T20:19:49.769Z
+=======================================
+
+Total build size: 78.46 MB
+Total files: 703
+
+File types by size:
+
+.map: 223 files, 65.85 MB (83.9%)
+  - stylist-vendors.js.map: 17527.4 KB
+  - stylist-123.js.map: 12700.0 KB
+  - stylist-481.js.map: 11628.6 KB
+  - stylist-main.js.map: 685.3 KB
+  - stylist-react.34c8dc240b1d199a42f2.js.map: 342.4 KB
+.js: 229 files, 9.31 MB (11.9%)
+  - stylist-vendors.js: 1631.2 KB
+  - stylist-widget.js: 1418.2 KB
+  - stylist-123.js: 1214.2 KB
+  - stylist-481.js: 1086.6 KB
+  - stylist-main.js: 263.8 KB
+.gz: 107 files, 0.88 MB (1.1%)
+  - stylist-react.34c8dc240b1d199a42f2.js.gz: 43.9 KB
+  - stylist-widget.7be997732f40e3a10e18.css.gz: 23.1 KB
+  - stylist-widget.c3b24cc2ffb64ecefbf3.css.gz: 23.1 KB
+  - stylist-vendors-9dd4f2b7.a6d734984794af74f2f3.js.gz: 21.9 KB
+  - stylist-main-ef7d455c.8d33db5900407459ec8a.js.gz: 21.6 KB
+.br: 107 files, 0.76 MB (1.0%)
+  - stylist-react.34c8dc240b1d199a42f2.js.br: 38.3 KB
+  - stylist-widget.7be997732f40e3a10e18.css.br: 18.9 KB
+  - stylist-widget.c3b24cc2ffb64ecefbf3.css.br: 18.9 KB
+  - stylist-vendors-9dd4f2b7.a6d734984794af74f2f3.js.br: 18.5 KB
+  - stylist-main-ef7d455c.8d33db5900407459ec8a.js.br: 18.0 KB
+.bin: 2 files, 0.58 MB (0.7%)
+  - models/body-pix/mobilenet/quant1/050/group1-shard1of1.bin: 590.8 KB
+  - models/body-pix/group1-shard1of1.bin: 0.0 KB
+.css: 3 files, 0.46 MB (0.6%)
+  - stylist-widget.7be997732f40e3a10e18.css: 201.1 KB
+  - stylist-widget.c3b24cc2ffb64ecefbf3.css: 200.4 KB
+  - stylist-widget.css: 73.1 KB
+.html: 12 files, 0.43 MB (0.5%)
+  - full-widget-do-not-touch.html: 131.2 KB
+  - full-widget copy 2.html: 109.3 KB
+  - full-widget.html: 49.6 KB
+  - full-widget.preview.html: 45.0 KB
+  - diagnostic.html: 33.4 KB
+.png: 5 files, 0.12 MB (0.2%)
+  - button-icons/social-proof.png: 33.8 KB
+  - button-icons/virtual-try-on.png: 29.6 KB
+  - button-icons/style-quiz.png: 23.4 KB
+  - button-icons/trending-items.png: 22.0 KB
+  - button-icons/my-closet.png: 16.8 KB
+.txt: 9 files, 0.06 MB (0.1%)
+  - stylist-vendors.js.LICENSE.txt: 16.2 KB
+  - stylist-widget.js.LICENSE.txt: 16.0 KB
+  - stylist-123.js.LICENSE.txt: 13.0 KB
+  - stylist-481.js.LICENSE.txt: 12.9 KB
+  - build-report.txt: 2.2 KB
+.md: 2 files, 0.00 MB (0.0%)
+  - models/body-pix/README.md: 2.6 KB
+  - models/segmentation-model/README.md: 1.2 KB
+no-extension: 1 files, 0.00 MB (0.0%)
+  - _headers: 0.8 KB
+.json: 3 files, 0.00 MB (0.0%)
+  - models/segmentation-model/model.json: 0.3 KB
+  - models/body-pix/model.json: 0.3 KB
+  - models/body-pix/mobilenet/quant1/050/model-stride32.json: 0.0 KB

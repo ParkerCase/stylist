@@ -1,0 +1,60 @@
+@use '../../styles/variables.scss' as variables;
+@use '../../styles/mixins.scss' as mixins;
+
+.stylist-category-selector {
+  position: relative;
+  --stylist-focus-color: var(--stylist-primary-color, #4361ee);
+  
+  &__label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 4px;
+    color: variables.$text-secondary;
+  }
+  
+  &__select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: variables.$background-color-light;
+    border: 1px solid variables.$border-color;
+    border-radius: 4px;
+    padding: 8px 32px 8px 12px;
+    width: 100%;
+    font-size: 14px;
+    cursor: pointer;
+    color: variables.$text-primary;
+    
+    &:focus {
+      outline: none;
+      border-color: var(--stylist-focus-color);
+      box-shadow: 0 0 0 2px rgba(var(--stylist-focus-color-rgb, 67, 97, 238), 0.25);
+    }
+    
+    &:hover {
+      border-color: variables.$border-color;
+    }
+  }
+  
+  &__arrow {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: variables.$text-secondary;
+  }
+  
+  // Style for dark mode
+  &.dark-mode {
+    .stylist-category-selector__select {
+      background-color: variables.$background-color-dark;
+      border-color: variables.$border-color;
+      color: variables.$text-inverse;
+    }
+    
+    .stylist-category-selector__arrow {
+      color: variables.$text-tertiary;
+    }
+  }
+}

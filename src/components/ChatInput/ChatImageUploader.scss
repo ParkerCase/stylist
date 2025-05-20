@@ -1,0 +1,144 @@
+// ChatImageUploader.scss - Styles for the image uploader component
+
+.stylist-chat-image-uploader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 180px;
+  border: 2px dashed #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 10px 0;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+  background-color: #f9f9f9;
+  
+  &:hover {
+    border-color: var(--stylist-primary-color, #4361ee);
+    background-color: rgba(67, 97, 238, 0.05);
+  }
+  
+  &.dragging {
+    border-color: var(--stylist-primary-color, #4361ee);
+    background-color: rgba(67, 97, 238, 0.1);
+  }
+  
+  &.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    
+    &:hover {
+      border-color: #e0e0e0;
+      background-color: #f9f9f9;
+    }
+  }
+  
+  &__input {
+    display: none;
+  }
+  
+  &__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    color: var(--stylist-primary-color, #4361ee);
+    
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+  
+  &__text {
+    margin-bottom: 16px;
+    
+    p {
+      margin: 0 0 4px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+    }
+    
+    small {
+      font-size: 12px;
+      color: #666;
+    }
+  }
+  
+  &__button {
+    background-color: var(--stylist-primary-color, #4361ee);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: var(--stylist-primary-color-dark, #3651d4);
+    }
+    
+    &:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  }
+  
+  &__preview {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &-image {
+      max-width: 100%;
+      max-height: 150px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+  }
+  
+  &__remove-button {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.9);
+    }
+    
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+  }
+}

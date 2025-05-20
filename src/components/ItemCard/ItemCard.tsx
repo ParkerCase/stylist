@@ -1,5 +1,5 @@
 // Enhanced item card component for displaying product recommendations and closet items
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import './ItemCard.scss';
 import { Recommendation } from '@/types/index';
 import { formatPrice } from '@/utils/formatters';
@@ -7,6 +7,13 @@ import FeedbackControls from '../FeedbackControls';
 import TryOnButton from '../TryOnButton/TryOnButton';
 import { mapProductTypeToGarmentType } from '@/utils/productMappings';
 import { GarmentType } from '@/types/tryOn';
+import ItemHoverMenu from './ItemHoverMenu';
+import ItemFeedbackOverlay from './ItemFeedbackOverlay';
+import SizeAvailability from './SizeAvailability';
+import CompleteLookModal from '../CompleteLookModal';
+import AdaptiveImage from '../common/AdaptiveImage';
+import { getDeviceCapabilities, DeviceCapabilities } from '@/utils/deviceCapabilities';
+import { getAnimationComplexity } from '@/utils/animationUtils';
 
 // Define a simpler item type for closet items
 interface ClosetItemCardData {
@@ -30,6 +37,14 @@ interface ItemCardProps {
   onClick?: (item: Recommendation.RecommendationItem | ClosetItemCardData) => void;
   isClosetItem?: boolean;
   isFavorite?: boolean;
+  onAddToDressingRoom?: (itemId: string) => void;
+  onOutfitSuggestions?: (itemId: string) => void;
+  complementaryItems?: Recommendation.RecommendationItem[];
+  userSizes?: string[];
+  onSizeSelect?: (itemId: string, size: string) => void;
+  onNotifyAvailability?: (itemId: string, size: string) => void;
+  onAddAllToCart?: (itemIds: string[]) => void;
+  className?: string; // Added to support external styling
 }
 
 const ItemCard: React.FC<ItemCardProps> = ({
@@ -44,7 +59,15 @@ const ItemCard: React.FC<ItemCardProps> = ({
   primaryColor,
   onClick,
   isClosetItem = false,
-  isFavorite = false
+  isFavorite = false,
+  onAddToDressingRoom,
+  onOutfitSuggestions,
+  complementaryItems = [],
+  userSizes = [],
+  onSizeSelect,
+  onNotifyAvailability,
+  onAddAllToCart,
+  className
 }) => {
   const id = item.id;
   const name = item.name;
@@ -56,10 +79,14 @@ const ItemCard: React.FC<ItemCardProps> = ({
   const matchScore = 'matchScore' in item ? item.matchScore : undefined;
   const matchReasons = 'matchReasons' in item ? item.matchReasons : [];
   const category = 'category' in item ? item.category : undefined;
+  const sizes = 'sizes' in item ? item.sizes : [];
+  const inStock = 'inStock' in item ? item.inStock : true;
   
   const [showFeedbackText, setShowFeedbackText] = useState<string | null>(null);
   const [animateItem, setAnimateItem] = useState(false);
   const [isFavoriteState, setIsFavoriteState] = useState(isFavorite);
+  const [showSizeSelector, setShowSizeSelector] = useState(false);
+  const [showCompleteLookModal, setShowCompleteLookModal] = useState(false);
   
   // Use the appropriate image URL based on item type
   const imageUrl = isClosetItem 
@@ -112,6 +139,11 @@ const ItemCard: React.FC<ItemCardProps> = ({
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent item click
+    if (!showSizeSelector && sizes && sizes.length > 0) {
+      setShowSizeSelector(true);
+      return;
+    }
+    
     if (onAddToCart) {
       onAddToCart(id);
       
@@ -120,6 +152,11 @@ const ItemCard: React.FC<ItemCardProps> = ({
       setTimeout(() => {
         setShowFeedbackText(null);
       }, 1800);
+      
+      // Show complete the look modal if we have complementary items
+      if (complementaryItems && complementaryItems.length > 0 && onAddAllToCart) {
+        setShowCompleteLookModal(true);
+      }
     }
   };
   
@@ -127,6 +164,66 @@ const ItemCard: React.FC<ItemCardProps> = ({
     e.stopPropagation(); // Prevent item click
     if (onTryOn) {
       onTryOn(item);
+    }
+  };
+  
+  const handleAddToDressingRoom = () => {
+    if (onAddToDressingRoom) {
+      onAddToDressingRoom(id);
+      
+      // Show feedback text briefly
+      setShowFeedbackText('Added to dressing room');
+      setTimeout(() => {
+        setShowFeedbackText(null);
+      }, 1800);
+    }
+  };
+  
+  const handleOutfitSuggestions = () => {
+    if (onOutfitSuggestions) {
+      onOutfitSuggestions(id);
+    }
+  };
+  
+  const handleSizeSelect = (size: string) => {
+    if (onSizeSelect) {
+      onSizeSelect(id, size);
+      setShowSizeSelector(false);
+      
+      // Add to cart after size is selected
+      if (onAddToCart) {
+        onAddToCart(id);
+        
+        // Show feedback text briefly
+        setShowFeedbackText('Added to cart');
+        setTimeout(() => {
+          setShowFeedbackText(null);
+        }, 1800);
+        
+        // Show complete the look modal if we have complementary items
+        if (complementaryItems && complementaryItems.length > 0 && onAddAllToCart) {
+          setShowCompleteLookModal(true);
+        }
+      }
+    }
+  };
+  
+  const handleNotifyAvailability = (size: string) => {
+    if (onNotifyAvailability) {
+      onNotifyAvailability(id, size);
+      setShowSizeSelector(false);
+      
+      // Show feedback text briefly
+      setShowFeedbackText(`We'll notify you when size ${size} is available`);
+      setTimeout(() => {
+        setShowFeedbackText(null);
+      }, 2500);
+    }
+  };
+  
+  const handleAddAllToCart = (itemIds: string[]) => {
+    if (onAddAllToCart) {
+      onAddAllToCart(itemIds);
     }
   };
 
@@ -142,16 +239,31 @@ const ItemCard: React.FC<ItemCardProps> = ({
     
   // Get garment type for try-on
   const garmentType = category ? mapProductTypeToGarmentType(category) : GarmentType.TOP;
+  
+  // Determine available sizes
+  const availableSizes = inStock ? sizes : [];
 
+  // Determine animation complexity based on device capabilities
+  const animationClass = useMemo(() => {
+    const level = getAnimationComplexity({
+      high: 'animation--high',
+      medium: 'animation--medium', 
+      low: 'animation--low',
+      none: 'animation--none'
+    });
+    return level;
+  }, []);
+  
   return (
-    <div className={`stylist-item-card ${animateItem ? 'stylist-item-card--animate' : ''}`}>
+    <div className={`stylist-item-card ${animateItem ? 'stylist-item-card--animate' : ''} ${animationClass} ${className || ''}`}>
       <div className="stylist-item-card__image-container" onClick={handleItemClick}>
         {imageUrl ? (
-          <img
+          <AdaptiveImage
             src={imageUrl}
             alt={name}
             className="stylist-item-card__image"
-            loading="lazy"
+            loadingPriority={isClosetItem ? 'high' : 'medium'}
+            quality={category === 'featured' ? 'high' : 'medium'}
           />
         ) : (
           <div className="stylist-item-card__image-placeholder">
@@ -189,6 +301,26 @@ const ItemCard: React.FC<ItemCardProps> = ({
             </button>
           </div>
         )}
+        
+        {/* Hover/tap menu */}
+        {!isClosetItem && (
+          <ItemHoverMenu
+            onAddToDressingRoom={handleAddToDressingRoom}
+            onAddToWishlist={handleAddToWishlist}
+            onAddToCart={handleAddToCart}
+            onOutfitSuggestions={handleOutfitSuggestions}
+            primaryColor={primaryColor}
+          />
+        )}
+        
+        {/* Like/Dislike overlay buttons */}
+        {!isClosetItem && onFeedback && (
+          <ItemFeedbackOverlay
+            onLike={() => handleFeedback(true)}
+            onDislike={() => handleFeedback(false)}
+            primaryColor={primaryColor}
+          />
+        )}
       </div>
 
       <div className="stylist-item-card__content" onClick={handleItemClick}>
@@ -209,6 +341,18 @@ const ItemCard: React.FC<ItemCardProps> = ({
           )}
         </div>
       </div>
+      
+      {/* Size availability selector */}
+      {showSizeSelector && sizes && sizes.length > 0 && (
+        <SizeAvailability
+          sizes={sizes}
+          availableSizes={availableSizes}
+          userSizes={userSizes}
+          onSizeSelect={handleSizeSelect}
+          onNotifyAvailability={handleNotifyAvailability}
+          primaryColor={primaryColor}
+        />
+      )}
 
       {showDetails && matchReasons && matchReasons.length > 0 && (
         <div className="stylist-item-card__match-reasons">
@@ -312,6 +456,19 @@ const ItemCard: React.FC<ItemCardProps> = ({
           </>
         )}
       </div>
+      
+      {/* Complete the Look Modal */}
+      {showCompleteLookModal && 'category' in item && complementaryItems && complementaryItems.length > 0 && (
+        <CompleteLookModal
+          isOpen={showCompleteLookModal}
+          onClose={() => setShowCompleteLookModal(false)}
+          selectedItem={item as Recommendation.RecommendationItem}
+          complementaryItems={complementaryItems}
+          onAddToCart={onAddToCart!}
+          onAddAllToCart={handleAddAllToCart}
+          primaryColor={primaryColor}
+        />
+      )}
     </div>
   );
 };

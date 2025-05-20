@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useUserStore } from '../../store/userStore';
 import { getAuthService, RegisterParams } from '../../services/auth/authService';
 import { ApiClient } from '../../api/apiClient';
+import { UserProfile } from '../../types/user';
 import './Auth.scss';
 
 interface RegisterProps {
@@ -52,8 +53,32 @@ const Register: React.FC<RegisterProps> = ({ apiClient, onSuccess, onLoginClick 
       const authToken = await authService.register(registerParams);
       
       // Fetch user profile
-      const userResponse = await apiClient.get(`/api/v1/users/me`);
-      setUser(userResponse);
+      const userResponse = await apiClient.get<UserProfile>(`/api/v1/users/me`);
+      
+      // Create a properly shaped UserProfile object to satisfy TypeScript
+      const userProfile: UserProfile = {
+        userId: userResponse.userId || 'unknown',
+        isAnonymous: false,
+        preferences: userResponse.preferences || {
+          stylePreferences: [],
+          colorPreferences: [],
+          sizePreferences: []
+        },
+        closet: userResponse.closet || [],
+        feedback: userResponse.feedback || {
+          likedItems: [],
+          dislikedItems: [],
+          savedOutfits: [],
+          viewedItems: [],
+          lastInteraction: new Date()
+        },
+        createdAt: userResponse.createdAt || new Date(),
+        lastActive: userResponse.lastActive || new Date(),
+        email: userResponse.email,
+        name: name // Use the name from the form
+      };
+      
+      setUser(userProfile);
       
       // Clear form
       setName('');

@@ -7,20 +7,22 @@
   width: 100%;
   height: 100%;
   background-color: variables.$background-color;
-  
+  overflow-y: auto;
+  @include mixins.scrollbar-custom;
+
   &__header {
     @include mixins.flex-between;
     padding: variables.$spacing-md;
     border-bottom: 1px solid variables.$border-color;
   }
-  
+
   &__title {
     font-size: variables.$font-size-xl;
     font-weight: variables.$font-weight-bold;
     color: variables.$text-primary;
     margin: 0;
   }
-  
+
   &__close-btn {
     @include mixins.flex-center;
     width: 36px;
@@ -29,30 +31,108 @@
     border-radius: variables.$border-radius-round;
     color: variables.$text-secondary;
     transition: all variables.$transition-normal ease;
-    
+
     &:hover {
       opacity: 0.9; /* Use opacity instead of darken for CSS variables */
       color: variables.$text-primary;
     }
   }
-  
+
+  // Steps indicator
+  &__steps {
+    display: flex;
+    justify-content: space-between;
+    padding: variables.$spacing-sm variables.$spacing-lg;
+    border-bottom: 1px solid variables.$border-color;
+    background-color: variables.$surface-color;
+
+    @include mixins.responsive('xs') {
+      padding: variables.$spacing-xs variables.$spacing-sm;
+    }
+  }
+
+  &__step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex: 1;
+
+    &:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 16px;
+      right: calc(-50% + 12px);
+      width: calc(100% - 24px);
+      height: 2px;
+      background-color: variables.$border-color;
+      z-index: 0;
+    }
+
+    &--active &-number {
+      background-color: variables.$primary-color;
+      color: white;
+    }
+
+    &--active &-name {
+      color: variables.$primary-color;
+      font-weight: variables.$font-weight-bold;
+    }
+
+    &--completed &-number {
+      background-color: variables.$success-color;
+      color: white;
+    }
+
+    &--completed &-name {
+      color: variables.$success-color;
+    }
+
+    &--completed:not(:last-child)::after {
+      background-color: variables.$success-color;
+    }
+
+    &-number {
+      @include mixins.flex-center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: variables.$border-color;
+      color: variables.$text-secondary;
+      font-weight: variables.$font-weight-bold;
+      margin-bottom: variables.$spacing-xs;
+      position: relative;
+      z-index: 1;
+    }
+
+    &-name {
+      font-size: variables.$font-size-sm;
+      color: variables.$text-secondary;
+      text-align: center;
+
+      @include mixins.responsive('xs') {
+        display: none;
+      }
+    }
+  }
+
   &__content {
     display: flex;
     flex: 1;
     min-height: 0; // Required for Firefox
     overflow: hidden;
-    
+
     @include mixins.responsive('xs') {
       flex-direction: column;
     }
   }
-  
+
   &__canvas-container {
     flex: 1;
     position: relative;
     overflow: hidden;
   }
-  
+
   &__processing {
     @include mixins.flex-center;
     flex-direction: column;
@@ -63,14 +143,14 @@
     height: 100%;
     background-color: rgba(variables.$background-color, 0.8);
     z-index: 10;
-    
+
     p {
       margin-top: variables.$spacing-md;
       font-size: variables.$font-size-md;
       color: variables.$text-primary;
     }
   }
-  
+
   &__spinner {
     width: 40px;
     height: 40px;
@@ -79,7 +159,7 @@
     border-top-color: variables.$primary-color;
     animation: spin 1s linear infinite;
   }
-  
+
   &__error {
     @include mixins.flex-center;
     flex-direction: column;
@@ -92,20 +172,190 @@
     z-index: 10;
     padding: variables.$spacing-md;
     text-align: center;
-    
+
     p {
       margin-bottom: variables.$spacing-md;
       color: variables.$error-color;
       font-size: variables.$font-size-md;
     }
   }
-  
+
+  &__warning {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(variables.$warning-color, 0.1);
+    border-bottom: 1px solid variables.$warning-color;
+    z-index: 5;
+    padding: variables.$spacing-sm;
+    text-align: center;
+
+    p {
+      margin: 0;
+      color: variables.$warning-color;
+      font-size: variables.$font-size-sm;
+    }
+  }
+
   &__retry-btn {
     @include mixins.button-primary;
     padding: variables.$spacing-sm variables.$spacing-lg;
     font-size: variables.$font-size-md;
   }
-  
+
+  // Countdown overlay for capture
+  &__countdown {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    @include mixins.flex-center;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 10;
+
+    &-number {
+      font-size: 6rem;
+      font-weight: variables.$font-weight-bold;
+      color: white;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      margin-bottom: variables.$spacing-lg;
+      animation: countdown-pulse 1s infinite;
+    }
+
+    &-cancel {
+      padding: variables.$spacing-sm variables.$spacing-lg;
+      background-color: rgba(255, 255, 255, 0.3);
+      border: 1px solid white;
+      color: white;
+      border-radius: variables.$border-radius-md;
+      font-size: variables.$font-size-md;
+      cursor: pointer;
+      transition: all variables.$transition-normal ease;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+      }
+    }
+  }
+
+  // Capture prompt shown in preview step
+  &__capture-prompt {
+    position: absolute;
+    bottom: variables.$spacing-lg;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    z-index: 5;
+
+    p {
+      font-size: variables.$font-size-md;
+      color: variables.$text-primary;
+      margin-bottom: variables.$spacing-sm;
+      background-color: rgba(255, 255, 255, 0.8);
+      display: inline-block;
+      padding: variables.$spacing-xs variables.$spacing-md;
+      border-radius: variables.$border-radius-md;
+    }
+  }
+
+  &__capture-button {
+    @include mixins.button-primary;
+    padding: variables.$spacing-sm variables.$spacing-lg;
+    font-size: variables.$font-size-md;
+
+    &::before {
+      content: '📸 ';
+    }
+  }
+
+  // Review mode styles
+  &__review {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(variables.$background-color, 0.9);
+    padding: variables.$spacing-md;
+
+    &-image {
+      max-width: 100%;
+      max-height: calc(100% - 120px);
+      object-fit: contain;
+      border-radius: variables.$border-radius-md;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    &-actions {
+      display: flex;
+      gap: variables.$spacing-md;
+      margin-top: variables.$spacing-md;
+    }
+
+    &-action {
+      padding: variables.$spacing-sm variables.$spacing-lg;
+      border-radius: variables.$border-radius-md;
+      font-size: variables.$font-size-md;
+      font-weight: variables.$font-weight-medium;
+      cursor: pointer;
+      transition: all variables.$transition-normal ease;
+
+      &--discard {
+        background-color: white;
+        color: variables.$text-secondary;
+        border: 1px solid variables.$border-color;
+
+        &:hover {
+          background-color: variables.$surface-color;
+        }
+      }
+
+      &--save {
+        color: white;
+        border: none;
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+    }
+
+    &-feedback {
+      margin-top: variables.$spacing-md;
+      text-align: center;
+
+      p {
+        font-size: variables.$font-size-md;
+        color: variables.$text-secondary;
+        margin-bottom: variables.$spacing-sm;
+      }
+
+      &-buttons {
+        display: flex;
+        gap: variables.$spacing-md;
+        justify-content: center;
+      }
+
+      &-button {
+        background-color: white;
+        border: 1px solid variables.$border-color;
+        border-radius: variables.$border-radius-md;
+        padding: variables.$spacing-xs variables.$spacing-md;
+        font-size: variables.$font-size-md;
+        cursor: pointer;
+        transition: all variables.$transition-normal ease;
+
+        &:hover {
+          background-color: variables.$surface-color;
+        }
+      }
+    }
+  }
+
   &__success {
     @include mixins.flex-center;
     background-color: rgba(variables.$success-color, 0.1);
@@ -113,7 +363,7 @@
     border-radius: variables.$border-radius-md;
     margin: variables.$spacing-md;
     padding: variables.$spacing-sm variables.$spacing-md;
-    
+
     &-icon {
       @include mixins.flex-center;
       width: 24px;
@@ -122,39 +372,39 @@
       background-color: variables.$success-color;
       color: white;
       margin-right: variables.$spacing-sm;
-      
+
       svg {
         width: 16px;
         height: 16px;
         fill: currentColor;
       }
     }
-    
+
     &-message {
       color: variables.$success-color;
       font-weight: variables.$font-weight-bold;
       margin: 0;
     }
   }
-  
+
   &__footer {
     @include mixins.flex-between;
     padding: variables.$spacing-md;
     border-top: 1px solid variables.$border-color;
   }
-  
+
   &__primary-btn {
     @include mixins.button-primary;
     padding: variables.$spacing-sm variables.$spacing-lg;
     font-size: variables.$font-size-md;
     min-width: 150px;
-    
+
     &:disabled {
       opacity: 0.6;
       cursor: not-allowed;
     }
   }
-  
+
   &__secondary-btn {
     @include mixins.button-secondary;
     padding: variables.$spacing-sm variables.$spacing-lg;
@@ -166,5 +416,20 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes countdown-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }

@@ -1,0 +1,229 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.celebrity-grid {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  
+  &__header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid;
+    text-align: center;
+  }
+  
+  &__title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  &__subtitle {
+    font-size: 1rem;
+    color: $color-text-secondary;
+    margin-bottom: 0.75rem;
+  }
+  
+  &__updated {
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    color: $color-text-secondary;
+    
+    &-label {
+      font-weight: 500;
+    }
+    
+    &-date {
+      font-style: italic;
+    }
+  }
+  
+  &__content {
+    width: 100%;
+    min-height: 200px;
+  }
+  
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 1.5rem;
+    
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  &__item {
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    height: 100%;
+    
+    &:hover, &--hovered {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      
+      .celebrity-grid__overlay {
+        opacity: 1;
+      }
+    }
+  }
+  
+  &__image-container {
+    position: relative;
+    height: 0;
+    padding-bottom: 133%; // 3:4 aspect ratio
+    overflow: hidden;
+  }
+  
+  &__image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+    
+    .celebrity-grid__item:hover & {
+      transform: scale(1.05);
+    }
+  }
+  
+  &__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    color: white;
+  }
+  
+  &__details {
+    text-align: left;
+  }
+  
+  &__event {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+  }
+  
+  &__description {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  &__tag {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    border: 1px solid;
+    background-color: rgba(255, 255, 255, 0.2);
+    white-space: nowrap;
+  }
+  
+  &__view-button {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+  
+  &__caption {
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    flex-grow: 1;
+  }
+  
+  &__name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  
+  &__look {
+    font-size: 0.875rem;
+    color: $color-text-secondary;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  &__empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: $color-text-secondary;
+    
+    p {
+      margin-bottom: 0.5rem;
+      
+      &:first-child {
+        font-weight: 500;
+        color: $color-text-primary;
+      }
+    }
+  }
+  
+  &__archive {
+    margin-top: 2rem;
+    text-align: center;
+  }
+  
+  &__archive-button {
+    background: transparent;
+    border: 1px solid;
+    border-radius: 4px;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+  }
+}

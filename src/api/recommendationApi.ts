@@ -1,5 +1,6 @@
 // API client for recommendation-related endpoints
 
+import axios from 'axios';
 import { ApiClient } from './apiClient';
 import {
   RecommendationRequest,
@@ -161,7 +162,13 @@ export class RecommendationApi {
           userId: request.userId,
           context: request.context,
           filterByRetailers: request.filterByRetailers,
-          category: request.category
+          category: request.category,
+          limit: request.limit,
+          includeOutfits: request.includeOutfits,
+          trending: request.trending,
+          deepSearch: request.deepSearch,
+          priceRange: request.priceRange,
+          filters: request.filters
         }
       );
       
@@ -247,9 +254,8 @@ export class RecommendationApi {
     } catch (error: unknown) {
       console.warn('Failed to fetch recommendations from API, using mock data:', error);
       // Add log for clean error message
-      if (error && typeof error === 'object' && 'response' in error) {
-        const errorWithResponse = error as { response: { status: number, statusText: string } };
-        console.error(`Recommendation API error: ${errorWithResponse.response.status} - ${errorWithResponse.response.statusText}`);
+      if (axios.isAxiosError(error) && error.response) {
+        console.error(`Recommendation API error: ${error.response.status} - ${error.response.statusText}`);
       }
       // Return mock data as fallback
       return completeMockRecommendations;

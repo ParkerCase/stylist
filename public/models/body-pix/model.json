@@ -1,0 +1,16 @@
+{
+  "format": "graph-model",
+  "generatedBy": "TensorFlow.js Converter",
+  "convertedBy": "TensorFlow.js Converter v3.6.0",
+  "modelTopology": {
+    "node": [],
+    "library": {},
+    "versions": {}
+  },
+  "weightsManifest": [
+    {
+      "paths": ["group1-shard1of1.bin"],
+      "weights": []
+    }
+  ]
+}

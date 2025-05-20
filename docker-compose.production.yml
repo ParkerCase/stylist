@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  # Frontend web application
+  stylist-widget:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    image: stylist-widget:${TAG:-latest}
+    container_name: stylist-widget
+    restart: unless-stopped
+    networks:
+      - stylist-network
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./production-logs:/var/log/nginx
+      - ./ssl:/etc/nginx/ssl:ro
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Redis cache for API and authentication
+  redis-cache:
+    image: redis:alpine
+    container_name: stylist-redis
+    restart: unless-stopped
+    networks:
+      - stylist-network
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-changeme}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Optional: Backend API service if needed
+  # backend-api:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile.production
+  #   image: stylist-backend:${TAG:-latest}
+  #   container_name: stylist-backend
+  #   restart: unless-stopped
+  #   networks:
+  #     - stylist-network
+  #   environment:
+  #     - NODE_ENV=production
+  #     - REDIS_URL=redis://redis-cache:6379
+  #     - REDIS_PASSWORD=${REDIS_PASSWORD:-changeme}
+  #     - API_KEY=${API_KEY}
+  #     - JWT_SECRET=${JWT_SECRET}
+  #   depends_on:
+  #     - redis-cache
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 3
+  #     start_period: 10s
+
+  # HTTPS proxy with rate limiting
+  caddy:
+    image: caddy:2-alpine
+    container_name: stylist-caddy
+    restart: unless-stopped
+    networks:
+      - stylist-network
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      - DOMAIN=${DOMAIN:-stylist-widget.com}
+    depends_on:
+      - stylist-widget
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  stylist-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  caddy-data:
+  caddy-config:

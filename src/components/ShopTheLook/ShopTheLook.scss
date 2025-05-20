@@ -1,0 +1,430 @@
+@import '../../styles/variables.scss';
+@import '../../styles/mixins.scss';
+
+.shop-the-look-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.shop-the-look {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  max-height: 90vh;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  
+  &__close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    line-height: 1;
+    color: $color-text-secondary;
+    cursor: pointer;
+    z-index: 2;
+    
+    &:hover {
+      color: $color-text-primary;
+    }
+  }
+  
+  &__content {
+    display: flex;
+    padding: 2rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      padding: 1.5rem;
+    }
+  }
+  
+  &__image-gallery {
+    width: 50%;
+    padding-right: 2rem;
+    
+    @media (max-width: 768px) {
+      width: 100%;
+      padding-right: 0;
+      margin-bottom: 2rem;
+    }
+  }
+  
+  &__main-image-container {
+    width: 100%;
+    position: relative;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: #f9f9f9;
+  }
+  
+  &__main-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    aspect-ratio: 3/4;
+  }
+  
+  &__discount-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+  
+  &__no-image {
+    width: 100%;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    color: $color-text-secondary;
+    font-style: italic;
+    border-radius: 4px;
+  }
+  
+  &__thumbnails {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+  
+  &__thumbnail-btn {
+    width: 60px;
+    height: 60px;
+    border: 1px solid $color-border;
+    border-radius: 4px;
+    padding: 2px;
+    cursor: pointer;
+    overflow: hidden;
+    background: none;
+    
+    &:hover {
+      border-color: $color-text-secondary;
+    }
+    
+    &--active {
+      border-width: 2px;
+    }
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  
+  &__details {
+    width: 50%;
+    
+    @media (max-width: 768px) {
+      width: 100%;
+    }
+  }
+  
+  &__header {
+    margin-bottom: 1rem;
+  }
+  
+  &__name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    
+    @media (max-width: 768px) {
+      font-size: 1.25rem;
+    }
+  }
+  
+  &__brand {
+    font-size: 1rem;
+    color: $color-text-secondary;
+    margin-bottom: 1rem;
+  }
+  
+  &__pricing {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  &__price {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  
+  &__original-price {
+    font-size: 1rem;
+    text-decoration: line-through;
+    color: $color-text-secondary;
+  }
+  
+  &__sale-price {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #e53935; // Red color for sale price
+  }
+  
+  &__description {
+    margin-bottom: 1.5rem;
+    
+    p {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: $color-text-secondary;
+    }
+  }
+  
+  &__sizes {
+    margin-bottom: 1.5rem;
+  }
+  
+  &__sizes-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  &__size-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  &__size-btn {
+    min-width: 40px;
+    height: 40px;
+    padding: 0 0.75rem;
+    border: 1px solid $color-border;
+    border-radius: 4px;
+    background: none;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      border-color: $color-text-primary;
+    }
+    
+    &--selected {
+      font-weight: 600;
+      border-width: 2px;
+    }
+    
+    &--out-of-stock {
+      opacity: 0.5;
+      text-decoration: line-through;
+      cursor: not-allowed;
+    }
+  }
+  
+  &__quantity {
+    margin-bottom: 1.5rem;
+  }
+  
+  &__quantity-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  &__quantity-selector {
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    border: 1px solid $color-border;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  &__quantity-btn {
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    
+    &:hover {
+      background-color: #f5f5f5;
+    }
+    
+    &:disabled {
+      color: $color-text-disabled;
+      cursor: not-allowed;
+    }
+  }
+  
+  &__quantity-input {
+    width: 50px;
+    height: 40px;
+    border: none;
+    border-right: 1px solid $color-border;
+    border-left: 1px solid $color-border;
+    text-align: center;
+    font-size: 0.9rem;
+    
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+  
+  &__availability {
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+  }
+  
+  &__in-stock {
+    color: #4caf50; // Green color for in stock
+    font-weight: 500;
+  }
+  
+  &__out-of-stock {
+    color: #e53935; // Red color for out of stock
+    font-weight: 500;
+  }
+  
+  &__actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    
+    @media (max-width: 576px) {
+      flex-direction: column;
+    }
+  }
+  
+  &__add-to-cart-btn {
+    flex: 1;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+    
+    &:disabled {
+      cursor: not-allowed;
+    }
+  }
+  
+  &__wishlist-btn {
+    flex: 1;
+    padding: 0.75rem 1.5rem;
+    background: none;
+    border: 1px solid;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+  }
+  
+  &__product-details {
+    margin-bottom: 2rem;
+  }
+  
+  &__details-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid $color-border;
+  }
+  
+  &__details-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    
+    th, td {
+      padding: 0.5rem;
+      border-bottom: 1px solid $color-border-light;
+      text-align: left;
+    }
+    
+    th {
+      width: 30%;
+      color: $color-text-secondary;
+      font-weight: 500;
+    }
+  }
+  
+  &__external-link {
+    margin-top: 1.5rem;
+    text-align: center;
+  }
+  
+  &__product-link {
+    padding: 0.75rem 1.5rem;
+    display: inline-block;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+  }
+  
+  &__notification {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    color: white;
+    font-weight: 500;
+    z-index: 2;
+    animation: fadeInOut 3s ease forwards;
+  }
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { opacity: 0; }
+}

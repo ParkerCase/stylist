@@ -12,12 +12,22 @@
   flex-direction: column;
   overflow: hidden;
   z-index: variables.$z-index-modal;
-  transition: transform variables.$transition-normal ease, opacity variables.$transition-normal ease, width variables.$transition-normal ease, height variables.$transition-normal ease;
+  transition: transform variables.$animation-duration ease-in-out,
+              opacity variables.$animation-duration ease-in-out,
+              width variables.$animation-duration ease-in-out,
+              height variables.$animation-duration ease-in-out;
   font-family: variables.$font-family;
   max-width: 95vw;
   max-height: 95vh;
-  animation: widget-appear variables.$transition-slow ease forwards;
+  animation: widget-appear variables.$animation-duration ease-in-out forwards;
+  @include mixins.respect-motion-preferences;
   
+  // Apply spacing for tab navigation
+  .stylist-tab-navigation {
+    flex-shrink: 0;
+    z-index: 15;
+    border-bottom: 1px solid variables.$border-color;
+  }
   // Widget positions
   &--bottom-right {
     bottom: variables.$spacing-md;
@@ -56,10 +66,40 @@
     position: relative;
     background-color: variables.$background-color;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  // View container for transitions
+  &__view {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 100%;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transition: opacity variables.$animation-duration ease-in-out, 
+                transform variables.$animation-duration ease-in-out;
     
-    // Style when in lookbook view
-    .stylist-lookbook {
-      animation: content-appear variables.$transition-normal ease forwards;
+    &--active {
+      opacity: 1;
+      transform: translateX(0);
+      z-index: 2;
+    }
+    
+    &--previous {
+      opacity: 0;
+      transform: translateX(-30px);
+      z-index: 1;
+    }
+    
+    &--next {
+      opacity: 0;
+      transform: translateX(30px);
+      z-index: 1;
     }
   }
   
@@ -86,8 +126,10 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform variables.$transition-fast ease, background-color variables.$transition-fast ease;
+  transition: transform variables.$animation-duration ease-in-out,
+              background-color variables.$animation-duration ease-in-out;
   z-index: variables.$z-index-modal;
+  @include mixins.respect-motion-preferences;
   
   &:hover {
     transform: scale(1.05);
@@ -167,22 +209,22 @@
 }
 
 @keyframes slideIn {
-  from {
+  0% {
     opacity: 0;
     transform: translateY(20px);
   }
-  to {
+  100% {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
 @keyframes slideOut {
-  from {
+  0% {
     opacity: 1;
     transform: translateY(0);
   }
-  to {
+  100% {
     opacity: 0;
     transform: translateY(20px);
   }
@@ -211,8 +253,20 @@
   }
 }
 
+// Tab switching animation
+@keyframes tab-switch {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 // Responsive styles
-@media (max-width: 768px) {
+@include mixins.mobile-only {
   .stylist-chat-widget {
     width: 100%;
     height: 100%;
@@ -223,16 +277,38 @@
     left: 0 !important;
     top: 0 !important;
     border-radius: 0;
-    animation: mobile-appear variables.$transition-normal ease forwards;
+    animation: mobile-appear variables.$animation-duration ease-in-out forwards;
   }
-  
+
   .stylist-floating-button {
     width: 50px;
     height: 50px;
-    
+
     &__icon {
       width: 24px;
       height: 24px;
+    }
+  }
+}
+
+// Extra-small device optimizations
+@include mixins.responsive('xxs') {
+  .stylist-chat-widget {
+    // Ensure proper font sizes for tiny screens
+    font-size: 14px;
+
+    &__content {
+      padding: variables.$spacing-xs;
+    }
+  }
+
+  .stylist-floating-button {
+    width: 44px;
+    height: 44px;
+
+    &__icon {
+      width: 20px;
+      height: 20px;
     }
   }
 }
@@ -249,19 +325,23 @@
 }
 
 // Tablet-specific optimizations
-@media (min-width: 769px) and (max-width: 1024px) {
+@include mixins.tablet-only {
   .stylist-chat-widget {
     width: 400px;
     height: 550px;
   }
 }
 
-// Add support for reduced motion preferences
-@media (prefers-reduced-motion: reduce) {
-  .stylist-chat-widget,
-  .stylist-floating-button,
-  .stylist-lookbook {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+// Large desktop optimizations
+@include mixins.responsive('xxl') {
+  .stylist-chat-widget {
+    width: 450px;
+    height: 650px;
+
+    &__content {
+      font-size: 1.05em;
+    }
   }
 }
+
+// Support for reduced motion preferences is now handled by the mixins.respect-motion-preferences mixin

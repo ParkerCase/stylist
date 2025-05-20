@@ -6,45 +6,45 @@
 .stylist-error-message {
   display: flex;
   align-items: flex-start;
-  padding: $spacing-md;
-  margin: $spacing-md 0;
-  background-color: rgba($error-color, 0.1);
-  border-radius: $border-radius-md;
-  border-left: 4px solid $error-color;
-  
+  padding: variables.$spacing-md;
+  margin: variables.$spacing-md 0;
+  background-color: rgba(variables.$error-color, 0.1);
+  border-radius: variables.$border-radius-md;
+  border-left: 4px solid variables.$error-color;
+
   &__icon {
-    color: $error-color;
-    margin-right: $spacing-sm;
+    color: variables.$error-color;
+    margin-right: variables.$spacing-sm;
     flex-shrink: 0;
   }
-  
+
   &__content {
     flex: 1;
   }
-  
+
   &__text {
-    color: $text-primary;
-    font-size: $font-size-sm;
-    margin-bottom: $spacing-xs;
+    color: variables.$text-primary;
+    font-size: variables.$font-size-sm;
+    margin-bottom: variables.$spacing-xs;
   }
-  
+
   &__code {
-    color: $text-tertiary;
-    font-size: $font-size-xs;
+    color: variables.$text-tertiary;
+    font-size: variables.$font-size-xs;
     font-family: monospace;
   }
-  
+
   &__retry-btn {
-    @include button-secondary;
-    margin-left: $spacing-sm;
-    padding: $spacing-xs $spacing-sm;
-    font-size: $font-size-xs;
+    @include mixins.button-secondary;
+    margin-left: variables.$spacing-sm;
+    padding: variables.$spacing-xs variables.$spacing-sm;
+    font-size: variables.$font-size-xs;
     white-space: nowrap;
-    
+
     &:hover {
-      background-color: rgba($error-color, 0.1);
-      border-color: $error-color;
-      color: $error-color;
+      background-color: rgba(variables.$error-color, 0.1);
+      border-color: variables.$error-color;
+      color: variables.$error-color;
     }
   }
 }

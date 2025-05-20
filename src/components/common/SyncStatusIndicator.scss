@@ -1,6 +1,6 @@
 // Styles for the sync status indicator
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use '../../styles/variables.scss' as variables;
+@use '../../styles/mixins.scss' as mixins;
 
 .sync-status-indicator {
   display: flex;
@@ -17,18 +17,18 @@
   transition: all 0.3s ease;
   
   &.sync-status-syncing {
-    background-color: rgba($primary-color, 0.1);
-    color: $primary-color;
+    background-color: rgba(variables.$primary-color, 0.1);
+    color: variables.$primary-color;
   }
   
   &.sync-status-pending {
-    background-color: rgba($warning-color, 0.1);
-    color: $warning-color;
+    background-color: rgba(variables.$warning-color, 0.1);
+    color: variables.$warning-color;
   }
   
   &.sync-status-offline {
-    background-color: rgba($error-color, 0.1);
-    color: $error-color;
+    background-color: rgba(variables.$error-color, 0.1);
+    color: variables.$error-color;
   }
   
   .sync-status-icon {

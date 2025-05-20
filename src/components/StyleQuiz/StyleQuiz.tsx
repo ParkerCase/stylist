@@ -1,8 +1,14 @@
 // Style quiz component for gathering user preferences
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './StyleQuiz.scss';
 import { StyleQuizQuestion, StyleQuizAnswer } from '../../types/index';
+import { 
+  SingleChoiceQuestion, 
+  MultipleChoiceQuestion, 
+  ImageChoiceQuestion, 
+  SliderQuestion 
+} from './questions';
 
 interface StyleQuizProps {
   quizId: string;
@@ -12,11 +18,35 @@ interface StyleQuizProps {
   primaryColor?: string;
 }
 
-// Comprehensive 25-question style quiz with additions for shoe size, accessory size, and brand preferences
-const DEMO_QUESTIONS: StyleQuizQuestion[] = [
-  // Overall Style
+// Quiz sections definition
+const quizSections = {
+  basics: "Style, size, gender (Q1-5)",
+  preferences: "Colors, patterns, fits (Q6-10)", 
+  lifestyle: "Occasions, activities (Q11-15)",
+  brands: "Favorite brands, budget (Q16-20)",
+  celebrities: "Style icons, looks (Q21-25)"
+};
+
+// Comprehensive 25-question style quiz organized into 5 sections with 5 questions each
+export const DEMO_QUESTIONS: StyleQuizQuestion[] = [
+  // SECTION 1: BASICS (Q1-5)
+  // Q1: Gender
   {
     id: 'q1',
+    questionText: 'Which clothing category do you primarily shop?',
+    type: 'single',
+    options: [
+      { id: 'womens', text: 'Women\'s', value: 'womens' },
+      { id: 'mens', text: 'Men\'s', value: 'mens' },
+      { id: 'unisex', text: 'Unisex/Gender-neutral', value: 'unisex' },
+      { id: 'mixed', text: 'Mix of different categories', value: 'mixed' }
+    ],
+    category: 'basics',
+    section: 'basics'
+  },
+  // Q2: Overall Style
+  {
+    id: 'q2',
     questionText: 'How would you describe your overall fashion style?',
     type: 'image',
     options: [
@@ -27,80 +57,12 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
       { id: 'sporty', text: 'Sporty & Casual', value: 'sporty', imageUrl: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=400&h=300&fit=crop' },
       { id: 'bohemian', text: 'Bohemian & Free-Spirited', value: 'bohemian', imageUrl: 'https://images.unsplash.com/photo-1534777620591-29eb7d8d7563?w=400&h=300&fit=crop' }
     ],
-    category: 'style'
+    category: 'style',
+    section: 'basics'
   },
-  // Color Palette
-  {
-    id: 'q2',
-    questionText: 'Which color palette do you prefer for your wardrobe?',
-    type: 'image',
-    options: [
-      { id: 'neutrals', text: 'Neutrals (Black, White, Grey, Beige)', value: 'neutrals', imageUrl: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=400&h=300&fit=crop' },
-      { id: 'earthy', text: 'Earthy Tones (Brown, Olive, Rust)', value: 'earthy', imageUrl: 'https://images.unsplash.com/photo-1514362453360-8f94243c9996?w=400&h=300&fit=crop' },
-      { id: 'pastels', text: 'Pastels (Light Pink, Baby Blue, Lavender)', value: 'pastels', imageUrl: 'https://images.unsplash.com/photo-1499781350541-7783f6c6a0c8?w=400&h=300&fit=crop' },
-      { id: 'bold', text: 'Bold & Bright Colors (Red, Yellow, Electric Blue)', value: 'bold', imageUrl: 'https://images.unsplash.com/photo-1535639818669-c059d2f038e6?w=400&h=300&fit=crop' },
-      { id: 'monochrome', text: 'Monochrome or All-Black', value: 'monochrome', imageUrl: 'https://images.unsplash.com/photo-1550330550-36e5c4d9b0c3?w=400&h=300&fit=crop' }
-    ],
-    category: 'color'
-  },
-  // Occasion
+  // Q3: Tops Size
   {
     id: 'q3',
-    questionText: 'What type of outfits do you need the most recommendations for?',
-    type: 'multiple',
-    options: [
-      { id: 'casual', text: 'Everyday Casual', value: 'casual' },
-      { id: 'work', text: 'Workwear & Business Casual', value: 'work' },
-      { id: 'street', text: 'Streetwear & Trendy Looks', value: 'street' },
-      { id: 'date', text: 'Date Night & Going Out', value: 'date' },
-      { id: 'formal', text: 'Formal & Special Events', value: 'formal' }
-    ],
-    category: 'occasion'
-  },
-  // Pattern Preference
-  {
-    id: 'q4',
-    questionText: 'Which patterns do you typically wear?',
-    type: 'multiple',
-    options: [
-      { id: 'solid', text: 'Solid Colors (No Pattern)', value: 'solid' },
-      { id: 'stripes', text: 'Stripes', value: 'stripes' },
-      { id: 'floral', text: 'Floral', value: 'floral' },
-      { id: 'geometric', text: 'Geometric', value: 'geometric' },
-      { id: 'animal', text: 'Animal Print', value: 'animal' },
-      { id: 'plaid', text: 'Plaid/Check', value: 'plaid' }
-    ],
-    category: 'pattern'
-  },
-  // Top Fit
-  {
-    id: 'q5',
-    questionText: 'How do you prefer your tops to fit?',
-    type: 'image',
-    options: [
-      { id: 'oversized', text: 'Oversized & Relaxed', value: 'oversized', imageUrl: 'https://images.unsplash.com/photo-1542837209-3bd9538b3a96?w=400&h=300&fit=crop' },
-      { id: 'fitted', text: 'Slim & Fitted', value: 'fitted', imageUrl: 'https://images.unsplash.com/photo-1570727624862-3008fe67a6f9?w=400&h=300&fit=crop' },
-      { id: 'cropped', text: 'Cropped', value: 'cropped', imageUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=300&fit=crop' },
-      { id: 'structured', text: 'Boxy & Structured', value: 'structured', imageUrl: 'https://images.unsplash.com/photo-1603252109303-2751441dd157?w=400&h=300&fit=crop' }
-    ],
-    category: 'fit'
-  },
-  // Bottom Fit
-  {
-    id: 'q6',
-    questionText: 'How do you prefer your bottoms to fit?',
-    type: 'image',
-    options: [
-      { id: 'skinny', text: 'Skinny/Slim', value: 'skinny', imageUrl: 'https://images.unsplash.com/photo-1598808503824-9725718f223d?w=400&h=300&fit=crop' },
-      { id: 'relaxed', text: 'Relaxed/Regular', value: 'relaxed', imageUrl: 'https://images.unsplash.com/photo-1581985673473-0784a7a44e39?w=400&h=300&fit=crop' },
-      { id: 'wide', text: 'Wide Leg', value: 'wide', imageUrl: 'https://images.unsplash.com/photo-1593030103066-0093718efeb9?w=400&h=300&fit=crop' },
-      { id: 'straight', text: 'Straight Cut', value: 'straight', imageUrl: 'https://images.unsplash.com/photo-1582418702059-97ebafb35d09?w=400&h=300&fit=crop' }
-    ],
-    category: 'fit'
-  },
-  // Size Profiling
-  {
-    id: 'q7',
     questionText: 'What size do you typically wear for tops?',
     type: 'single',
     options: [
@@ -111,10 +73,12 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
       { id: 'xl', text: 'XL', value: 'xl' },
       { id: 'xxl', text: 'XXL+', value: 'xxl' }
     ],
-    category: 'size'
+    category: 'size',
+    section: 'basics'
   },
+  // Q4: Bottoms Size
   {
-    id: 'q8',
+    id: 'q4',
     questionText: 'What size do you typically wear for bottoms/pants?',
     type: 'single',
     options: [
@@ -125,24 +89,211 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
       { id: '16-18', text: '16-18', value: '16-18' },
       { id: '20+', text: '20+', value: '20+' }
     ],
-    category: 'size'
+    category: 'size',
+    section: 'basics'
   },
-  // Budget Range
+  // Q5: Shoe Size
   {
-    id: 'q9',
-    questionText: "What's your typical budget for a single clothing item?",
+    id: 'q5',
+    questionText: 'What shoe size do you typically wear?',
     type: 'single',
     options: [
-      { id: 'budget_low', text: 'Under $50', value: 'Under $50' },
-      { id: 'budget_medium_low', text: '$50 - $100', value: '$50 - $100' },
-      { id: 'budget_medium_high', text: '$100 - $250', value: '$100 - $250' },
-      { id: 'budget_high', text: '$250+', value: '$250+' }
+      { id: 'us5', text: 'US 5 / EU 35-36', value: 'us5' },
+      { id: 'us6', text: 'US 6 / EU 36-37', value: 'us6' },
+      { id: 'us7', text: 'US 7 / EU 37-38', value: 'us7' },
+      { id: 'us8', text: 'US 8 / EU 38-39', value: 'us8' },
+      { id: 'us9', text: 'US 9 / EU 39-40', value: 'us9' },
+      { id: 'us10', text: 'US 10 / EU 40-41', value: 'us10' },
+      { id: 'us11', text: 'US 11 / EU 41-42', value: 'us11' },
+      { id: 'us12', text: 'US 12+ / EU 42+', value: 'us12' }
     ],
-    category: 'budget'
+    category: 'size',
+    section: 'basics'
   },
-  // Brand Preferences - Casual Wear
+
+  // SECTION 2: PREFERENCES (Q6-10)
+  // Q6: Color Palette
+  {
+    id: 'q6',
+    questionText: 'Which color palette do you prefer for your wardrobe?',
+    type: 'image',
+    options: [
+      { id: 'neutrals', text: 'Neutrals (Black, White, Grey, Beige)', value: 'neutrals', imageUrl: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=400&h=300&fit=crop' },
+      { id: 'earthy', text: 'Earthy Tones (Brown, Olive, Rust)', value: 'earthy', imageUrl: 'https://images.unsplash.com/photo-1514362453360-8f94243c9996?w=400&h=300&fit=crop' },
+      { id: 'pastels', text: 'Pastels (Light Pink, Baby Blue, Lavender)', value: 'pastels', imageUrl: 'https://images.unsplash.com/photo-1499781350541-7783f6c6a0c8?w=400&h=300&fit=crop' },
+      { id: 'bold', text: 'Bold & Bright Colors (Red, Yellow, Electric Blue)', value: 'bold', imageUrl: 'https://images.unsplash.com/photo-1535639818669-c059d2f038e6?w=400&h=300&fit=crop' },
+      { id: 'monochrome', text: 'Monochrome or All-Black', value: 'monochrome', imageUrl: 'https://images.unsplash.com/photo-1550330550-36e5c4d9b0c3?w=400&h=300&fit=crop' }
+    ],
+    category: 'color',
+    section: 'preferences'
+  },
+  // Q7: Pattern Preference
+  {
+    id: 'q7',
+    questionText: 'Which patterns do you typically wear?',
+    type: 'multiple',
+    options: [
+      { id: 'solid', text: 'Solid Colors (No Pattern)', value: 'solid' },
+      { id: 'stripes', text: 'Stripes', value: 'stripes' },
+      { id: 'floral', text: 'Floral', value: 'floral' },
+      { id: 'geometric', text: 'Geometric', value: 'geometric' },
+      { id: 'animal', text: 'Animal Print', value: 'animal' },
+      { id: 'plaid', text: 'Plaid/Check', value: 'plaid' }
+    ],
+    category: 'pattern',
+    section: 'preferences'
+  },
+  // Q8: Top Fit Preference
+  {
+    id: 'q8',
+    questionText: 'How do you prefer your tops to fit?',
+    type: 'image',
+    options: [
+      { id: 'oversized', text: 'Oversized & Relaxed', value: 'oversized', imageUrl: 'https://images.unsplash.com/photo-1542837209-3bd9538b3a96?w=400&h=300&fit=crop' },
+      { id: 'fitted', text: 'Slim & Fitted', value: 'fitted', imageUrl: 'https://images.unsplash.com/photo-1570727624862-3008fe67a6f9?w=400&h=300&fit=crop' },
+      { id: 'cropped', text: 'Cropped', value: 'cropped', imageUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=300&fit=crop' },
+      { id: 'structured', text: 'Boxy & Structured', value: 'structured', imageUrl: 'https://images.unsplash.com/photo-1603252109303-2751441dd157?w=400&h=300&fit=crop' }
+    ],
+    category: 'fit',
+    section: 'preferences'
+  },
+  // Q9: Bottom Fit Preference
+  {
+    id: 'q9',
+    questionText: 'How do you prefer your bottoms to fit?',
+    type: 'image',
+    options: [
+      { id: 'skinny', text: 'Skinny/Slim', value: 'skinny', imageUrl: 'https://images.unsplash.com/photo-1598808503824-9725718f223d?w=400&h=300&fit=crop' },
+      { id: 'relaxed', text: 'Relaxed/Regular', value: 'relaxed', imageUrl: 'https://images.unsplash.com/photo-1581985673473-0784a7a44e39?w=400&h=300&fit=crop' },
+      { id: 'wide', text: 'Wide Leg', value: 'wide', imageUrl: 'https://images.unsplash.com/photo-1593030103066-0093718efeb9?w=400&h=300&fit=crop' },
+      { id: 'straight', text: 'Straight Cut', value: 'straight', imageUrl: 'https://images.unsplash.com/photo-1582418702059-97ebafb35d09?w=400&h=300&fit=crop' }
+    ],
+    category: 'fit',
+    section: 'preferences'
+  },
+  // Q10: Fabric Preferences
   {
     id: 'q10',
+    questionText: 'Which fabric types do you prefer?',
+    type: 'multiple',
+    options: [
+      { id: 'cotton', text: 'Cotton', value: 'cotton' },
+      { id: 'linen', text: 'Linen', value: 'linen' },
+      { id: 'silk', text: 'Silk', value: 'silk' },
+      { id: 'wool', text: 'Wool', value: 'wool' },
+      { id: 'synthetic', text: 'Synthetic/Technical Fabrics', value: 'synthetic' },
+      { id: 'leather', text: 'Leather', value: 'leather' },
+      { id: 'denim', text: 'Denim', value: 'denim' },
+      { id: 'knit', text: 'Knits', value: 'knit' }
+    ],
+    category: 'fabrics',
+    section: 'preferences'
+  },
+
+  // SECTION 3: LIFESTYLE (Q11-15)
+  // Q11: Occasion Types
+  {
+    id: 'q11',
+    questionText: 'What type of outfits do you need the most recommendations for?',
+    type: 'multiple',
+    options: [
+      { id: 'casual', text: 'Everyday Casual', value: 'casual' },
+      { id: 'work', text: 'Workwear & Business Casual', value: 'work' },
+      { id: 'street', text: 'Streetwear & Trendy Looks', value: 'street' },
+      { id: 'date', text: 'Date Night & Going Out', value: 'date' },
+      { id: 'formal', text: 'Formal & Special Events', value: 'formal' }
+    ],
+    category: 'occasion',
+    section: 'lifestyle'
+  },
+  // Q12: Work Environment
+  {
+    id: 'q12',
+    questionText: 'What best describes your work environment dress code?',
+    type: 'single',
+    options: [
+      { id: 'formal', text: 'Formal/Business Professional', value: 'formal' },
+      { id: 'business', text: 'Business Casual', value: 'business' },
+      { id: 'casual', text: 'Casual', value: 'casual' },
+      { id: 'creative', text: 'Creative/No Dress Code', value: 'creative' },
+      { id: 'uniform', text: 'Uniform Required', value: 'uniform' },
+      { id: 'na', text: 'Not Applicable', value: 'na' }
+    ],
+    category: 'lifestyle',
+    section: 'lifestyle'
+  },
+  // Q13: Active Lifestyle
+  {
+    id: 'q13',
+    questionText: 'How active is your lifestyle?',
+    type: 'single',
+    options: [
+      { id: 'very', text: 'Very active - I need clothes for frequent exercise', value: 'very' },
+      { id: 'moderately', text: 'Moderately active - occasional exercise', value: 'moderately' },
+      { id: 'somewhat', text: 'Somewhat active - light activity', value: 'somewhat' },
+      { id: 'not', text: 'Not very active', value: 'not' }
+    ],
+    category: 'lifestyle',
+    section: 'lifestyle'
+  },
+  // Q14: Seasonal Preference
+  {
+    id: 'q14',
+    questionText: 'Which season do you most enjoy dressing for?',
+    type: 'image',
+    options: [
+      { id: 'spring', text: 'Spring', value: 'spring', imageUrl: 'https://images.unsplash.com/photo-1497942304796-b8bc2cc898f3?w=400&h=300&fit=crop' },
+      { id: 'summer', text: 'Summer', value: 'summer', imageUrl: 'https://images.unsplash.com/photo-1517206577696-6ce38fb787a3?w=400&h=300&fit=crop' },
+      { id: 'fall', text: 'Fall/Autumn', value: 'fall', imageUrl: 'https://images.unsplash.com/photo-1551843073-4a9a5b6fcd5f?w=400&h=300&fit=crop' },
+      { id: 'winter', text: 'Winter', value: 'winter', imageUrl: 'https://images.unsplash.com/photo-1515311320503-6591cade8414?w=400&h=300&fit=crop' }
+    ],
+    category: 'seasonal',
+    section: 'lifestyle'
+  },
+  // Q15: Layering Preference
+  {
+    id: 'q15',
+    questionText: 'How do you feel about layering clothes?',
+    type: 'single',
+    options: [
+      { id: 'love', text: 'Love it - the more layers the better', value: 'love' },
+      { id: 'sometimes', text: 'Sometimes - when appropriate for weather', value: 'sometimes' },
+      { id: 'minimal', text: 'Prefer minimal layers', value: 'minimal' },
+      { id: 'avoid', text: 'Avoid layering when possible', value: 'avoid' }
+    ],
+    category: 'styling',
+    section: 'lifestyle'
+  },
+
+  // SECTION 4: BRANDS & BUDGET (Q16-20)
+  // Q16: Budget Range
+  {
+    id: 'q16',
+    questionText: "What's your typical budget for a single clothing item?",
+    type: 'slider',
+    minValue: 0,
+    maxValue: 500,
+    step: 10,
+    category: 'budget',
+    section: 'brands'
+  },
+  // Q17: Shopping Frequency
+  {
+    id: 'q17',
+    questionText: 'How often do you shop for clothes?',
+    type: 'single',
+    options: [
+      { id: 'weekly', text: 'Weekly', value: 'weekly' },
+      { id: 'monthly', text: 'Monthly', value: 'monthly' },
+      { id: 'seasonally', text: 'Seasonally', value: 'seasonally' },
+      { id: 'rarely', text: 'Rarely/As needed', value: 'rarely' }
+    ],
+    category: 'shopping',
+    section: 'brands'
+  },
+  // Q18: Casual Brands
+  {
+    id: 'q18',
     questionText: 'Which casual wear brands do you typically shop?',
     type: 'multiple',
     options: [
@@ -160,11 +311,12 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
       { id: 'ae', text: 'American Eagle', value: 'ae' },
       { id: 'other_casual', text: 'Other', value: 'other_casual' }
     ],
-    category: 'brand'
+    category: 'brand',
+    section: 'brands'
   },
-  // Brand Preferences - Athletic Wear
+  // Q19: Athletic Brands
   {
-    id: 'q10a',
+    id: 'q19',
     questionText: 'Which athletic/athleisure brands do you prefer?',
     type: 'multiple',
     options: [
@@ -180,11 +332,12 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
       { id: 'fabletics', text: 'Fabletics', value: 'fabletics' },
       { id: 'other_athletic', text: 'Other', value: 'other_athletic' }
     ],
-    category: 'brand'
+    category: 'brand',
+    section: 'brands'
   },
-  // Brand Preferences - Luxury
+  // Q20: Luxury Brands
   {
-    id: 'q10b',
+    id: 'q20',
     questionText: 'Do you shop any luxury or designer brands?',
     type: 'multiple',
     options: [
@@ -201,11 +354,14 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
       { id: 'burberry', text: 'Burberry', value: 'burberry' },
       { id: 'other_luxury', text: 'Other', value: 'other_luxury' }
     ],
-    category: 'brand'
+    category: 'brand',
+    section: 'brands'
   },
-  // Celebrity Style Matching - Option 1
+
+  // SECTION 5: CELEBRITY STYLE & INSPIRATION (Q21-25)
+  // Q21: Modern Celebrity Inspiration
   {
-    id: 'q11',
+    id: 'q21',
     questionText: "Which celebrity's style do you most admire? (Modern Icons)",
     type: 'image',
     options: [
@@ -216,11 +372,12 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
       { id: 'hailey', text: 'Hailey Bieber (Cool Girl)', value: 'hailey', imageUrl: 'https://www.fillmurray.com/402/301' },
       { id: 'asap', text: 'A$AP Rocky (Streetwear)', value: 'asap', imageUrl: 'https://www.fillmurray.com/403/300' }
     ],
-    category: 'inspiration'
+    category: 'inspiration',
+    section: 'celebrities'
   },
-  // Celebrity Style Matching - Option 2
+  // Q22: Classic Celebrity Inspiration
   {
-    id: 'q11a',
+    id: 'q22',
     questionText: "Which celebrity's style do you most admire? (Classic Icons)",
     type: 'image',
     options: [
@@ -231,117 +388,12 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
       { id: 'blake', text: 'Blake Lively (Classic Chic)', value: 'blake', imageUrl: 'https://www.fillmurray.com/403/302' },
       { id: 'beckham', text: 'David Beckham (Polished)', value: 'beckham', imageUrl: 'https://www.fillmurray.com/405/300' }
     ],
-    category: 'inspiration'
+    category: 'inspiration',
+    section: 'celebrities'
   },
-  // Shoe Preferences
+  // Q23: Trend Approach
   {
-    id: 'q12',
-    questionText: 'What types of shoes do you wear most often?',
-    type: 'multiple',
-    options: [
-      { id: 'sneakers', text: 'Sneakers', value: 'sneakers' },
-      { id: 'boots', text: 'Boots', value: 'boots' },
-      { id: 'flats', text: 'Flats/Loafers', value: 'flats' },
-      { id: 'heels', text: 'Heels', value: 'heels' },
-      { id: 'sandals', text: 'Sandals', value: 'sandals' },
-      { id: 'athletic', text: 'Athletic Shoes', value: 'athletic' }
-    ],
-    category: 'footwear'
-  },
-  // Shoe Size
-  {
-    id: 'q12a',
-    questionText: 'What shoe size do you typically wear?',
-    type: 'single',
-    options: [
-      { id: 'us5', text: 'US 5 / EU 35-36', value: 'us5' },
-      { id: 'us6', text: 'US 6 / EU 36-37', value: 'us6' },
-      { id: 'us7', text: 'US 7 / EU 37-38', value: 'us7' },
-      { id: 'us8', text: 'US 8 / EU 38-39', value: 'us8' },
-      { id: 'us9', text: 'US 9 / EU 39-40', value: 'us9' },
-      { id: 'us10', text: 'US 10 / EU 40-41', value: 'us10' },
-      { id: 'us11', text: 'US 11 / EU 41-42', value: 'us11' },
-      { id: 'us12', text: 'US 12+ / EU 42+', value: 'us12' }
-    ],
-    category: 'size'
-  },
-  // Accessory Preferences
-  {
-    id: 'q13',
-    questionText: 'Which accessories do you typically wear?',
-    type: 'multiple',
-    options: [
-      { id: 'none', text: 'Minimal/No Accessories', value: 'none' },
-      { id: 'earrings', text: 'Earrings', value: 'earrings' },
-      { id: 'necklaces', text: 'Necklaces', value: 'necklaces' },
-      { id: 'bracelets', text: 'Bracelets/Watches', value: 'bracelets' },
-      { id: 'rings', text: 'Rings', value: 'rings' },
-      { id: 'scarves', text: 'Scarves/Bandanas', value: 'scarves' },
-      { id: 'hats', text: 'Hats', value: 'hats' },
-      { id: 'belts', text: 'Belts', value: 'belts' }
-    ],
-    category: 'accessories'
-  },
-  // Accessory Sizes
-  {
-    id: 'q13a',
-    questionText: 'What sizes do you typically wear for accessories?',
-    type: 'multiple',
-    options: [
-      { id: 'bracelet_small', text: 'Bracelets: Small (6-7")', value: 'bracelet_small' },
-      { id: 'bracelet_medium', text: 'Bracelets: Medium (7-8")', value: 'bracelet_medium' },
-      { id: 'bracelet_large', text: 'Bracelets: Large (8"+)', value: 'bracelet_large' },
-      { id: 'ring_small', text: 'Rings: Small (5-6)', value: 'ring_small' },
-      { id: 'ring_medium', text: 'Rings: Medium (7-8)', value: 'ring_medium' },
-      { id: 'ring_large', text: 'Rings: Large (9+)', value: 'ring_large' },
-      { id: 'hat_small', text: 'Hats: Small/Medium', value: 'hat_small' },
-      { id: 'hat_large', text: 'Hats: Large/XL', value: 'hat_large' },
-      { id: 'not_sure', text: 'Not sure / Varies', value: 'not_sure' }
-    ],
-    category: 'size'
-  },
-  // Seasonal Preference
-  {
-    id: 'q14',
-    questionText: 'Which season do you most enjoy dressing for?',
-    type: 'image',
-    options: [
-      { id: 'spring', text: 'Spring', value: 'spring', imageUrl: 'https://images.unsplash.com/photo-1497942304796-b8bc2cc898f3?w=400&h=300&fit=crop' },
-      { id: 'summer', text: 'Summer', value: 'summer', imageUrl: 'https://images.unsplash.com/photo-1517206577696-6ce38fb787a3?w=400&h=300&fit=crop' },
-      { id: 'fall', text: 'Fall/Autumn', value: 'fall', imageUrl: 'https://images.unsplash.com/photo-1551843073-4a9a5b6fcd5f?w=400&h=300&fit=crop' },
-      { id: 'winter', text: 'Winter', value: 'winter', imageUrl: 'https://images.unsplash.com/photo-1515311320503-6591cade8414?w=400&h=300&fit=crop' }
-    ],
-    category: 'seasonal'
-  },
-  // Layering Preference
-  {
-    id: 'q15',
-    questionText: 'How do you feel about layering clothes?',
-    type: 'single',
-    options: [
-      { id: 'love', text: 'Love it - the more layers the better', value: 'love' },
-      { id: 'sometimes', text: 'Sometimes - when appropriate for weather', value: 'sometimes' },
-      { id: 'minimal', text: 'Prefer minimal layers', value: 'minimal' },
-      { id: 'avoid', text: 'Avoid layering when possible', value: 'avoid' }
-    ],
-    category: 'styling'
-  },
-  // Shopping Frequency
-  {
-    id: 'q16',
-    questionText: 'How often do you shop for clothes?',
-    type: 'single',
-    options: [
-      { id: 'weekly', text: 'Weekly', value: 'weekly' },
-      { id: 'monthly', text: 'Monthly', value: 'monthly' },
-      { id: 'seasonally', text: 'Seasonally', value: 'seasonally' },
-      { id: 'rarely', text: 'Rarely/As needed', value: 'rarely' }
-    ],
-    category: 'shopping'
-  },
-  // Trend Interest
-  {
-    id: 'q17',
+    id: 'q23',
     questionText: 'How do you approach fashion trends?',
     type: 'single',
     options: [
@@ -350,106 +402,21 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
       { id: 'wait', text: 'Wait and see - adopt trends after they\'re established', value: 'wait' },
       { id: 'avoid', text: 'Avoid trends - prefer timeless styles', value: 'avoid' }
     ],
-    category: 'styling'
+    category: 'styling',
+    section: 'celebrities'
   },
-  // Comfort vs Style
+  // Q24: Comfort vs Style Priority
   {
-    id: 'q18',
+    id: 'q24',
     questionText: 'When it comes to choosing clothes, you prioritize:',
     type: 'slider',
     minValue: 0,
     maxValue: 100,
     step: 1,
-    category: 'priorities'
+    category: 'priorities',
+    section: 'celebrities'
   },
-  // Sustainability
-  {
-    id: 'q19',
-    questionText: 'How important is sustainability in your clothing choices?',
-    type: 'single',
-    options: [
-      { id: 'very', text: 'Very important - I prioritize sustainable brands', value: 'very' },
-      { id: 'somewhat', text: 'Somewhat important - I consider it when convenient', value: 'somewhat' },
-      { id: 'neutral', text: 'Neutral - I don\'t specifically seek it out', value: 'neutral' },
-      { id: 'not', text: 'Not important to me', value: 'not' }
-    ],
-    category: 'values'
-  },
-  // Secondhand Interest
-  {
-    id: 'q20',
-    questionText: 'Do you shop secondhand/vintage clothing?',
-    type: 'single',
-    options: [
-      { id: 'frequently', text: 'Frequently', value: 'frequently' },
-      { id: 'sometimes', text: 'Sometimes', value: 'sometimes' },
-      { id: 'rarely', text: 'Rarely', value: 'rarely' },
-      { id: 'never', text: 'Never', value: 'never' }
-    ],
-    category: 'shopping'
-  },
-  // Work Environment
-  {
-    id: 'q21',
-    questionText: 'What best describes your work environment dress code?',
-    type: 'single',
-    options: [
-      { id: 'formal', text: 'Formal/Business Professional', value: 'formal' },
-      { id: 'business', text: 'Business Casual', value: 'business' },
-      { id: 'casual', text: 'Casual', value: 'casual' },
-      { id: 'creative', text: 'Creative/No Dress Code', value: 'creative' },
-      { id: 'uniform', text: 'Uniform Required', value: 'uniform' },
-      { id: 'na', text: 'Not Applicable', value: 'na' }
-    ],
-    category: 'lifestyle'
-  },
-  // Active Lifestyle
-  {
-    id: 'q22',
-    questionText: 'How active is your lifestyle?',
-    type: 'single',
-    options: [
-      { id: 'very', text: 'Very active - I need clothes for frequent exercise', value: 'very' },
-      { id: 'moderately', text: 'Moderately active - occasional exercise', value: 'moderately' },
-      { id: 'somewhat', text: 'Somewhat active - light activity', value: 'somewhat' },
-      { id: 'not', text: 'Not very active', value: 'not' }
-    ],
-    category: 'lifestyle'
-  },
-  // Fabric Preferences
-  {
-    id: 'q23',
-    questionText: 'Which fabric types do you prefer?',
-    type: 'multiple',
-    options: [
-      { id: 'cotton', text: 'Cotton', value: 'cotton' },
-      { id: 'linen', text: 'Linen', value: 'linen' },
-      { id: 'silk', text: 'Silk', value: 'silk' },
-      { id: 'wool', text: 'Wool', value: 'wool' },
-      { id: 'synthetic', text: 'Synthetic/Technical Fabrics', value: 'synthetic' },
-      { id: 'leather', text: 'Leather', value: 'leather' },
-      { id: 'denim', text: 'Denim', value: 'denim' },
-      { id: 'knit', text: 'Knits', value: 'knit' }
-    ],
-    category: 'fabrics'
-  },
-  // Special Requirements
-  {
-    id: 'q24',
-    questionText: 'Do you have any special clothing requirements or preferences?',
-    type: 'multiple',
-    options: [
-      { id: 'none', text: 'None', value: 'none' },
-      { id: 'pockets', text: 'Must have pockets', value: 'pockets' },
-      { id: 'petite', text: 'Petite sizes', value: 'petite' },
-      { id: 'tall', text: 'Tall sizes', value: 'tall' },
-      { id: 'plus', text: 'Plus sizes', value: 'plus' },
-      { id: 'adaptable', text: 'Adaptable/Accessible clothing', value: 'adaptable' },
-      { id: 'allergy', text: 'Hypoallergenic fabrics', value: 'allergy' }
-    ],
-    category: 'requirements'
-  },
-  // Style Goal
+  // Q25: Style Goal
   {
     id: 'q25',
     questionText: "What's your main style goal right now?",
@@ -462,7 +429,8 @@ const DEMO_QUESTIONS: StyleQuizQuestion[] = [
       { id: 'experiment', text: 'Experiment with new styles', value: 'experiment' },
       { id: 'confidence', text: 'Gain confidence in my clothing choices', value: 'confidence' }
     ],
-    category: 'goals'
+    category: 'goals',
+    section: 'celebrities'
   }
 ];
 
@@ -487,52 +455,43 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
         if (progress.answers && Array.isArray(progress.answers)) {
           return {
             currentQuestionIndex: progress.currentQuestion || 0,
-            savedAnswers: progress.answers as StyleQuizAnswer[]
+            savedAnswers: progress.answers as StyleQuizAnswer[],
+            activeSection: progress.activeSection || 'basics'
           };
         }
       }
     } catch (e) {
       console.error('Error loading saved quiz progress:', e);
     }
-    return { currentQuestionIndex: 0, savedAnswers: [] };
+    return { 
+      currentQuestionIndex: 0, 
+      savedAnswers: [],
+      activeSection: 'basics'
+    };
   };
   
-  const { currentQuestionIndex, savedAnswers } = loadSavedProgress();
+  const { currentQuestionIndex, savedAnswers, activeSection: savedSection } = loadSavedProgress();
   
   const [currentQuestion, setCurrentQuestion] = useState(currentQuestionIndex);
   const [answers, setAnswers] = useState<StyleQuizAnswer[]>(savedAnswers);
+  const [activeSection, setActiveSection] = useState(savedSection);
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   
   // Save progress to localStorage whenever answers or current question changes
   useEffect(() => {
     try {
       const progress = {
         currentQuestion,
-        answers
+        answers,
+        activeSection
       };
       localStorage.setItem(`${STORAGE_KEY}_${quizId}`, JSON.stringify(progress));
     } catch (e) {
       console.error('Error saving quiz progress:', e);
     }
-  }, [currentQuestion, answers, quizId]);
-  
-  // In a real implementation, we would fetch questions from the API
-  // useEffect(() => {
-  //   const fetchQuestions = async () => {
-  //     try {
-  //       setLoading(true);
-  //       const response = await api.user.getStyleQuiz();
-  //       setQuestions(response);
-  //     } catch (error) {
-  //       console.error('Error fetching quiz questions:', error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-  //   
-  //   fetchQuestions();
-  // }, [quizId]);
+  }, [currentQuestion, answers, activeSection, quizId]);
   
   // Track the quiz progress for analytics but don't trigger the actual submission
   // We're passing progress to the parent for tracking purposes only
@@ -548,78 +507,197 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
     onSubmit(answers);
   }, [answers, submitting, onSubmit]);
   
-  // Auto-move to next question for single & image options when selected
-  const handleOptionSelect = (questionId: string, optionId: string, type: string) => {
-    if (type === 'single' || type === 'image') {
-      handleSingleAnswer(questionId, optionId);
-      
-      // For single/image selections, auto-advance to next question after short delay
-      if (currentQuestion < questions.length - 1) {
+  // Group questions by section
+  const questionsBySection = useMemo(() => {
+    return questions.reduce((acc, question) => {
+      if (!acc[question.section]) {
+        acc[question.section] = [];
+      }
+      acc[question.section].push(question);
+      return acc;
+    }, {} as Record<string, StyleQuizQuestion[]>);
+  }, [questions]);
+  
+  // Get questions for current section
+  const currentSectionQuestions = useMemo(() => {
+    return questionsBySection[activeSection] || [];
+  }, [questionsBySection, activeSection]);
+  
+  // Get current question object
+  const questionIndex = currentSectionQuestions.findIndex(q => q.id === questions[currentQuestion]?.id);
+  const question = currentSectionQuestions[questionIndex >= 0 ? questionIndex : 0] || questions[currentQuestion];
+  
+  // Check if this is the last question in the current section
+  const isLastQuestionInSection = questionIndex === currentSectionQuestions.length - 1;
+  
+  // Check if this is the last question overall
+  const isLastQuestion = currentQuestion === questions.length - 1;
+  
+  // Calculate section progress
+  const getSectionProgress = (section: string) => {
+    const sectionQuestions = questionsBySection[section] || [];
+    const answeredQuestions = answers.filter(a => 
+      sectionQuestions.some(q => q.id === a.questionId)
+    ).length;
+    
+    return {
+      total: sectionQuestions.length,
+      answered: answeredQuestions,
+      percentage: Math.round((answeredQuestions / Math.max(sectionQuestions.length, 1)) * 100)
+    };
+  };
+  
+  // Main answer handler function
+  const handleAnswerUpdate = (questionId: string, answer: StyleQuizAnswer) => {
+    const newAnswers = [...answers];
+    const existingIndex = answers.findIndex(a => a.questionId === questionId);
+    
+    if (existingIndex >= 0) {
+      newAnswers[existingIndex] = answer;
+    } else {
+      newAnswers.push(answer);
+    }
+    
+    setAnswers(newAnswers);
+    
+    // Auto-advance if it's a single or image type question
+    if ((question.type === 'single' || question.type === 'image') && 
+        answer.answerId && 
+        currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        handleNextQuestion();
+      }, 300);
+    }
+  };
+  
+  // Function to handle going to the next question
+  const handleNextQuestion = () => {
+    if (currentQuestion < questions.length - 1) {
+      // Check if we need to move to the next section
+      if (isLastQuestionInSection) {
+        // Get the next section
+        const sectionKeys = Object.keys(quizSections);
+        const currentSectionIndex = sectionKeys.indexOf(activeSection);
+        
+        if (currentSectionIndex < sectionKeys.length - 1) {
+          const nextSection = sectionKeys[currentSectionIndex + 1];
+          
+          // Animate the transition
+          document.querySelector('.stylist-style-quiz__section-content')?.classList.add('fade-out');
+          setTimeout(() => {
+            setActiveSection(nextSection);
+            // Find the first question in the next section
+            const nextSectionQuestions = questionsBySection[nextSection] || [];
+            const nextQuestionIndex = questions.findIndex(q => q.id === nextSectionQuestions[0]?.id);
+            setCurrentQuestion(nextQuestionIndex >= 0 ? nextQuestionIndex : currentQuestion + 1);
+            
+            document.querySelector('.stylist-style-quiz__section-content')?.classList.remove('fade-out');
+            document.querySelector('.stylist-style-quiz__section-content')?.classList.add('fade-in');
+            setTimeout(() => {
+              document.querySelector('.stylist-style-quiz__section-content')?.classList.remove('fade-in');
+            }, 300);
+          }, 200);
+        }
+      } else {
+        // Just move to next question within current section
+        document.querySelector('.stylist-style-quiz__question')?.classList.add('fade-out');
         setTimeout(() => {
           setCurrentQuestion(currentQuestion + 1);
-        }, 300);
+          document.querySelector('.stylist-style-quiz__question')?.classList.remove('fade-out');
+          document.querySelector('.stylist-style-quiz__question')?.classList.add('fade-in');
+          setTimeout(() => {
+            document.querySelector('.stylist-style-quiz__question')?.classList.remove('fade-in');
+          }, 300);
+        }, 200);
       }
     }
   };
   
-  const handleSingleAnswer = (questionId: string, answerId: string) => {
-    const newAnswers = [...answers];
-    const existingIndex = answers.findIndex(a => a.questionId === questionId);
-    
-    const answer: StyleQuizAnswer = {
-      questionId,
-      answerId,
-      answered: new Date()
-    };
-    
-    if (existingIndex >= 0) {
-      newAnswers[existingIndex] = answer;
-    } else {
-      newAnswers.push(answer);
+  // Function to handle going to the previous question
+  const handlePreviousQuestion = () => {
+    if (currentQuestion > 0) {
+      // Check if we need to move to the previous section
+      if (questionIndex === 0) {
+        // Get the previous section
+        const sectionKeys = Object.keys(quizSections);
+        const currentSectionIndex = sectionKeys.indexOf(activeSection);
+        
+        if (currentSectionIndex > 0) {
+          const prevSection = sectionKeys[currentSectionIndex - 1];
+          
+          // Animate the transition
+          document.querySelector('.stylist-style-quiz__section-content')?.classList.add('fade-out');
+          setTimeout(() => {
+            setActiveSection(prevSection);
+            // Find the last question in the previous section
+            const prevSectionQuestions = questionsBySection[prevSection] || [];
+            const prevQuestionIndex = questions.findIndex(q => q.id === prevSectionQuestions[prevSectionQuestions.length - 1]?.id);
+            setCurrentQuestion(prevQuestionIndex >= 0 ? prevQuestionIndex : currentQuestion - 1);
+            
+            document.querySelector('.stylist-style-quiz__section-content')?.classList.remove('fade-out');
+            document.querySelector('.stylist-style-quiz__section-content')?.classList.add('fade-in');
+            setTimeout(() => {
+              document.querySelector('.stylist-style-quiz__section-content')?.classList.remove('fade-in');
+            }, 300);
+          }, 200);
+        }
+      } else {
+        // Just move to previous question within current section
+        document.querySelector('.stylist-style-quiz__question')?.classList.add('fade-out');
+        setTimeout(() => {
+          setCurrentQuestion(currentQuestion - 1);
+          document.querySelector('.stylist-style-quiz__question')?.classList.remove('fade-out');
+          document.querySelector('.stylist-style-quiz__question')?.classList.add('fade-in');
+          setTimeout(() => {
+            document.querySelector('.stylist-style-quiz__question')?.classList.remove('fade-in');
+          }, 300);
+        }, 200);
+      }
     }
-    
-    setAnswers(newAnswers);
-    
-    // Note: Auto-advancing to next question is now handled in handleOptionSelect
-    // We don't automatically advance here to allow the Next button to work properly
   };
   
-  const handleMultipleAnswer = (questionId: string, answerIds: string[]) => {
-    const newAnswers = [...answers];
-    const existingIndex = answers.findIndex(a => a.questionId === questionId);
+  // Function to jump to a specific section
+  const jumpToSection = (section: string) => {
+    // Get first question in the target section
+    const targetSectionQuestions = questionsBySection[section] || [];
+    if (targetSectionQuestions.length === 0) return;
     
-    const answer: StyleQuizAnswer = {
-      questionId,
-      answerIds,
-      answered: new Date()
-    };
+    const targetQuestionIndex = questions.findIndex(q => q.id === targetSectionQuestions[0].id);
+    if (targetQuestionIndex === -1) return;
     
-    if (existingIndex >= 0) {
-      newAnswers[existingIndex] = answer;
-    } else {
-      newAnswers.push(answer);
-    }
-    
-    setAnswers(newAnswers);
+    // Animate the transition
+    document.querySelector('.stylist-style-quiz__section-content')?.classList.add('fade-out');
+    setTimeout(() => {
+      setActiveSection(section);
+      setCurrentQuestion(targetQuestionIndex);
+      
+      document.querySelector('.stylist-style-quiz__section-content')?.classList.remove('fade-out');
+      document.querySelector('.stylist-style-quiz__section-content')?.classList.add('fade-in');
+      setTimeout(() => {
+        document.querySelector('.stylist-style-quiz__section-content')?.classList.remove('fade-in');
+      }, 300);
+    }, 200);
   };
   
-  const handleSliderAnswer = (questionId: string, value: number) => {
-    const newAnswers = [...answers];
-    const existingIndex = answers.findIndex(a => a.questionId === questionId);
-    
-    const answer: StyleQuizAnswer = {
-      questionId,
-      answerValue: value,
-      answered: new Date()
-    };
-    
-    if (existingIndex >= 0) {
-      newAnswers[existingIndex] = answer;
-    } else {
-      newAnswers.push(answer);
-    }
-    
-    setAnswers(newAnswers);
+  // Function to skip to results
+  const handleSkipToResults = () => {
+    setShowSkipConfirm(true);
+  };
+  
+  // Function to confirm skip to results
+  const confirmSkipToResults = () => {
+    setShowSkipConfirm(false);
+    handleSubmit();
+  };
+  
+  // Function to cancel skip to results
+  const cancelSkipToResults = () => {
+    setShowSkipConfirm(false);
+  };
+  
+  // Function to check if the current question has been answered
+  const isCurrentQuestionAnswered = () => {
+    return !!answers.find(a => a.questionId === question.id);
   };
   
   const handleSubmit = () => {
@@ -648,156 +726,100 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
     );
   }
   
-  const question = questions[currentQuestion];
-  const isLastQuestion = currentQuestion === questions.length - 1;
+  // Calculate overall completion percentage
+  const completionPercentage = Math.round((answers.length / questions.length) * 100);
   
+  // Render the question based on its type
   const renderQuestion = () => {
     if (!question) return null;
     
     // Get current answer for this question
     const currentAnswer = answers.find(a => a.questionId === question.id);
     
+    // Shared props for all question types
+    const commonProps = {
+      question,
+      currentAnswer,
+      onAnswer: handleAnswerUpdate,
+      primaryColor
+    };
+    
     switch (question.type) {
       case 'single':
-        return (
-          <div className="stylist-style-quiz__options">
-            {question.options?.map(option => (
-              <button
-                key={option.id}
-                className={`stylist-style-quiz__option ${currentAnswer?.answerId === option.id ? 'stylist-style-quiz__option--selected' : ''}`}
-                onClick={() => handleOptionSelect(question.id, option.id, 'single')}
-                style={currentAnswer?.answerId === option.id ? { borderColor: primaryColor, backgroundColor: `${primaryColor}20` } : undefined}
-              >
-                {option.text}
-              </button>
-            ))}
-          </div>
-        );
+        return <SingleChoiceQuestion {...commonProps} />;
       
       case 'image':
-        return (
-          <div className="stylist-style-quiz__image-options">
-            {question.options?.map(option => (
-              <button
-                key={option.id}
-                className={`stylist-style-quiz__image-option ${currentAnswer?.answerId === option.id ? 'stylist-style-quiz__image-option--selected' : ''}`}
-                onClick={() => handleOptionSelect(question.id, option.id, 'image')}
-                style={currentAnswer?.answerId === option.id ? { borderColor: primaryColor } : undefined}
-              >
-                <div 
-                  className="stylist-style-quiz__image-container"
-                  style={{ 
-                    backgroundImage: option.imageUrl ? `url(${option.imageUrl})` : undefined,
-                  }}
-                >
-                  {!option.imageUrl && <div className="stylist-style-quiz__image-placeholder"></div>}
-                </div>
-                <div className="stylist-style-quiz__image-label" style={currentAnswer?.answerId === option.id ? { color: primaryColor } : undefined}>{option.text}</div>
-              </button>
-            ))}
-          </div>
-        );
+        return <ImageChoiceQuestion {...commonProps} />;
         
       case 'multiple':
-        return (
-          <div className="stylist-style-quiz__options">
-            {question.options?.map(option => {
-              const isSelected = currentAnswer?.answerIds?.includes(option.id);
-              return (
-                <button
-                  key={option.id}
-                  className={`stylist-style-quiz__option ${isSelected ? 'stylist-style-quiz__option--selected' : ''}`}
-                  onClick={() => {
-                    const currentIds = currentAnswer?.answerIds || [];
-                    const newIds = isSelected
-                      ? currentIds.filter(id => id !== option.id)
-                      : [...currentIds, option.id];
-                    handleMultipleAnswer(question.id, newIds);
-                  }}
-                  style={isSelected ? { borderColor: primaryColor, backgroundColor: `${primaryColor}20` } : undefined}
-                >
-                  {option.text}
-                </button>
-              );
-            })}
-          </div>
-        );
+        return <MultipleChoiceQuestion {...commonProps} />;
         
       case 'slider':
-        const getSliderLabels = (id: string) => {
-          // Define labels based on question ID
-          switch(id) {
-            case 'q18': // Comfort vs Style priority
-              return { left: 'Comfort', right: 'Style' };
-            default:
-              return { left: 'Low', right: 'High' };
-          }
-        };
-        
-        const labels = getSliderLabels(question.id);
-        
-        return (
-          <div className="stylist-style-quiz__slider">
-            <input
-              type="range"
-              min={question.minValue || 0}
-              max={question.maxValue || 100}
-              step={question.step || 1}
-              value={currentAnswer?.answerValue || 50}
-              onChange={(e) => handleSliderAnswer(question.id, parseInt(e.target.value))}
-              style={{ accentColor: primaryColor }}
-            />
-            <div className="stylist-style-quiz__slider-labels">
-              <div className="stylist-style-quiz__slider-label-left">{labels.left}</div>
-              <div className="stylist-style-quiz__slider-label-right">{labels.right}</div>
-            </div>
-          </div>
-        );
+        return <SliderQuestion {...commonProps} />;
         
       default:
         return null;
     }
   };
   
-  // Function to check if the current question has been answered
-  const isCurrentQuestionAnswered = () => {
-    return !!answers.find(a => a.questionId === question.id);
+  // Render section navigation tabs
+  const renderSectionTabs = () => {
+    return (
+      <div className="stylist-style-quiz__section-tabs">
+        {Object.entries(quizSections).map(([sectionKey, sectionLabel]) => {
+          const sectionProgress = getSectionProgress(sectionKey);
+          const isActive = activeSection === sectionKey;
+          
+          return (
+            <button
+              key={sectionKey}
+              className={`stylist-style-quiz__section-tab ${isActive ? 'stylist-style-quiz__section-tab--active' : ''}`}
+              onClick={() => jumpToSection(sectionKey)}
+              disabled={answers.length === 0 && sectionKey !== 'basics'} // Can't jump ahead if no answers yet
+              style={isActive ? { borderColor: primaryColor, color: primaryColor } : undefined}
+            >
+              <div className="stylist-style-quiz__section-tab-label">{sectionLabel}</div>
+              <div 
+                className="stylist-style-quiz__section-tab-progress"
+                style={{ width: `${sectionProgress.percentage}%`, backgroundColor: primaryColor }}
+              ></div>
+            </button>
+          );
+        })}
+      </div>
+    );
   };
   
-  // Function to handle going to the next question
-  const handleNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      // Animate the transition
-      document.querySelector('.stylist-style-quiz__question')?.classList.add('fade-out');
-      setTimeout(() => {
-        setCurrentQuestion(currentQuestion + 1);
-        document.querySelector('.stylist-style-quiz__question')?.classList.remove('fade-out');
-        document.querySelector('.stylist-style-quiz__question')?.classList.add('fade-in');
-        setTimeout(() => {
-          document.querySelector('.stylist-style-quiz__question')?.classList.remove('fade-in');
-        }, 300);
-      }, 200);
-    }
+  // Render the skip confirmation dialog
+  const renderSkipConfirmation = () => {
+    if (!showSkipConfirm) return null;
+    
+    return (
+      <div className="stylist-style-quiz__skip-confirm">
+        <div className="stylist-style-quiz__skip-confirm-backdrop" onClick={cancelSkipToResults}></div>
+        <div className="stylist-style-quiz__skip-confirm-dialog">
+          <h4>Skip to Results?</h4>
+          <p>You've answered {answers.length} of {questions.length} questions ({completionPercentage}% complete).</p>
+          <p>More answers will improve your personalized recommendations. Are you sure you want to skip to results?</p>
+          <div className="stylist-style-quiz__skip-confirm-actions">
+            <button 
+              className="stylist-style-quiz__button stylist-style-quiz__button--secondary"
+              onClick={cancelSkipToResults}
+            >
+              Continue Quiz
+            </button>
+            <button 
+              className="stylist-style-quiz__button stylist-style-quiz__button--primary"
+              onClick={confirmSkipToResults}
+              style={{ backgroundColor: primaryColor }}
+            >
+              Skip to Results
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
-  
-  // Function to handle going to the previous question
-  const handlePreviousQuestion = () => {
-    if (currentQuestion > 0) {
-      // Animate the transition
-      document.querySelector('.stylist-style-quiz__question')?.classList.add('fade-out');
-      setTimeout(() => {
-        setCurrentQuestion(currentQuestion - 1);
-        document.querySelector('.stylist-style-quiz__question')?.classList.remove('fade-out');
-        document.querySelector('.stylist-style-quiz__question')?.classList.add('fade-in');
-        setTimeout(() => {
-          document.querySelector('.stylist-style-quiz__question')?.classList.remove('fade-in');
-        }, 300);
-      }, 200);
-    }
-  };
-  
-  // Calculate completion percentage
-  const completionPercentage = Math.round((answers.length / questions.length) * 100);
   
   return (
     <div className="stylist-style-quiz">
@@ -808,11 +830,12 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
         )}
       </div>
       
+      {/* Overall progress bar */}
       <div className="stylist-style-quiz__progress">
         <div
           className="stylist-style-quiz__progress-bar"
           style={{
-            width: `${((currentQuestion + 1) / questions.length) * 100}%`,
+            width: `${completionPercentage}%`,
             backgroundColor: primaryColor
           }}
         ></div>
@@ -821,45 +844,90 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
         </div>
       </div>
       
-      <div className="stylist-style-quiz__question">
-        <div className="stylist-style-quiz__question-number">
-          Question {currentQuestion + 1} of {questions.length}
+      {/* Section tabs navigation */}
+      {renderSectionTabs()}
+      
+      {/* Current section content */}
+      <div className="stylist-style-quiz__section-content">
+        <div className="stylist-style-quiz__section-header">
+          <h3 className="stylist-style-quiz__section-title">
+            {quizSections[activeSection]}
+          </h3>
+          
+          <div className="stylist-style-quiz__section-progress">
+            <span>
+              Question {questionIndex + 1} of {currentSectionQuestions.length}
+            </span>
+          </div>
         </div>
-        <h4 className="stylist-style-quiz__question-text">{question.questionText}</h4>
-      </div>
-      
-      {renderQuestion()}
-      
-      <div className="stylist-style-quiz__actions">
-        {currentQuestion > 0 && (
-          <button
-            className="stylist-style-quiz__button stylist-style-quiz__button--secondary"
-            onClick={handlePreviousQuestion}
-          >
-            Previous
-          </button>
-        )}
         
-        {isLastQuestion ? (
-          <button
-            className="stylist-style-quiz__button stylist-style-quiz__button--primary"
-            onClick={handleSubmit}
-            style={{ backgroundColor: primaryColor }}
-            disabled={!isCurrentQuestionAnswered() || submitting}
-          >
-            {submitting ? 'Submitting...' : 'Complete Quiz'}
-          </button>
-        ) : (
-          <button
-            className="stylist-style-quiz__button stylist-style-quiz__button--primary"
-            onClick={handleNextQuestion}
-            style={{ backgroundColor: primaryColor }}
-            disabled={!isCurrentQuestionAnswered()}
-          >
-            Next
-          </button>
-        )}
+        <div className="stylist-style-quiz__question">
+          <div className="stylist-style-quiz__question-number">
+            Question {currentQuestion + 1} of {questions.length}
+          </div>
+          <h4 className="stylist-style-quiz__question-text">{question.questionText}</h4>
+        </div>
+        
+        {renderQuestion()}
+        
+        <div className="stylist-style-quiz__actions">
+          {currentQuestion > 0 && (
+            <button
+              className="stylist-style-quiz__button stylist-style-quiz__button--secondary"
+              onClick={handlePreviousQuestion}
+            >
+              Previous
+            </button>
+          )}
+          
+          {/* Skip to results button (only show after answering at least 5 questions) */}
+          {answers.length >= 5 && !isLastQuestion && (
+            <button
+              className="stylist-style-quiz__button stylist-style-quiz__button--skip"
+              onClick={handleSkipToResults}
+            >
+              Skip to Results
+            </button>
+          )}
+          
+          {isLastQuestion ? (
+            <button
+              className="stylist-style-quiz__button stylist-style-quiz__button--primary"
+              onClick={handleSubmit}
+              style={{ backgroundColor: primaryColor }}
+              disabled={!isCurrentQuestionAnswered() || submitting}
+            >
+              {submitting ? 'Submitting...' : 'Complete Quiz'}
+            </button>
+          ) : (
+            <button
+              className="stylist-style-quiz__button stylist-style-quiz__button--primary"
+              onClick={handleNextQuestion}
+              style={{ backgroundColor: primaryColor }}
+              disabled={!isCurrentQuestionAnswered()}
+            >
+              Next
+            </button>
+          )}
+        </div>
       </div>
+      
+      {/* Save progress reminder */}
+      <div className="stylist-style-quiz__save-progress">
+        <div className="stylist-style-quiz__save-progress-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 0C3.6 0 0 3.6 0 8C0 12.4 3.6 16 8 16C12.4 16 16 12.4 16 8C16 3.6 12.4 0 8 0ZM8 14C4.7 14 2 11.3 2 8C2 4.7 4.7 2 8 2C11.3 2 14 4.7 14 8C14 11.3 11.3 14 8 14Z" fill="currentColor"/>
+            <path d="M7 5H9V11H7V5Z" fill="currentColor"/>
+            <path d="M7 3H9V5H7V3Z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div className="stylist-style-quiz__save-progress-text">
+          Your progress is automatically saved. You can return to complete the quiz later.
+        </div>
+      </div>
+      
+      {/* Skip confirmation dialog */}
+      {renderSkipConfirmation()}
     </div>
   );
 };

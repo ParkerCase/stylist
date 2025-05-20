@@ -1,5 +1,5 @@
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use '../../styles/variables.scss' as variables;
+@use '../../styles/mixins.scss' as mixins;
 
 // Auth Modal Styles
 .auth-modal-overlay {
@@ -12,13 +12,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: variables.$z-index-modal;
 }
 
 .auth-modal {
-  background-color: $color-background;
-  border-radius: $border-radius;
-  box-shadow: $box-shadow;
+  background-color: variables.$background-color;
+  border-radius: variables.$border-radius-md;
+  box-shadow: variables.$shadow-lg;
   width: 90%;
   max-width: 450px;
   max-height: 90vh;
@@ -26,7 +26,7 @@
   position: relative;
   padding: 20px;
   
-  @include respond-to('medium') {
+  @include mixins.responsive('md') {
     width: 450px;
   }
 }
@@ -39,10 +39,10 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: $color-text-secondary;
+  color: variables.$text-secondary;
   
   &:hover {
-    color: $color-text-primary;
+    color: variables.$text-primary;
   }
 }
 
@@ -52,7 +52,7 @@
   
   h2 {
     margin-bottom: 20px;
-    color: $color-text-primary;
+    color: variables.$text-primary;
     text-align: center;
   }
 }
@@ -71,23 +71,23 @@
   label {
     margin-bottom: 5px;
     font-weight: 500;
-    color: $color-text-primary;
+    color: variables.$text-primary;
   }
   
   input {
     padding: 12px 15px;
-    border: 1px solid $color-border;
-    border-radius: $border-radius;
+    border: 1px solid variables.$border-color;
+    border-radius: variables.$border-radius-md;
     font-size: 16px;
     transition: border-color 0.3s ease;
     
     &:focus {
-      border-color: $color-primary;
+      border-color: variables.$primary-color;
       outline: none;
     }
     
     &:disabled {
-      background-color: $color-background-disabled;
+      background-color: variables.$background-color-light;
       cursor: not-allowed;
     }
   }
@@ -95,16 +95,16 @@
   .password-requirements {
     margin-top: 5px;
     font-size: 12px;
-    color: $color-text-secondary;
+    color: variables.$text-secondary;
   }
 }
 
 .auth-button {
   padding: 12px 15px;
-  background-color: $color-primary;
+  background-color: variables.$primary-color;
   color: white;
   border: none;
-  border-radius: $border-radius;
+  border-radius: variables.$border-radius-md;
   font-size: 16px;
   font-weight: 500;
   cursor: pointer;
@@ -112,11 +112,11 @@
   margin-top: 10px;
   
   &:hover:not(:disabled) {
-    background-color: darken($color-primary, 10%);
+    background-color: variables.$primary-color-dark;
   }
   
   &:disabled {
-    background-color: lighten($color-primary, 20%);
+    background-color: variables.$primary-color-light;
     cursor: not-allowed;
   }
 }
@@ -131,7 +131,7 @@
   .text-button {
     background: none;
     border: none;
-    color: $color-primary;
+    color: variables.$primary-color;
     cursor: pointer;
     font-size: 14px;
     
@@ -140,26 +140,26 @@
     }
     
     &:disabled {
-      color: $color-text-secondary;
+      color: variables.$text-secondary;
       cursor: not-allowed;
     }
   }
 }
 
 .auth-error {
-  background-color: rgba($color-error, 0.1);
-  color: $color-error;
+  background-color: rgba(variables.$error-color, 0.1);
+  color: variables.$error-color;
   padding: 12px 15px;
-  border-radius: $border-radius;
+  border-radius: variables.$border-radius-md;
   margin-bottom: 20px;
   font-size: 14px;
 }
 
 .auth-success {
-  background-color: rgba($color-success, 0.1);
-  color: $color-success;
+  background-color: rgba(variables.$success-color, 0.1);
+  color: variables.$success-color;
   padding: 12px 15px;
-  border-radius: $border-radius;
+  border-radius: variables.$border-radius-md;
   margin-bottom: 20px;
   font-size: 14px;
 }
@@ -171,7 +171,7 @@
   
   p {
     font-size: 14px;
-    color: $color-text-secondary;
+    color: variables.$text-secondary;
     margin-bottom: 15px;
     position: relative;
     
@@ -182,7 +182,7 @@
       top: 50%;
       width: 35%;
       height: 1px;
-      background-color: $color-border;
+      background-color: variables.$border-color;
     }
     
     &::before {
@@ -203,8 +203,8 @@
 
 .social-button {
   padding: 10px 15px;
-  border-radius: $border-radius;
-  border: 1px solid $color-border;
+  border-radius: variables.$border-radius-md;
+  border: 1px solid variables.$border-color;
   background-color: white;
   font-weight: 500;
   cursor: pointer;
@@ -213,7 +213,7 @@
   max-width: 130px;
   
   &:hover:not(:disabled) {
-    background-color: darken(white, 5%);
+    background-color: variables.$background-color-light;
   }
   
   &:disabled {
@@ -229,10 +229,3 @@
 .facebook-button {
   color: #1877F2;
 }
-
-// Create index.ts for easy imports
-export { default as Login } from './Login';
-export { default as Register } from './Register';
-export { default as ForgotPassword } from './ForgotPassword';
-export { default as ResetPassword } from './ResetPassword';
-export { default as AuthModal } from './AuthModal';

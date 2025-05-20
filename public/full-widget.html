@@ -1486,31 +1486,89 @@
         return featureName ? widgetConfig.features[featureName] : true;
       }
 
+      // Add this function to full-widget.html
+      function adaptConfigForStylistWidget(config) {
+        // Create a compatible configuration object
+        const adaptedConfig = {
+          apiKey: config.apiKey,
+          retailerId: config.retailerId,
+          primaryColor: config.primaryColor,
+          // Add any other direct properties here
+        };
+
+        // Store mount points in a global that the widget can access
+        window.__STYLIST_MOUNT_POINTS = config.mountPoints || {};
+
+        return adaptedConfig;
+      }
+
+      // Use a persistent window-level flag instead of a local variable
+      // This ensures initialization state persists across all code paths
+
       function initializeReactComponents() {
-        // Check if global Stylist object exists
-        if (window.Stylist) {
-          // Initialize React components with current config
-          window.Stylist.initialize({
-            apiKey: widgetConfig.apiKey,
-            retailerId: widgetConfig.retailerId,
-            primaryColor: widgetConfig.primaryColor,
-            useMockData: widgetConfig.useMockData,
-            features: widgetConfig.features,
-            mountPoints: {
-              chat: "stylist-chat-component",
-              lookbook: "stylist-lookbook-container",
-              closet: "stylist-closet-container",
-              tryOn: "stylist-try-on-container",
-              quiz: "stylist-quiz-container",
-              social: "stylist-social-container",
-              floatingButton: "stylist-floating-button-container",
-            },
-          });
+        // Use global initialization flag to guard against multiple initializations
+        if (window.__STYLIST_WIDGET_INITIALIZED === true) {
+          console.log("Stylist Widget already fully initialized, skipping");
+          return;
+        }
+
+        if (window.StylistWidget) {
+          console.log("Initializing Stylist Widget with config");
+
+          // Set global initialization flag BEFORE initialization to prevent race conditions
+          window.__STYLIST_WIDGET_INITIALIZED = true;
+
+          try {
+            // One-time initialization of the widget
+            window.StylistWidget.init(
+              adaptConfigForStylistWidget(widgetConfig)
+            );
+
+            // Set up event listeners only once
+            if (window.__StylistWidgetEvents) {
+              const onTabChange = function (data) {
+                if (data && data.activeTab) {
+                  try {
+                    window.StylistWidget.switchView(
+                      data.activeTab === "chat" ? "chat" : "lookbook"
+                    );
+                  } catch (err) {
+                    console.error("Error switching view:", err);
+                  }
+                }
+              };
+
+              // Clean up any previous listeners to avoid duplicates
+              window.__StylistWidgetEvents.off("tab:change", onTabChange);
+              window.__StylistWidgetEvents.on("tab:change", onTabChange);
+
+              // Set up handlers for modal events
+              window.__StylistWidgetEvents.on("styleQuiz:open", function () {
+                console.log("Style quiz opened via event");
+              });
+
+              window.__StylistWidgetEvents.on("virtualTryOn:open", function () {
+                console.log("Virtual try-on opened via event");
+              });
+            }
+
+            console.log("Stylist Widget initialization completed successfully");
+          } catch (error) {
+            console.error("Error during Stylist Widget initialization:", error);
+            // Keep the flag as true to prevent infinite retries
+          }
         } else {
-          console.warn(
-            "Stylist Widget SDK not loaded yet. Will try again in 500ms."
-          );
-          setTimeout(initializeReactComponents, 500);
+          // If this is the first attempt (from main initialization), retry once with timeout
+          // Otherwise, don't schedule more retries to avoid loop
+          if (!window.__STYLIST_RETRY_ATTEMPT) {
+            window.__STYLIST_RETRY_ATTEMPT = true;
+            console.warn(
+              "Stylist Widget SDK not loaded yet. Will try once more in 1000ms."
+            );
+            setTimeout(initializeReactComponents, 1000);
+          } else {
+            console.error("Stylist Widget SDK failed to load after retry.");
+          }
         }
       }
 
@@ -1553,7 +1611,7 @@
         }
       });
 
-      // Initialize the widget
+      // Initialize the widget with protection against re-initialization
       document.addEventListener("DOMContentLoaded", function () {
         // Set primary color CSS variable
         document.documentElement.style.setProperty(
@@ -1564,17 +1622,79 @@
         // Initialize quiz progress
         updateQuizProgress();
 
-        // Wait for stylist-widget.js to load
+        // Create a persistent initialization lock
+        window.__STYLIST_INIT_ATTEMPTED =
+          window.__STYLIST_INIT_ATTEMPTED || false;
+
+        // Wait for stylist-widget.js to load, with safety checks
         const scriptCheckInterval = setInterval(function () {
-          if (window.Stylist) {
+          // Check if widget is already initialized or initialization is in progress
+          if (window.__STYLIST_INIT_ATTEMPTED) {
+            console.log(
+              "Stylist Widget initialization already attempted, skipping..."
+            );
             clearInterval(scriptCheckInterval);
-            console.log("Stylist Widget SDK loaded. Ready to initialize.");
+            return;
+          }
+
+          if (window.StylistWidget) {
+            // Set initialization lock BEFORE initialization to prevent race conditions
+            window.__STYLIST_INIT_ATTEMPTED = true;
+            clearInterval(scriptCheckInterval);
+            console.log(
+              "Stylist Widget SDK loaded. Initializing (once only)..."
+            );
+            initializeReactComponents();
           }
         }, 100);
+
+        // Safety timeout to clear interval after 10 seconds if widget never loads
+        setTimeout(function () {
+          clearInterval(scriptCheckInterval);
+          console.warn("Stylist Widget initialization timed out");
+        }, 10000);
       });
     </script>
 
+    <!-- Polyfill for process with additional safety measures -->
+    <script>
+      // Enhanced process polyfill with error handling and safety timeouts
+      window.process = {
+        browser: true,
+        env: { NODE_ENV: "production" },
+        nextTick: function (fn) {
+          try {
+            setTimeout(fn, 0);
+          } catch (e) {
+            console.error("Error in process.nextTick callback:", e);
+          }
+        },
+      };
+
+      // Add global error handler for unhandled promise rejections
+      window.addEventListener("unhandledrejection", function (event) {
+        console.error("Unhandled promise rejection:", event.reason);
+        event.preventDefault();
+      });
+
+      // Add global safety timeout to clear initialization flags if widget fails to load
+      setTimeout(function () {
+        if (!window.__STYLIST_WIDGET_RENDER_COMPLETE) {
+          console.warn(
+            "Safety timeout: Widget failed to render in 30 seconds, resetting initialization flags"
+          );
+          window.__STYLIST_WIDGET_DOM_MOUNTED = false;
+          window.__STYLIST_WIDGET_INITIALIZED = false;
+          window.__STYLIST_STORES_INITIALIZED = false;
+          window.__STYLIST_STORES_INITIALIZING = false;
+          alert(
+            "Widget initialization timed out. Please refresh the page to try again."
+          );
+        }
+      }, 30000);
+    </script>
+
     <!-- Load the main Stylist Widget Script -->
-    <script src="stylist-widget.js" async></script>
+    <script src="stylist-widget.js"></script>
   </body>
 </html>

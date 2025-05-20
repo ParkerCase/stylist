@@ -9,65 +9,145 @@
   border-left: 1px solid variables.$border-color;
   overflow-y: auto;
   @include mixins.scrollbar-custom;
-  
+
   @include mixins.responsive('xs') {
     width: 100%;
     height: 300px;
     border-left: none;
     border-top: 1px solid variables.$border-color;
   }
-  
+
   &__section {
     border-bottom: 1px solid variables.$border-color;
-    
+
     &:last-child {
       border-bottom: none;
     }
   }
-  
+
   &__section-header {
     @include mixins.flex-between;
     padding: variables.$spacing-md;
     cursor: pointer;
     transition: background-color variables.$transition-normal ease;
-    
+
     &:hover {
       background-color: rgba(variables.$primary-color, 0.05);
     }
   }
-  
+
+  &__section-title-container {
+    display: flex;
+    align-items: center;
+    gap: variables.$spacing-xs;
+  }
+
   &__section-title {
     font-size: variables.$font-size-md;
     font-weight: variables.$font-weight-bold;
     color: variables.$text-primary;
     margin: 0;
   }
-  
+
+  &__header-actions {
+    display: flex;
+    align-items: center;
+    gap: variables.$spacing-sm;
+  }
+
+  &__view-toggle {
+    background: none;
+    border: none;
+    color: variables.$text-secondary;
+    padding: variables.$spacing-xs;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: all variables.$transition-normal ease;
+
+    &:hover {
+      opacity: 1;
+      color: variables.$primary-color;
+    }
+  }
+
+  &__item-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    background-color: variables.$primary-color;
+    color: white;
+    border-radius: 9px;
+    font-size: variables.$font-size-xs;
+    font-weight: variables.$font-weight-bold;
+    padding: 0 variables.$spacing-xs;
+  }
+
   &__section-toggle {
     font-size: variables.$font-size-lg;
     color: variables.$text-secondary;
     font-weight: variables.$font-weight-bold;
   }
-  
+
   &__section-content {
     padding: variables.$spacing-md;
     padding-top: 0;
   }
-  
+
+  &__batch-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: variables.$spacing-sm;
+  }
+
+  &__batch-action {
+    display: flex;
+    align-items: center;
+    font-size: variables.$font-size-xs;
+    padding: variables.$spacing-xs variables.$spacing-sm;
+    border-radius: variables.$border-radius-sm;
+    cursor: pointer;
+    transition: all variables.$transition-normal ease;
+
+    svg {
+      margin-right: variables.$spacing-xs;
+    }
+
+    &--remove {
+      color: variables.$error-color;
+      background-color: rgba(variables.$error-color, 0.05);
+      border: 1px solid rgba(variables.$error-color, 0.2);
+
+      &:hover:not(:disabled) {
+        background-color: rgba(variables.$error-color, 0.1);
+        border-color: rgba(variables.$error-color, 0.3);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+
   &__empty {
     font-size: variables.$font-size-sm;
     color: variables.$text-tertiary;
     text-align: center;
     padding: variables.$spacing-md 0;
   }
-  
-  &__garment-list {
+
+  &__garment-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: variables.$spacing-sm;
     margin-bottom: variables.$spacing-md;
   }
-  
+
   &__garment-thumbnail {
     position: relative;
     border: 2px solid variables.$border-color;
@@ -75,32 +155,48 @@
     overflow: hidden;
     cursor: pointer;
     transition: all variables.$transition-normal ease;
-    
+
     &:hover {
       border-color: variables.$text-secondary;
+      transform: translateY(-2px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-    
+
     &--active {
       border-color: variables.$primary-color;
       box-shadow: 0 0 0 2px rgba(variables.$primary-color, 0.2);
     }
   }
-  
+
+  &__garment-active-marker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    border: 3px solid variables.$primary-color;
+    box-sizing: border-box;
+    border-radius: calc(variables.$border-radius-sm - 2px);
+  }
+
   &__garment-image {
     aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: variables.$background-color;
-    
+
     img {
       max-width: 100%;
       max-height: 100%;
       object-fit: contain;
     }
   }
-  
+
   &__garment-type {
+    @include mixins.flex-center;
+    gap: variables.$spacing-xs;
     padding: variables.$spacing-xs;
     font-size: variables.$font-size-xs;
     color: variables.$text-secondary;
@@ -109,7 +205,7 @@
     background-color: variables.$surface-color;
     border-top: 1px solid variables.$border-color;
   }
-  
+
   &__garment-remove {
     position: absolute;
     top: variables.$spacing-xs;
@@ -122,33 +218,202 @@
     @include mixins.flex-center;
     opacity: 0;
     transition: opacity variables.$transition-normal ease;
-    
+
     &:hover {
       background-color: variables.$error-color;
     }
-    
-    .stylist-try-on-controls__garment-thumbnail:hover & {
+
+    .stylist-try-on-controls__garment-thumbnail:hover &,
+    .stylist-try-on-controls__garment-list-item:hover & {
       opacity: 1;
     }
   }
-  
+
+  // List view styles
+  &__garment-list {
+    display: flex;
+    flex-direction: column;
+    gap: variables.$spacing-md;
+    margin-bottom: variables.$spacing-md;
+  }
+
+  &__garment-group {
+    border: 1px solid variables.$border-color;
+    border-radius: variables.$border-radius-sm;
+    overflow: hidden;
+  }
+
+  &__group-title {
+    display: flex;
+    align-items: center;
+    gap: variables.$spacing-xs;
+    font-size: variables.$font-size-sm;
+    font-weight: variables.$font-weight-medium;
+    color: variables.$text-primary;
+    margin: 0;
+    padding: variables.$spacing-xs variables.$spacing-sm;
+    background-color: rgba(variables.$border-color, 0.2);
+    border-bottom: 1px solid variables.$border-color;
+    text-transform: capitalize;
+  }
+
+  &__group-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    background-color: rgba(variables.$text-tertiary, 0.3);
+    color: variables.$text-secondary;
+    border-radius: 9px;
+    font-size: variables.$font-size-xs;
+    font-weight: variables.$font-weight-bold;
+    padding: 0 variables.$spacing-xs;
+    margin-left: auto;
+  }
+
+  &__garment-list-item {
+    display: flex;
+    align-items: center;
+    gap: variables.$spacing-sm;
+    padding: variables.$spacing-xs;
+    border-bottom: 1px solid variables.$border-color;
+    cursor: pointer;
+    transition: all variables.$transition-normal ease;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background-color: rgba(variables.$primary-color, 0.05);
+    }
+
+    &--active {
+      background-color: rgba(variables.$primary-color, 0.1);
+    }
+  }
+
+  &__garment-list-image {
+    width: 40px;
+    height: 40px;
+    border-radius: variables.$border-radius-sm;
+    overflow: hidden;
+    border: 1px solid variables.$border-color;
+    background-color: variables.$background-color;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  &__garment-list-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__garment-name {
+    font-size: variables.$font-size-sm;
+    font-weight: variables.$font-weight-medium;
+    color: variables.$text-primary;
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__garment-meta {
+    font-size: variables.$font-size-xs;
+    color: variables.$text-tertiary;
+  }
+
+  &__garment-list-remove {
+    width: 24px;
+    height: 24px;
+    border-radius: variables.$border-radius-round;
+    background-color: rgba(variables.$error-color, 0.8);
+    color: variables.$text-inverse;
+    @include mixins.flex-center;
+    opacity: 0;
+    transition: opacity variables.$transition-normal ease;
+    flex-shrink: 0;
+
+    &:hover {
+      background-color: variables.$error-color;
+    }
+  }
+
   &__add-garment {
     margin-top: variables.$spacing-md;
   }
-  
+
+  &__garment-types {
+    margin-top: variables.$spacing-sm;
+  }
+
+  &__garment-type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: variables.$spacing-xs;
+    margin-top: variables.$spacing-xs;
+  }
+
+  &__garment-type-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: variables.$spacing-sm;
+    background-color: variables.$background-color;
+    border: 1px solid variables.$border-color;
+    border-radius: variables.$border-radius-sm;
+    cursor: pointer;
+    transition: all variables.$transition-normal ease;
+
+    span {
+      font-size: variables.$font-size-xs;
+      color: variables.$text-secondary;
+      margin-top: variables.$spacing-xs;
+      text-transform: capitalize;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: rgba(variables.$primary-color, 0.05);
+      border-color: variables.$primary-color;
+      transform: translateY(-2px);
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  &__garment-type-icon {
+    width: 24px;
+    height: 24px;
+    @include mixins.flex-center;
+    color: variables.$text-primary;
+  }
+
   &__label {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     font-size: variables.$font-size-sm;
     color: variables.$text-secondary;
     margin-bottom: variables.$spacing-xs;
   }
-  
+
   &__button-group {
     display: flex;
     flex-wrap: wrap;
     gap: variables.$spacing-xs;
   }
-  
+
   &__button {
     padding: variables.$spacing-xs variables.$spacing-sm;
     background-color: variables.$background-color;
@@ -158,52 +423,88 @@
     color: variables.$text-primary;
     cursor: pointer;
     transition: all variables.$transition-normal ease;
-    
-    &:hover {
+
+    &:hover:not(:disabled) {
       background-color: variables.$surface-color;
       border-color: variables.$text-secondary;
     }
-    
+
     &--active {
       background-color: rgba(variables.$primary-color, 0.1);
       border-color: variables.$primary-color;
       color: variables.$primary-color;
     }
-    
+
     &--full-width {
       width: 100%;
       padding: variables.$spacing-sm;
+      @include mixins.flex-center;
+
+      svg {
+        margin-right: variables.$spacing-xs;
+      }
     }
-    
+
     &:disabled {
       opacity: 0.6;
       cursor: not-allowed;
     }
   }
-  
+
   &__garment-controls {
     display: flex;
     flex-direction: column;
     gap: variables.$spacing-md;
   }
-  
+
   &__control-group {
     margin-bottom: variables.$spacing-sm;
-    
+
     &:last-child {
       margin-bottom: 0;
     }
   }
-  
+
+  &__range-with-buttons {
+    display: flex;
+    align-items: center;
+    gap: variables.$spacing-xs;
+  }
+
+  &__range-button {
+    width: 24px;
+    height: 24px;
+    border-radius: variables.$border-radius-sm;
+    background-color: variables.$background-color;
+    border: 1px solid variables.$border-color;
+    color: variables.$text-secondary;
+    font-size: variables.$font-size-md;
+    @include mixins.flex-center;
+    cursor: pointer;
+    transition: all variables.$transition-normal ease;
+    flex-shrink: 0;
+
+    &:hover:not(:disabled) {
+      background-color: variables.$surface-color;
+      border-color: variables.$primary-color;
+      color: variables.$primary-color;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
   &__slider {
-    width: 100%;
+    flex: 1;
     appearance: none;
     height: 4px;
     background-color: variables.$border-color;
     border-radius: 2px;
     outline: none;
     margin: variables.$spacing-xs 0;
-    
+
     &::-webkit-slider-thumb {
       appearance: none;
       width: 16px;
@@ -212,7 +513,7 @@
       border-radius: 50%;
       cursor: pointer;
     }
-    
+
     &::-moz-range-thumb {
       width: 16px;
       height: 16px;
@@ -221,15 +522,66 @@
       cursor: pointer;
       border: none;
     }
-    
+
     &:disabled {
       opacity: 0.6;
     }
   }
-  
+
   &__value {
     font-size: variables.$font-size-xs;
     color: variables.$text-tertiary;
-    text-align: right;
+    margin-left: auto;
+  }
+
+  &__action-buttons {
+    display: flex;
+    gap: variables.$spacing-sm;
+    margin-top: variables.$spacing-md;
+  }
+
+  &__action-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: variables.$spacing-xs;
+    padding: variables.$spacing-sm;
+    background-color: variables.$background-color;
+    border: 1px solid variables.$border-color;
+    border-radius: variables.$border-radius-sm;
+    font-size: variables.$font-size-sm;
+    color: variables.$text-primary;
+    cursor: pointer;
+    transition: all variables.$transition-normal ease;
+
+    svg {
+      flex-shrink: 0;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: variables.$surface-color;
+      border-color: variables.$text-secondary;
+    }
+
+    &--active {
+      background-color: rgba(variables.$primary-color, 0.1);
+      border-color: variables.$primary-color;
+      color: variables.$primary-color;
+    }
+
+    &--danger {
+      color: variables.$error-color;
+
+      &:hover:not(:disabled) {
+        background-color: rgba(variables.$error-color, 0.1);
+        border-color: variables.$error-color;
+      }
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   }
 }

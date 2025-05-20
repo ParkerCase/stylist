@@ -1,0 +1,66 @@
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
+
+.stylist-item-feedback-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 5;
+  
+  &__button {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: variables.$border-radius-round;
+    background-color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: variables.$shadow-md;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all variables.$transition-normal ease;
+    pointer-events: auto;
+    
+    &--like {
+      top: variables.$spacing-sm;
+      right: variables.$spacing-sm;
+      color: variables.$secondary-color;
+      
+      &:hover, &:active {
+        background-color: variables.$secondary-color;
+        color: white;
+        transform: scale(1.1);
+      }
+    }
+    
+    &--dislike {
+      top: variables.$spacing-sm;
+      left: variables.$spacing-sm;
+      color: variables.$error-color;
+      
+      &:hover, &:active {
+        background-color: variables.$error-color;
+        color: white;
+        transform: scale(1.1);
+      }
+    }
+  }
+  
+  &__icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+// Show buttons on parent hover
+.stylist-item-card:hover .stylist-item-feedback-overlay__button {
+  opacity: 1;
+  transform: scale(1);
+}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stylist Widget Diagnostic Test</title>
+  <script src="./dist/stylist-runtime.js"></script>
+  <script src="./dist/stylist-vendors.js"></script>
+  <script src="./dist/stylist-213.js"></script>
+  <script src="./dist/stylist-main.js"></script>
+  <link rel="stylesheet" href="./dist/stylist-widget.css">
+</head>
+<body>
+  <h1>Stylist Widget Diagnostic Test</h1>
+  <p>This page is used to test the Stylist Widget and its diagnostic capabilities.</p>
+  
+  <button id="init-widget">Initialize Widget</button>
+  <button id="open-widget">Open Widget</button>
+  <button id="close-widget">Close Widget</button>
+  <button id="run-diagnostics">Run Diagnostics</button>
+  
+  <pre id="diagnostic-output" style="background-color: #f5f5f5; padding: 10px; margin-top: 20px; height: 400px; overflow: auto;"></pre>
+
+  <script>
+    // Set diagnostic mode
+    window.__STYLIST_DIAGNOSTICS_LOG_TO_TEMP = true;
+    
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Handle initialize button
+      document.getElementById('init-widget').addEventListener('click', function() {
+        if (window.StylistWidget) {
+          const result = window.StylistWidget.init({
+            apiKey: 'test_key',
+            retailerId: 'test_retailer',
+            primaryColor: '#4361ee',
+            position: 'bottom-right'
+          });
+          console.log('Initialization result:', result);
+        } else {
+          console.error('StylistWidget not available');
+        }
+      });
+      
+      // Handle open button
+      document.getElementById('open-widget').addEventListener('click', function() {
+        if (window.StylistWidget) {
+          window.StylistWidget.open();
+        }
+      });
+      
+      // Handle close button
+      document.getElementById('close-widget').addEventListener('click', function() {
+        if (window.StylistWidget) {
+          window.StylistWidget.close();
+        }
+      });
+      
+      // Handle diagnose button
+      document.getElementById('run-diagnostics').addEventListener('click', function() {
+        if (window.StylistWidget && window.StylistWidget.__debug) {
+          const diagnostics = window.StylistWidget.__debug.getDiagnostics();
+          document.getElementById('diagnostic-output').textContent = 
+            JSON.stringify(diagnostics, null, 2);
+        } else {
+          console.error('StylistWidget diagnostics not available');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

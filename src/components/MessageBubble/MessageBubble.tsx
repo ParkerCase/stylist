@@ -6,7 +6,7 @@ import './MessageBubble.scss';
 import { TextMessage, MessageSender } from '../../types/index';
 import { formatDate } from '../../utils/formatters';
 import { ThumbsUpButton } from '@/components/FeedbackControls';
-import { trackEvent } from '@/utils/analytics';
+import { trackEvent, AnalyticsEventType } from '@/utils/analytics';
 import { getUserId } from '@/utils/localStorage';
 
 interface MessageBubbleProps {
@@ -50,7 +50,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       onFeedback(id, true);
       
       // Track the event
-      trackEvent('ASSISTANT_RESPONSE_THUMBS_UP', getUserId(), {
+      trackEvent(AnalyticsEventType.MESSAGE_THUMBS_UP, getUserId(), {
         messageId: id,
         messageContent: text.substring(0, 100) // First 100 chars for context
       });

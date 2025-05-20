@@ -3,9 +3,105 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FashionAI Stylist Widget - AI-powered fashion recommendations">
   <title>FashionAI Stylist Widget</title>
+  
+  <!-- Preload critical fonts -->
+  <link rel="preload" href="/fonts/your-main-font.woff2" as="font" type="font/woff2" crossorigin>
+  
+  <!-- Preconnect to origins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Critical CSS inlined -->
+  <style>
+    /* Critical CSS for initial rendering */
+    :root {
+      --stylist-primary-color: #4361ee;
+      --stylist-secondary-color: #3f37c9;
+      --stylist-text-color: #1b1b1b;
+      --stylist-background-color: #ffffff;
+      --stylist-border-radius: 8px;
+      --stylist-transition-speed: 0.3s;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    
+    #stylist-root {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .stylist-loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      height: 100%;
+    }
+    
+    .stylist-loading-spinner {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 3px solid rgba(67, 97, 238, 0.2);
+      border-top-color: var(--stylist-primary-color, #4361ee);
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  
+  <!-- App Shell -->
+  <script>
+    // Feature detection and minimal initial setup
+    window.__STYLIST_CAPABILITIES = {
+      webp: (function() {
+        var canvas = document.createElement('canvas');
+        if (!!(canvas.getContext && canvas.getContext('2d'))) {
+          return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+        }
+        return false;
+      })(),
+      webgl: (function() {
+        try {
+          return !!window.WebGLRenderingContext && 
+            !!(document.createElement('canvas').getContext('webgl') || 
+               document.createElement('canvas').getContext('experimental-webgl'));
+        } catch(e) {
+          return false;
+        }
+      })(),
+      touch: (function() {
+        return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      })(),
+      perfEntry: !!(window.PerformanceObserver && window.PerformanceMark),
+      raf: !!window.requestAnimationFrame
+    };
+  </script>
 </head>
 <body>
-  <div id="stylist-root"></div>
+  <div id="stylist-root">
+    <!-- App Shell Placeholder -->
+    <div class="stylist-loading-container">
+      <div class="stylist-loading-spinner"></div>
+      <p style="margin-top: 1rem; color: var(--stylist-text-color, #1b1b1b);">Loading Stylist Widget...</p>
+    </div>
+  </div>
+  
+  <!-- Prefetch likely next navigation -->
+  <link rel="prefetch" href="/assets/social-proof-images.json">
+  <link rel="prefetch" href="/assets/trending-items-placeholder.json">
+  
+  <!-- Service Worker Registration - added with a small delay to improve initial load time -->
+  <script src="/service-worker-registration.js" defer></script>
 </body>
 </html>

@@ -51,6 +51,35 @@
   &__controls {
     @include mixins.flex-center;
   }
+
+  &__demo-toggle {
+    margin-right: variables.$spacing-sm;
+
+    .stylist-demo-toggle-switch {
+      width: 40px;
+      height: 20px;
+    }
+
+    .stylist-demo-toggle-slider {
+      background-color: rgba(255, 255, 255, 0.2);
+
+      &:before {
+        height: 14px;
+        width: 14px;
+        background-color: white;
+      }
+    }
+
+    input:checked + .stylist-demo-toggle-slider {
+      background-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .stylist-demo-toggle-label {
+      font-size: variables.$font-size-xs;
+      color: white;
+      margin-left: variables.$spacing-xs;
+    }
+  }
   
   &__button {
     @include mixins.flex-center;

@@ -1,0 +1,271 @@
+// src/components/DemoGuide/DemoGuide.scss
+
+@use "../../styles/variables.scss" as variables;
+@use "../../styles/mixins.scss" as mixins;
+
+.stylist-demo-guide {
+  position: fixed;
+  width: 350px;
+  max-width: 100%;
+  background-color: variables.$background-color;
+  border: 1px solid variables.$border-color;
+  border-radius: variables.$border-radius-md;
+  box-shadow: variables.$shadow-lg;
+  z-index: variables.$z-index-tooltip;
+  overflow: hidden;
+  @include mixins.animate-all;
+  font-family: variables.$font-family;
+  
+  // Positioning variations
+  &--right {
+    top: 100px;
+    right: variables.$spacing-md;
+  }
+  
+  &--left {
+    top: 100px;
+    left: variables.$spacing-md;
+  }
+  
+  &--bottom {
+    bottom: variables.$spacing-md;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  // Minimized state
+  &--minimized {
+    width: 120px;
+    height: auto;
+    opacity: 0.8;
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+  
+  // Header section
+  &__header {
+    @include mixins.flex-between;
+    padding: variables.$spacing-sm variables.$spacing-md;
+    background-color: variables.$primary-color;
+    color: variables.$text-inverse;
+    cursor: move;
+    user-select: none;
+  }
+  
+  &__header-title {
+    font-weight: variables.$font-weight-medium;
+    font-size: variables.$font-size-sm;
+  }
+  
+  &__header-controls {
+    display: flex;
+    gap: variables.$spacing-xs;
+  }
+  
+  &__control-btn {
+    @include mixins.flex-center;
+    width: 24px;
+    height: 24px;
+    border-radius: variables.$border-radius-sm;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: variables.$text-inverse;
+    border: none;
+    cursor: pointer;
+    transition: background-color variables.$animation-duration ease-in-out;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+  
+  // Flow selector
+  &__flow-selector {
+    padding: variables.$spacing-sm variables.$spacing-md;
+    border-bottom: 1px solid variables.$border-color;
+    @include mixins.flex-between;
+    
+    label {
+      font-size: variables.$font-size-sm;
+      color: variables.$text-secondary;
+      margin-right: variables.$spacing-sm;
+    }
+    
+    select {
+      flex: 1;
+      padding: variables.$spacing-xs variables.$spacing-sm;
+      border: 1px solid variables.$border-color;
+      border-radius: variables.$border-radius-sm;
+      background-color: variables.$background-color;
+      font-size: variables.$font-size-sm;
+      color: variables.$text-primary;
+    }
+  }
+  
+  // Content area
+  &__content {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: variables.$spacing-md;
+  }
+  
+  // Progress indicator
+  &__progress {
+    margin-bottom: variables.$spacing-md;
+  }
+  
+  &__progress-text {
+    font-size: variables.$font-size-xs;
+    color: variables.$text-secondary;
+    margin-bottom: variables.$spacing-xs;
+  }
+  
+  &__progress-bar {
+    height: 4px;
+    background-color: variables.$border-color;
+    border-radius: variables.$border-radius-sm;
+    overflow: hidden;
+  }
+  
+  &__progress-indicator {
+    height: 100%;
+    background-color: variables.$primary-color;
+    transition: width variables.$animation-duration ease-in-out;
+  }
+  
+  // Step content
+  &__step {
+    margin-bottom: variables.$spacing-md;
+  }
+  
+  &__step-title {
+    font-size: variables.$font-size-md;
+    font-weight: variables.$font-weight-bold;
+    color: variables.$text-primary;
+    margin: 0 0 variables.$spacing-xs 0;
+  }
+  
+  &__step-description {
+    font-size: variables.$font-size-sm;
+    color: variables.$text-secondary;
+    margin-bottom: variables.$spacing-md;
+  }
+  
+  &__step-action,
+  &__step-outcome,
+  &__step-tips,
+  &__step-fallback {
+    margin-bottom: variables.$spacing-sm;
+    padding: variables.$spacing-sm;
+    border-radius: variables.$border-radius-sm;
+    
+    h4 {
+      font-size: variables.$font-size-sm;
+      font-weight: variables.$font-weight-bold;
+      margin: 0 0 variables.$spacing-xs 0;
+    }
+    
+    p {
+      font-size: variables.$font-size-sm;
+      margin: 0;
+      line-height: 1.4;
+    }
+  }
+  
+  &__step-action {
+    background-color: rgba(variables.$primary-color, 0.1);
+    
+    h4 {
+      color: variables.$primary-color;
+    }
+  }
+  
+  &__step-outcome {
+    background-color: rgba(variables.$success-color, 0.1);
+    
+    h4 {
+      color: variables.$success-color;
+    }
+  }
+  
+  &__step-tips {
+    background-color: rgba(variables.$info-color, 0.1);
+    
+    h4 {
+      color: variables.$info-color;
+    }
+  }
+  
+  &__step-fallback {
+    background-color: rgba(variables.$warning-color, 0.1);
+    
+    h4 {
+      color: variables.$warning-color;
+    }
+  }
+  
+  // Navigation controls
+  &__navigation {
+    @include mixins.flex-between;
+    margin-top: variables.$spacing-lg;
+  }
+  
+  &__nav-btn {
+    @include mixins.flex-center;
+    padding: variables.$spacing-xs variables.$spacing-sm;
+    background-color: variables.$primary-color;
+    color: variables.$text-inverse;
+    border: none;
+    border-radius: variables.$border-radius-sm;
+    font-size: variables.$font-size-sm;
+    cursor: pointer;
+    transition: background-color variables.$animation-duration ease-in-out;
+    gap: variables.$spacing-xs;
+    
+    &:hover {
+      background-color: variables.$primary-color-dark;
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  
+  // Footer
+  &__footer {
+    padding: variables.$spacing-sm variables.$spacing-md;
+    border-top: 1px solid variables.$border-color;
+    background-color: variables.$background-color-light;
+  }
+  
+  &__duration {
+    @include mixins.flex-start;
+    font-size: variables.$font-size-xs;
+    color: variables.$text-secondary;
+    
+    svg {
+      margin-right: variables.$spacing-xs;
+      color: variables.$text-tertiary;
+    }
+  }
+}
+
+// Responsive adjustments
+@include mixins.mobile-only {
+  .stylist-demo-guide {
+    width: calc(100% - #{variables.$spacing-md * 2});
+    max-height: 80vh;
+    
+    &--right,
+    &--left {
+      right: variables.$spacing-md;
+      left: variables.$spacing-md;
+    }
+    
+    &__content {
+      max-height: 60vh;
+    }
+  }
+}

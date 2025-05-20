@@ -1,0 +1,68 @@
+Starting Stylist Widget diagnostics...
+
+Generating sample test logs for diagnostic analysis...
+Found 14 log entries to analyze
+
+Component Lifecycle Summary:
+StylistWidget       : ✓ Mounted (2 logs)
+ChatWidget          : ✓ Mounted (2 logs)
+TryOnModal          : ✗ 1 Errors (1 logs)
+  First error: Error boundary triggered in TryOnModal
+StyleQuizModal      : No logs found
+Lookbook            : No logs found
+AsyncComponentLoader: ? Unknown (1 logs)
+
+Store Initialization Summary:
+chatStore           : ✓ Initialized (1 logs)
+userStore           : ✓ Initialized (1 logs)
+recommendationStore : No logs found
+
+Global Flags Summary:
+__STYLIST_WIDGET_INITIALIZED       : ✗ False
+__STYLIST_WIDGET_DOM_MOUNTED       : ✗ False
+__STYLIST_WIDGET_RENDER_COMPLETE   : ✓ True
+__STYLIST_STORES_INITIALIZED       : ✓ True
+__STYLIST_CHAT_INITIALIZED         : ✗ False
+__STYLIST_BACKGROUND_INIT_COMPLETE : ✗ False
+
+Issues Detected:
+Issue 1: Suspense Fallback Stuck
+Description: One or more Suspense fallbacks got stuck and never resolved
+Recommendation: Check lazy-loaded components, ensure they are importing correctly
+
+Issue 2: AsyncComponentLoader Timeout
+Description: AsyncComponentLoader timed out waiting for component to load
+Recommendation: Check for unresolved promises in the lazy-loaded components
+
+Issue 3: Error Boundary Triggered
+Description: An error boundary was triggered during rendering
+Recommendation: Check the component stack in the logs for the source of the error
+
+Issue 4: Background Initialization Missing
+Description: Background initialization tasks did not complete
+Recommendation: Check for errors in the background initialization tasks
+
+Key Lifecycle Events:
+15:06:57            [global] Store initialization started
+15:06:58      +1.0s [chatStore] Chat store successfully initialized ("isOpen":false,"hasMessages":false,"currentView":"...)
+15:06:59      +1.0s [userStore] User store successfully initialized ("hasUser":false)
+15:07:00      +1.0s Stores successfully initialized ("flag":"__STYLIST_STORES_INITIALIZED","value":true...)
+15:07:01      +1.0s [StylistWidget] StylistWidget initialized
+15:07:03      +2.0s [ChatWidget] ChatWidgetLazy import starting
+15:07:07      +4.0s [TryOnModal] Error boundary triggered in TryOnModal ("errorMessage":"Failed to compile shader program: ...)
+15:07:15      +8.0s [ChatWidget] First paint callback triggered from ChatWidget
+15:07:17      +2.0s Background initialization tasks starting now ("flag":"__STYLIST_PENDING_INITIALIZATIONS","value"...)
+15:07:22      +5.0s Widget render completed successfully ("flag":"__STYLIST_WIDGET_RENDER_COMPLETE","value":...)
+
+Recommended Next Steps:
+1. Check lazy-loaded components, ensure they are importing correctly
+2. Check the component stack in the logs for the source of the error
+3. Check for unresolved promises in the lazy-loaded components
+
+Diagnostic Summary:
+Total Log Entries: 14
+Issues Detected: 4
+First Log: 5/10/2025, 3:06:57 PM
+Last Log: 5/10/2025, 3:07:22 PM
+
+Diagnostics complete!

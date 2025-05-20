@@ -2,6 +2,7 @@
 
 @use './variables.scss' as v;
 @use './mixins.scss' as m;
+@use './adaptive-animations.scss' as a;
 
 // Reset box-sizing
 *,
@@ -29,7 +30,7 @@
     list-style: none;
   }
   
-  // Reset buttons
+  // Reset buttons with improved focus states
   button {
     background-color: transparent;
     border: none;
@@ -45,23 +46,48 @@
     &:focus {
       outline: none;
     }
+    
+    &:focus-visible {
+      outline: 2px solid v.$primary-color;
+      outline-offset: 2px;
+      box-shadow: 0 0 0 4px rgba(v.$primary-color, 0.2);
+      position: relative;
+      z-index: 10;
+    }
   }
   
-  // Reset inputs
-  input {
+  // Reset inputs with improved focus states
+  input, select, textarea {
     font-family: inherit;
     font-size: inherit;
     line-height: inherit;
     margin: 0;
+    
+    &:focus-visible {
+      outline: 2px solid v.$primary-color;
+      outline-offset: 2px;
+      box-shadow: 0 0 0 4px rgba(v.$primary-color, 0.2);
+      position: relative;
+      z-index: 10;
+      border-color: v.$primary-color;
+    }
   }
   
-  // Links
+  // Links with improved focus states
   a {
     color: v.$primary-color;
     text-decoration: none;
     
     &:hover {
       text-decoration: underline;
+    }
+    
+    &:focus-visible {
+      outline: 2px solid v.$primary-color;
+      outline-offset: 2px;
+      box-shadow: 0 0 0 4px rgba(v.$primary-color, 0.2);
+      position: relative;
+      z-index: 10;
     }
   }
 }
@@ -116,24 +142,104 @@
   }
 }
 
-// Common animation classes
+// Common animation classes with adaptive complexity
 .animate-fade-in {
+  &.animation--high {
+    animation: fadeIn v.$transition-normal cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  }
+  
+  &.animation--medium {
+    animation: fadeIn v.$transition-normal ease-out forwards;
+  }
+  
+  &.animation--low {
+    animation: fadeIn v.$transition-fast ease forwards;
+  }
+  
+  &.animation--none {
+    animation: none;
+    opacity: 1;
+  }
+  
+  // Default for when no explicit complexity class is added
   animation: fadeIn v.$transition-normal ease forwards;
 }
 
 .animate-slide-up {
+  &.animation--high {
+    animation: slideInUp v.$transition-normal cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  
+  &.animation--medium {
+    animation: slideInUp v.$transition-normal ease-out forwards;
+  }
+  
+  &.animation--low {
+    animation: slideInUp v.$transition-fast ease forwards;
+  }
+  
+  &.animation--none {
+    animation: none;
+    opacity: 1;
+  }
+  
+  // Default
   animation: slideInUp v.$transition-normal ease forwards;
 }
 
 .animate-slide-right {
+  &.animation--high {
+    animation: slideInRight v.$transition-normal cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  
+  &.animation--medium {
+    animation: slideInRight v.$transition-normal ease-out forwards;
+  }
+  
+  &.animation--low {
+    animation: slideInRight v.$transition-fast ease forwards;
+  }
+  
+  &.animation--none {
+    animation: none;
+    opacity: 1;
+  }
+  
+  // Default
   animation: slideInRight v.$transition-normal ease forwards;
 }
 
 .animate-pulse {
+  &.animation--high {
+    animation: pulse 2s cubic-bezier(0.4, 0.0, 0.2, 1) infinite;
+  }
+  
+  &.animation--medium {
+    animation: pulse 2s ease-in-out infinite;
+  }
+  
+  &.animation--low {
+    animation: pulse 2.5s ease infinite;
+  }
+  
+  &.animation--none {
+    animation: none;
+  }
+  
+  // Default
   animation: pulse 2s ease infinite;
 }
 
 .animate-spin {
+  &.animation--high, &.animation--medium, &.animation--low {
+    animation: spin 1s linear infinite;
+  }
+  
+  &.animation--none {
+    animation: none;
+  }
+  
+  // Default
   animation: spin 1s linear infinite;
 }
 

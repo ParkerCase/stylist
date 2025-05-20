@@ -85,13 +85,13 @@ const Wishlist: React.FC<WishlistProps> = ({
     // Create closet item from wishlist item
     const closetItem: ClosetItem = {
       id: item.itemId,
-      name: item.name || `Item ${item.itemId.slice(0, 6)}`,
       category: 'clothing', // Default category
-      addedAt: new Date(),
+      color: 'unknown', // Required field
+      dateAdded: new Date(),
       favorite: true,
       imageUrl: item.imageUrl,
       brand: item.brand,
-      price: item.price
+      tags: []
     };
     
     // Add to closet in user store

@@ -71,22 +71,95 @@ export interface StylistWidgetConfig {
 
 // Define shared widget API interface
 export interface StylistWidgetAPI {
-  init: (config: StylistWidgetConfig) => void;
-  open: () => void;
-  close: () => void;
-  minimize: () => void;
-  switchView: (view: 'chat' | 'lookbook') => void;
-  openStyleQuiz: () => void;
-  openVirtualTryOn: () => void;
-  __debug?: {
-    addMockItems: () => void;
+  // Core Widget API
+  init: (config: StylistWidgetConfig) => { success: boolean; message: string };
+  open: () => boolean;
+  close: () => boolean;
+  minimize: () => boolean;
+  switchView: (view: 'chat' | 'lookbook') => boolean;
+  openStyleQuiz: () => boolean;
+  openVirtualTryOn: () => boolean;
+
+  // Debug/Diagnostic API
+  __debug: {
+    // Add mock items to the widget for testing
+    addMockItems: () => {
+      success: boolean;
+      message: string;
+      data?: { itemCount: number; outfitCount: number };
+      error?: string;
+    };
+
+    // Retrieve diagnostics logs and global flags
+    getDiagnostics: () => {
+      logs: any[];
+      flags: {
+        initialized: boolean;
+        mounted: boolean;
+        renderComplete: boolean;
+        storesInitialized: boolean;
+        backgroundInitComplete: boolean;
+      }
+    };
+
+    // Clear diagnostics logs
+    clearDiagnostics: () => {
+      success: boolean;
+      message: string
+    };
   };
+}
+
+// Define social proof related interfaces
+export interface SocialProofMatch {
+  id: string;
+  name?: string;
+  description?: string;
+  price?: number;
+  brand?: string;
+  category?: string;
+  imageUrl: string;
+  matchScore?: number;
+  matchReasons?: string[];
+  celebrityName?: string;
+  event?: string;
+  matchedProducts: ProductRecommendation[];
+  confidence?: number;
+  source?: string;
+  timestamp?: string;
+}
+
+// Product recommendation in social proof
+export interface ProductRecommendation {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  brand: string;
+  category: string;
+  imageUrl: string;
+  matchScore?: number;
+  matchReasons?: string[];
+}
+
+export interface SocialProofItem {
+  id: string;
+  celebrity: string;
+  event: string;
+  outfitTags: string[];
+  patterns: string[];
+  colors: string[];
+  timestamp: string;
+  matchedProducts: SocialProofMatch[];
 }
 
 // Define window interface extensions for TypeScript global namespace
 export interface StylistWindowExtensions {
+  // Configuration
   __StylistWidgetConfig?: StylistWidgetConfig;
   StylistWidget: StylistWidgetAPI;
+
+  // Store access
   __STYLIST_STORE__?: {
     chat: {
       toggleOpen: () => void;
@@ -102,4 +175,44 @@ export interface StylistWindowExtensions {
       recommendedOutfits?: Outfit[];
     };
   };
+
+  // Widget lifecycle flags
+  __STYLIST_WIDGET_INITIALIZED?: boolean;
+  __STYLIST_WIDGET_DOM_MOUNTED?: boolean;
+  __STYLIST_WIDGET_RENDER_COMPLETE?: boolean;
+  __STYLIST_STORES_INITIALIZED?: boolean;
+  __STYLIST_STORES_INITIALIZING?: boolean;
+  __STYLIST_CHAT_INITIALIZED?: boolean;
+  __STYLIST_BACKGROUND_INIT_COMPLETE?: boolean;
+
+  // Initialization queues
+  __STYLIST_PENDING_INITIALIZATIONS?: {
+    feedbackSync?: {
+      apiKey: string;
+      retailerId: string;
+      apiUrl?: string;
+    };
+    recommendations?: {
+      userId: string;
+    };
+    [key: string]: any;
+  };
+
+  // Diagnostic module
+  __STYLIST_DIAGNOSTICS?: {
+    logs: any[];
+    enabled: boolean;
+    originalConsole: {
+      log: typeof console.log;
+      warn: typeof console.warn;
+      error: typeof console.error;
+      info: typeof console.info;
+      debug: typeof console.debug;
+    };
+  };
+
+  // Feature flags
+  __StylistShowStyleQuiz?: boolean;
+  __StylistShowVirtualTryOn?: boolean;
+  __STYLIST_DIAGNOSTICS_LOG_TO_TEMP?: boolean;
 }

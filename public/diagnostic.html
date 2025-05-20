@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stylist Widget Diagnostic Page</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    h1, h2, h3 {
+      color: #2c3e50;
+    }
+    
+    .container {
+      margin-top: 20px;
+    }
+    
+    pre {
+      background-color: #f8f8f8;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 14px;
+    }
+    
+    .system-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .info-card {
+      background-color: #f8f8f8;
+      border-radius: 4px;
+      padding: 15px;
+    }
+    
+    .info-card h3 {
+      margin-top: 0;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .test-section {
+      margin-bottom: 30px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+    }
+    
+    .test-button {
+      background-color: #4361ee;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 15px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+    
+    .test-button:hover {
+      background-color: #3651d4;
+    }
+    
+    .success {
+      color: #2ecc71;
+    }
+    
+    .warning {
+      color: #f39c12;
+    }
+    
+    .error {
+      color: #e74c3c;
+    }
+    
+    .log-output {
+      height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-top: 15px;
+      font-family: monospace;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    
+    .progress {
+      margin-bottom: 20px;
+    }
+    
+    .progress-steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .step {
+      background-color: #eee;
+      padding: 8px 15px;
+      border-radius: 4px;
+    }
+    
+    .step.active {
+      background-color: #4361ee;
+      color: white;
+    }
+    
+    .step.completed {
+      background-color: #2ecc71;
+      color: white;
+    }
+    
+    .step.error {
+      background-color: #e74c3c;
+      color: white;
+    }
+    
+    .diagnostic-actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Stylist Widget Diagnostic Tool</h1>
+  <p>This page helps diagnose and fix issues with the Stylist Widget.</p>
+  
+  <div class="container" id="systemInfo">
+    <h2>System Information</h2>
+    
+    <div class="system-info">
+      <div class="info-card">
+        <h3>Browser</h3>
+        <div id="browserInfo">Loading...</div>
+      </div>
+      
+      <div class="info-card">
+        <h3>WebGL Support</h3>
+        <div id="webglInfo">Checking...</div>
+      </div>
+      
+      <div class="info-card">
+        <h3>Device Capabilities</h3>
+        <div id="deviceInfo">Loading...</div>
+      </div>
+      
+      <div class="info-card">
+        <h3>Network</h3>
+        <div id="networkInfo">Checking...</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="container">
+    <h2>Diagnostics</h2>
+    
+    <div class="progress">
+      <h3>Progress</h3>
+      <div class="progress-steps">
+        <div class="step" id="step1">1. System Check</div>
+        <div class="step" id="step2">2. Connection Test</div>
+        <div class="step" id="step3">3. Widget Load Test</div>
+        <div class="step" id="step4">4. Component Test</div>
+      </div>
+    </div>
+    
+    <div class="test-section">
+      <h3>1. System Check</h3>
+      <p>Verify that your system meets the minimum requirements for running the Stylist Widget.</p>
+      <button class="test-button" id="runSystemCheckBtn">Run System Check</button>
+      <div class="log-output" id="systemCheckOutput"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>2. Connection Test</h3>
+      <p>Test connectivity to backend services and APIs required by the widget.</p>
+      <button class="test-button" id="runConnectionTestBtn">Run Connection Test</button>
+      <div class="log-output" id="connectionTestOutput"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>3. Widget Load Test</h3>
+      <p>Test loading the Stylist Widget and its resources.</p>
+      <button class="test-button" id="runWidgetLoadTestBtn">Run Widget Load Test</button>
+      <div class="log-output" id="widgetLoadOutput"></div>
+    </div>
+    
+    <div class="test-section">
+      <h3>4. Component Test</h3>
+      <p>Test individual components of the Stylist Widget.</p>
+      <div class="component-test-buttons">
+        <button class="test-button" id="testChatWidgetBtn">Test Chat</button>
+        <button class="test-button" id="testTryOnBtn">Test Try-On</button>
+        <button class="test-button" id="testLookbookBtn">Test Lookbook</button>
+        <button class="test-button" id="testStyleQuizBtn">Test Style Quiz</button>
+      </div>
+      <div class="log-output" id="componentTestOutput"></div>
+    </div>
+  </div>
+  
+  <div class="container">
+    <h2>Fix Issues</h2>
+    <p>Resolve common issues with the Stylist Widget.</p>
+    
+    <div class="diagnostic-actions">
+      <button class="test-button" id="fixCacheBtn">Clear Browser Cache</button>
+      <button class="test-button" id="resetSettingsBtn">Reset Widget Settings</button>
+      <button class="test-button" id="fixWebGLBtn">Fix WebGL Issues</button>
+      <button class="test-button" id="enableCompatModeBtn">Enable Compatibility Mode</button>
+    </div>
+    
+    <div class="log-output" id="fixOutput"></div>
+  </div>
+  
+  <script>
+    // System information detection
+    function detectBrowserInfo() {
+      const browserInfo = document.getElementById('browserInfo');
+      const userAgent = navigator.userAgent;
+      const browserName = (function() {
+        if (userAgent.includes('Firefox')) return 'Firefox';
+        if (userAgent.includes('Chrome')) return 'Chrome';
+        if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) return 'Safari';
+        if (userAgent.includes('Edge')) return 'Edge';
+        if (userAgent.includes('MSIE') || userAgent.includes('Trident/')) return 'Internet Explorer';
+        return 'Unknown';
+      })();
+      
+      browserInfo.innerHTML = `
+        <p><strong>Browser:</strong> ${browserName}</p>
+        <p><strong>User Agent:</strong> ${userAgent}</p>
+        <p><strong>Platform:</strong> ${navigator.platform}</p>
+      `;
+    }
+    
+    function checkWebGLSupport() {
+      const webglInfo = document.getElementById('webglInfo');
+      
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        
+        if (!gl) {
+          webglInfo.innerHTML = '<p class="error">❌ WebGL is not supported by your browser.</p>';
+          return false;
+        }
+        
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        let vendor = 'Unknown';
+        let renderer = 'Unknown';
+        
+        if (debugInfo) {
+          vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+          renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+        }
+        
+        const extensions = gl.getSupportedExtensions();
+        
+        webglInfo.innerHTML = `
+          <p class="success">✅ WebGL is supported</p>
+          <p><strong>Vendor:</strong> ${vendor}</p>
+          <p><strong>Renderer:</strong> ${renderer}</p>
+          <p><strong>Max Texture Size:</strong> ${gl.getParameter(gl.MAX_TEXTURE_SIZE)}</p>
+          <p><strong>Max Texture Units:</strong> ${gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS)}</p>
+        `;
+        
+        return true;
+      } catch (error) {
+        webglInfo.innerHTML = `<p class="error">❌ Error detecting WebGL support: ${error.message}</p>`;
+        return false;
+      }
+    }
+    
+    function detectDeviceCapabilities() {
+      const deviceInfo = document.getElementById('deviceInfo');
+      
+      const memory = navigator.deviceMemory ? `${navigator.deviceMemory} GB` : 'Unknown';
+      const cores = navigator.hardwareConcurrency || 'Unknown';
+      const touchSupport = 'ontouchstart' in window ? 'Yes' : 'No';
+      
+      const isLowEndDevice = (function() {
+        if (navigator.deviceMemory && navigator.deviceMemory < 4) return true;
+        if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) return true;
+        return false;
+      })();
+      
+      deviceInfo.innerHTML = `
+        <p><strong>Memory:</strong> ${memory}</p>
+        <p><strong>CPU Cores:</strong> ${cores}</p>
+        <p><strong>Touch Support:</strong> ${touchSupport}</p>
+        <p><strong>Low-End Device:</strong> ${isLowEndDevice ? 'Yes' : 'No'}</p>
+      `;
+    }
+    
+    function checkNetworkConnection() {
+      const networkInfo = document.getElementById('networkInfo');
+      
+      // Get connection type if available
+      let connectionType = 'Unknown';
+      if (navigator.connection) {
+        connectionType = navigator.connection.effectiveType || 'Unknown';
+      }
+      
+      // Test basic connectivity
+      fetch('https://www.google.com', { mode: 'no-cors' })
+        .then(() => {
+          networkInfo.innerHTML = `
+            <p class="success">✅ Internet connection available</p>
+            <p><strong>Connection Type:</strong> ${connectionType}</p>
+            <p><strong>Online Status:</strong> ${navigator.onLine ? 'Online' : 'Offline'}</p>
+          `;
+        })
+        .catch(error => {
+          networkInfo.innerHTML = `
+            <p class="error">❌ Internet connection issue: ${error.message}</p>
+            <p><strong>Connection Type:</strong> ${connectionType}</p>
+            <p><strong>Online Status:</strong> ${navigator.onLine ? 'Online' : 'Offline'}</p>
+          `;
+        });
+    }
+    
+    // Test functions
+    function runSystemCheck() {
+      const output = document.getElementById('systemCheckOutput');
+      output.innerHTML = ''; // Clear previous output
+      
+      const step1 = document.getElementById('step1');
+      step1.className = 'step active';
+      
+      log(output, 'Starting system check...');
+      
+      // Basic browser compatibility check
+      const isCompatibleBrowser = !navigator.userAgent.includes('MSIE') && !navigator.userAgent.includes('Trident/');
+      if (!isCompatibleBrowser) {
+        log(output, '❌ Internet Explorer is not supported. Please use a modern browser like Chrome, Firefox, or Edge.', 'error');
+      } else {
+        log(output, '✅ Compatible browser detected', 'success');
+      }
+      
+      // Check WebGL support
+      const hasWebGL = checkWebGLSupport();
+      if (hasWebGL) {
+        log(output, '✅ WebGL is supported', 'success');
+      } else {
+        log(output, '⚠️ WebGL is not supported. Virtual try-on features will not be available.', 'warning');
+      }
+      
+      // Check for low-end device
+      const isLowEndDevice = (navigator.deviceMemory && navigator.deviceMemory < 4) || 
+                             (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4);
+      
+      if (isLowEndDevice) {
+        log(output, '⚠️ Low-end device detected. Some features may have reduced performance.', 'warning');
+      } else {
+        log(output, '✅ Device meets performance requirements', 'success');
+      }
+      
+      // Check for online status
+      if (navigator.onLine) {
+        log(output, '✅ Internet connection available', 'success');
+      } else {
+        log(output, '❌ No internet connection detected', 'error');
+      }
+      
+      // Check local storage availability
+      try {
+        localStorage.setItem('stylist_test', 'test');
+        localStorage.removeItem('stylist_test');
+        log(output, '✅ Local storage is available', 'success');
+      } catch (e) {
+        log(output, '❌ Local storage is not available. Some features will not work correctly.', 'error');
+      }
+      
+      log(output, 'System check completed');
+      
+      // Update step status
+      const allPassed = isCompatibleBrowser && hasWebGL && navigator.onLine && !isLowEndDevice;
+      step1.className = allPassed ? 'step completed' : 'step error';
+    }
+    
+    function runConnectionTest() {
+      const output = document.getElementById('connectionTestOutput');
+      output.innerHTML = ''; // Clear previous output
+      
+      const step2 = document.getElementById('step2');
+      step2.className = 'step active';
+      
+      log(output, 'Starting connection test...');
+      
+      // Backend API test
+      log(output, 'Testing connection to backend API...');
+      fetch('/api/v1/health', { method: 'GET' })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          log(output, `✅ Backend API connection successful: ${JSON.stringify(data)}`, 'success');
+          continueTests();
+        })
+        .catch(error => {
+          log(output, `❌ Backend API connection failed: ${error.message}`, 'error');
+          log(output, '⚠️ Trying alternative backend endpoint...', 'warning');
+          
+          // Try alternative endpoint
+          fetch('/health', { method: 'GET' })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+              }
+              return response.json();
+            })
+            .then(data => {
+              log(output, `✅ Alternative backend API connection successful: ${JSON.stringify(data)}`, 'success');
+              continueTests();
+            })
+            .catch(error => {
+              log(output, `❌ All backend API connection attempts failed. Make sure the backend server is running.`, 'error');
+              // Update step status
+              step2.className = 'step error';
+            });
+        });
+      
+      function continueTests() {
+        // Check static resource loading
+        log(output, 'Testing static resource loading...');
+        
+        const scriptTest = new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.onload = () => resolve('Script loaded');
+          script.onerror = () => reject(new Error('Script failed to load'));
+          script.src = '/stylist-widget.js';
+          document.head.appendChild(script);
+          
+          // Add safety timeout
+          setTimeout(() => {
+            if (window.StylistWidget) {
+              resolve('Script loaded');
+            } else {
+              reject(new Error('Script load timed out'));
+            }
+          }, 5000);
+        });
+        
+        const styleTest = new Promise((resolve, reject) => {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.onload = () => resolve('Stylesheet loaded');
+          link.onerror = () => reject(new Error('Stylesheet failed to load'));
+          link.href = '/stylist-widget.css';
+          document.head.appendChild(link);
+        });
+        
+        Promise.allSettled([scriptTest, styleTest])
+          .then(results => {
+            const scriptResult = results[0];
+            const styleResult = results[1];
+            
+            if (scriptResult.status === 'fulfilled') {
+              log(output, '✅ Widget script loaded successfully', 'success');
+            } else {
+              log(output, `❌ Widget script loading failed: ${scriptResult.reason.message}`, 'error');
+            }
+            
+            if (styleResult.status === 'fulfilled') {
+              log(output, '✅ Widget stylesheet loaded successfully', 'success');
+            } else {
+              log(output, `❌ Widget stylesheet loading failed: ${styleResult.reason.message}`, 'error');
+            }
+            
+            log(output, 'Connection tests completed');
+            
+            // Update step status based on results
+            const testsPassed = scriptResult.status === 'fulfilled' && styleResult.status === 'fulfilled';
+            step2.className = testsPassed ? 'step completed' : 'step error';
+          });
+      }
+    }
+    
+    function runWidgetLoadTest() {
+      const output = document.getElementById('widgetLoadOutput');
+      output.innerHTML = ''; // Clear previous output
+      
+      const step3 = document.getElementById('step3');
+      step3.className = 'step active';
+      
+      log(output, 'Starting widget load test...');
+      
+      // Create container
+      const testContainer = document.createElement('div');
+      testContainer.id = 'widget-test-container';
+      testContainer.style.position = 'absolute';
+      testContainer.style.top = '-9999px';
+      testContainer.style.left = '-9999px';
+      document.body.appendChild(testContainer);
+      
+      // Track initialization events
+      let initTimeout;
+      let initFailed = false;
+      
+      window.__StylistWidgetEvents = window.__StylistWidgetEvents || {
+        listeners: {},
+        on(event, callback) {
+          this.listeners[event] = this.listeners[event] || [];
+          this.listeners[event].push(callback);
+        },
+        off(event, callback) {
+          if (this.listeners[event]) {
+            this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+          }
+        },
+        emit(event, data) {
+          if (this.listeners[event]) {
+            this.listeners[event].forEach(callback => callback(data));
+          }
+        }
+      };
+      
+      window.__StylistWidgetEvents.on('init:complete', () => {
+        clearTimeout(initTimeout);
+        log(output, '✅ Widget initialized successfully', 'success');
+        
+        // Test basic functionality
+        if (window.StylistWidget) {
+          log(output, '✅ StylistWidget namespace is accessible', 'success');
+          
+          // Check widget methods
+          if (typeof window.StylistWidget.init === 'function') {
+            log(output, '✅ StylistWidget.init() method exists', 'success');
+          } else {
+            log(output, '❌ StylistWidget.init() method is missing', 'error');
+          }
+          
+          if (typeof window.StylistWidget.switchView === 'function') {
+            log(output, '✅ StylistWidget.switchView() method exists', 'success');
+          } else {
+            log(output, '❌ StylistWidget.switchView() method is missing', 'error');
+          }
+          
+          log(output, 'Widget load test completed successfully');
+          
+          // Update step status
+          step3.className = 'step completed';
+        } else {
+          log(output, '❌ StylistWidget namespace is not accessible', 'error');
+          step3.className = 'step error';
+        }
+        
+        // Clean up
+        document.body.removeChild(testContainer);
+      });
+      
+      window.__StylistWidgetEvents.on('init:error', (error) => {
+        clearTimeout(initTimeout);
+        initFailed = true;
+        log(output, `❌ Widget initialization failed: ${error.message || 'Unknown error'}`, 'error');
+        
+        // Update step status
+        step3.className = 'step error';
+        
+        // Clean up
+        document.body.removeChild(testContainer);
+      });
+      
+      // Set initialization timeout
+      initTimeout = setTimeout(() => {
+        if (!initFailed) {
+          log(output, '❌ Widget initialization timed out', 'error');
+          
+          // Offer troubleshooting steps
+          log(output, '⚠️ Try clearing browser cache and reloading the page', 'warning');
+          log(output, '⚠️ Verify that the backend server is running', 'warning');
+          
+          // Update step status
+          step3.className = 'step error';
+          
+          // Clean up
+          document.body.removeChild(testContainer);
+        }
+      }, 10000);
+      
+      // Initialize widget
+      if (window.StylistWidget) {
+        try {
+          log(output, 'Initializing widget...');
+          window.StylistWidget.init({
+            apiKey: 'test-api-key',
+            retailerId: 'test-retailer-id',
+            mountPoint: 'widget-test-container'
+          });
+        } catch (error) {
+          clearTimeout(initTimeout);
+          log(output, `❌ Widget initialization threw an error: ${error.message}`, 'error');
+          
+          // Update step status
+          step3.className = 'step error';
+          
+          // Clean up
+          document.body.removeChild(testContainer);
+        }
+      } else {
+        clearTimeout(initTimeout);
+        log(output, '❌ StylistWidget is not available. Make sure widget script is loaded.', 'error');
+        
+        // Update step status
+        step3.className = 'step error';
+        
+        // Clean up
+        document.body.removeChild(testContainer);
+      }
+    }
+    
+    function testComponent(componentName) {
+      const output = document.getElementById('componentTestOutput');
+      const step4 = document.getElementById('step4');
+      step4.className = 'step active';
+      
+      log(output, `Testing ${componentName} component...`);
+      
+      // Create test container
+      const testContainer = document.createElement('div');
+      testContainer.id = 'component-test-container';
+      testContainer.style.position = 'absolute';
+      testContainer.style.top = '-9999px';
+      testContainer.style.left = '-9999px';
+      document.body.appendChild(testContainer);
+      
+      // Initialize component tests based on type
+      if (window.StylistWidget) {
+        try {
+          window.StylistWidget.init({
+            apiKey: 'test-api-key',
+            retailerId: 'test-retailer-id',
+            mountPoint: 'component-test-container'
+          });
+          
+          if (componentName === 'Chat') {
+            log(output, 'Testing ChatWidget component...');
+            
+            setTimeout(() => {
+              const chatWidget = document.querySelector('.stylist-chat-widget');
+              if (chatWidget) {
+                log(output, '✅ ChatWidget rendered successfully', 'success');
+                step4.className = 'step completed';
+              } else {
+                log(output, '❌ ChatWidget failed to render', 'error');
+                step4.className = 'step error';
+              }
+              
+              // Clean up
+              document.body.removeChild(testContainer);
+            }, 3000);
+          } else if (componentName === 'Try-On') {
+            log(output, 'Testing TryOnModal component...');
+            
+            // Try to open the try-on modal
+            if (window.__StylistWidgetEvents) {
+              window.__StylistWidgetEvents.emit('virtualTryOn:open');
+              
+              setTimeout(() => {
+                const tryOnModal = document.querySelector('.stylist-try-on-modal');
+                if (tryOnModal) {
+                  log(output, '✅ TryOnModal rendered successfully', 'success');
+                  step4.className = 'step completed';
+                } else {
+                  const fallback = document.querySelector('.stylist-try-on-fallback');
+                  if (fallback) {
+                    log(output, '⚠️ TryOnModal fallback displayed (WebGL issue)', 'warning');
+                    step4.className = 'step completed';
+                  } else {
+                    log(output, '❌ TryOnModal failed to render', 'error');
+                    step4.className = 'step error';
+                  }
+                }
+                
+                // Clean up
+                document.body.removeChild(testContainer);
+              }, 3000);
+            } else {
+              log(output, '❌ Widget event system is not available', 'error');
+              step4.className = 'step error';
+              document.body.removeChild(testContainer);
+            }
+          } else if (componentName === 'Lookbook') {
+            log(output, 'Testing Lookbook component...');
+            
+            // Try to switch to lookbook view
+            if (window.StylistWidget.switchView) {
+              window.StylistWidget.switchView('lookbook');
+              
+              setTimeout(() => {
+                const lookbook = document.querySelector('.stylist-lookbook');
+                if (lookbook) {
+                  log(output, '✅ Lookbook rendered successfully', 'success');
+                  step4.className = 'step completed';
+                } else {
+                  log(output, '❌ Lookbook failed to render', 'error');
+                  step4.className = 'step error';
+                }
+                
+                // Clean up
+                document.body.removeChild(testContainer);
+              }, 3000);
+            } else {
+              log(output, '❌ StylistWidget.switchView method is not available', 'error');
+              step4.className = 'step error';
+              document.body.removeChild(testContainer);
+            }
+          } else if (componentName === 'Style Quiz') {
+            log(output, 'Testing StyleQuiz component...');
+            
+            // Try to open style quiz
+            if (window.__StylistWidgetEvents) {
+              window.__StylistWidgetEvents.emit('styleQuiz:open');
+              
+              setTimeout(() => {
+                const styleQuiz = document.querySelector('.stylist-style-quiz-modal');
+                if (styleQuiz) {
+                  log(output, '✅ StyleQuiz rendered successfully', 'success');
+                  step4.className = 'step completed';
+                } else {
+                  log(output, '❌ StyleQuiz failed to render', 'error');
+                  step4.className = 'step error';
+                }
+                
+                // Clean up
+                document.body.removeChild(testContainer);
+              }, 3000);
+            } else {
+              log(output, '❌ Widget event system is not available', 'error');
+              step4.className = 'step error';
+              document.body.removeChild(testContainer);
+            }
+          }
+        } catch (error) {
+          log(output, `❌ Error during ${componentName} test: ${error.message}`, 'error');
+          step4.className = 'step error';
+          document.body.removeChild(testContainer);
+        }
+      } else {
+        log(output, '❌ StylistWidget is not available. Make sure widget script is loaded.', 'error');
+        step4.className = 'step error';
+        document.body.removeChild(testContainer);
+      }
+    }
+    
+    // Fix functions
+    function clearBrowserCache() {
+      const output = document.getElementById('fixOutput');
+      output.innerHTML = ''; // Clear previous output
+      
+      log(output, 'Clearing browser cache...');
+      
+      // Clear localStorage items related to the widget
+      let count = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.includes('stylist') || key.includes('widget')) {
+          localStorage.removeItem(key);
+          count++;
+        }
+      }
+      
+      log(output, `✅ Cleared ${count} items from localStorage`, 'success');
+      
+      // Clear sessionStorage
+      count = 0;
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key.includes('stylist') || key.includes('widget')) {
+          sessionStorage.removeItem(key);
+          count++;
+        }
+      }
+      
+      log(output, `✅ Cleared ${count} items from sessionStorage`, 'success');
+      
+      // Remove all script and style tags related to the widget
+      const scripts = document.querySelectorAll('script[src*="stylist"]');
+      scripts.forEach(script => script.remove());
+      log(output, `✅ Removed ${scripts.length} widget script tags`, 'success');
+      
+      const styles = document.querySelectorAll('link[href*="stylist"]');
+      styles.forEach(style => style.remove());
+      log(output, `✅ Removed ${styles.length} widget style tags`, 'success');
+      
+      log(output, 'Browser cache cleared. Please reload the page to complete the process.');
+    }
+    
+    function resetWidgetSettings() {
+      const output = document.getElementById('fixOutput');
+      output.innerHTML = ''; // Clear previous output
+      
+      log(output, 'Resetting widget settings...');
+      
+      // Remove all widget-related localStorage items
+      let count = 0;
+      const keysToRemove = [
+        'stylist_user_id',
+        'stylist_auth_token',
+        'stylist_preferences',
+        'stylist_quiz_progress',
+        'stylist_message_feedback',
+        'stylist_recent_items',
+        'stylist_wishlist',
+        'stylist_cart',
+        'stylist_closet',
+        'stylist_liked_items',
+        'stylist_disliked_items'
+      ];
+      
+      keysToRemove.forEach(key => {
+        if (localStorage.getItem(key)) {
+          localStorage.removeItem(key);
+          count++;
+        }
+      });
+      
+      log(output, `✅ Reset ${count} widget settings`, 'success');
+      
+      // Reset any window-level widget variables
+      if (window.__STYLIST_WIDGET_INITIALIZED) {
+        window.__STYLIST_WIDGET_INITIALIZED = false;
+        window.__STYLIST_CHAT_INITIALIZED = false;
+        window.__STYLIST_STORES_INITIALIZED = false;
+        window.__STYLIST_BACKGROUND_INIT_COMPLETE = false;
+        log(output, '✅ Reset widget initialization flags', 'success');
+      }
+      
+      log(output, 'Widget settings have been reset. Please reload the page to complete the process.');
+    }
+    
+    function fixWebGLIssues() {
+      const output = document.getElementById('fixOutput');
+      output.innerHTML = ''; // Clear previous output
+      
+      log(output, 'Attempting to fix WebGL issues...');
+      
+      // Check WebGL support
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      
+      if (!gl) {
+        log(output, '❌ WebGL is not supported by your browser. Virtual try-on features will not be available.', 'error');
+        log(output, 'Recommendations:');
+        log(output, '1. Update your browser to the latest version');
+        log(output, '2. Check if hardware acceleration is enabled in your browser settings');
+        log(output, '3. Update your graphics drivers');
+        log(output, '4. Try a different browser (Chrome or Firefox recommended)');
+        return;
+      }
+      
+      // Apply WebGL fixes
+      localStorage.setItem('stylist_webgl_optimization', 'true');
+      localStorage.setItem('stylist_render_quality', 'low');
+      
+      log(output, '✅ Applied WebGL optimizations', 'success');
+      log(output, '✅ Reduced render quality to improve performance', 'success');
+      
+      // Force widget to use software rendering for WebGL
+      localStorage.setItem('stylist_use_software_rendering', 'true');
+      log(output, '✅ Enabled software rendering fallback for WebGL', 'success');
+      
+      log(output, 'WebGL optimizations applied. Please reload the page to see if the issues are resolved.');
+    }
+    
+    function enableCompatibilityMode() {
+      const output = document.getElementById('fixOutput');
+      output.innerHTML = ''; // Clear previous output
+      
+      log(output, 'Enabling compatibility mode...');
+      
+      // Set compatibility flags
+      localStorage.setItem('stylist_compatibility_mode', 'true');
+      localStorage.setItem('stylist_disable_animations', 'true');
+      localStorage.setItem('stylist_disable_webgl', 'true');
+      localStorage.setItem('stylist_use_fallback_components', 'true');
+      localStorage.setItem('stylist_reduce_quality', 'true');
+      
+      log(output, '✅ Disabled animations for better performance', 'success');
+      log(output, '✅ Disabled WebGL features', 'success');
+      log(output, '✅ Enabled fallback components', 'success');
+      log(output, '✅ Reduced rendering quality', 'success');
+      
+      log(output, 'Compatibility mode enabled. Please reload the page to apply these changes.');
+    }
+    
+    // Helper functions
+    function log(element, message, type) {
+      const logEntry = document.createElement('div');
+      logEntry.className = type || '';
+      logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      element.appendChild(logEntry);
+      element.scrollTop = element.scrollHeight;
+    }
+    
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', () => {
+      // Detect system information
+      detectBrowserInfo();
+      checkWebGLSupport();
+      detectDeviceCapabilities();
+      checkNetworkConnection();
+      
+      // Set up event listeners for test buttons
+      document.getElementById('runSystemCheckBtn').addEventListener('click', runSystemCheck);
+      document.getElementById('runConnectionTestBtn').addEventListener('click', runConnectionTest);
+      document.getElementById('runWidgetLoadTestBtn').addEventListener('click', runWidgetLoadTest);
+      
+      document.getElementById('testChatWidgetBtn').addEventListener('click', () => testComponent('Chat'));
+      document.getElementById('testTryOnBtn').addEventListener('click', () => testComponent('Try-On'));
+      document.getElementById('testLookbookBtn').addEventListener('click', () => testComponent('Lookbook'));
+      document.getElementById('testStyleQuizBtn').addEventListener('click', () => testComponent('Style Quiz'));
+      
+      // Set up event listeners for fix buttons
+      document.getElementById('fixCacheBtn').addEventListener('click', clearBrowserCache);
+      document.getElementById('resetSettingsBtn').addEventListener('click', resetWidgetSettings);
+      document.getElementById('fixWebGLBtn').addEventListener('click', fixWebGLIssues);
+      document.getElementById('enableCompatModeBtn').addEventListener('click', enableCompatibilityMode);
+    });
+  </script>
+</body>
+</html>
