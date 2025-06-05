@@ -320,7 +320,7 @@ export async function preloadBodyPixModel(): Promise<bodyPix.BodyPix> {
       outputStride: webGLCaps.fullSupport ? 16 : 32, // Larger stride for limited devices
       multiplier: webGLCaps.fullSupport ? 0.75 : 0.5, // Smaller network for limited devices
       quantBytes: webGLCaps.fallbackOptions.useReducedPrecision ? 1 : 2, // Use fewer bits per weight for limited devices
-      modelUrl: '/models/body-pix/model.json' // Use local model file path
+      modelUrl: 'https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/quant2/075/model-stride16.json' // Use CDN model file path
     };
 
     // If progressive loading is needed, load in stages
@@ -364,7 +364,7 @@ export async function preloadBodyPixModel(): Promise<bodyPix.BodyPix> {
             outputStride: 32,
             multiplier: 0.5,
             quantBytes: 1,
-            modelUrl: '/models/body-pix/model.json' // Use local model file path
+            modelUrl: 'https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/quant2/075/model-stride16.json' // Use CDN model file path
           });
 
           console.log('BodyPix model loaded with fallback settings');
@@ -387,7 +387,7 @@ export async function preloadBodyPixModel(): Promise<bodyPix.BodyPix> {
               outputStride: 16,
               multiplier: 0.5,
               quantBytes: 1,
-              modelUrl: '/models/body-pix/model.json' // Use local model file path
+              modelUrl: 'https://storage.googleapis.com/tfjs-models/savedmodel/bodypix/mobilenet/quant2/075/model-stride16.json' // Use CDN model file path
             });
 
             console.log('BodyPix model loaded with alternative URL');
@@ -843,12 +843,12 @@ export function extractBodyMeasurements(
   let shouldersCount = 0;
   
   // Waist tracking
-  let waistY = Math.floor(imageHeight * 0.5); // Approximate middle
+  const waistY = Math.floor(imageHeight * 0.5); // Approximate middle
   let waistLeft = imageWidth;
   let waistRight = 0;
   
   // Hips tracking (lower third of body)
-  let hipsY = Math.floor(imageHeight * 0.7);
+  const hipsY = Math.floor(imageHeight * 0.7);
   let hipsLeft = imageWidth;
   let hipsRight = 0;
   
@@ -887,7 +887,6 @@ export function extractBodyMeasurements(
   
   // Calculate measurements
   const bodyWidth = maxX - minX;
-  const bodyHeight = maxY - minY;
   const shouldersAvgY = shouldersCount > 0 ? shouldersY / shouldersCount : 0;
   const waistWidth = waistRight - waistLeft;
   const hipsWidth = hipsRight - hipsLeft;
@@ -895,12 +894,12 @@ export function extractBodyMeasurements(
   // Return normalized measurements (as ratios of image dimensions)
   return {
     width: bodyWidth / imageWidth,
-    height: bodyHeight / imageHeight,
+    height: bodyWidth / imageWidth,
     shouldersY: shouldersAvgY / imageHeight,
     waistWidth: waistWidth / imageWidth,
     hipsWidth: hipsWidth / imageWidth,
     // Approximate sizing category based on proportions
-    approximateSize: calculateApproximateSize(waistWidth / hipsWidth, bodyWidth, bodyHeight),
+    approximateSize: calculateApproximateSize(waistWidth / hipsWidth, bodyWidth),
     // Body shape classification
     bodyShape: classifyBodyShape(waistWidth / hipsWidth)
   };
@@ -911,8 +910,7 @@ export function extractBodyMeasurements(
  */
 function calculateApproximateSize(
   waistToHipRatio: number,
-  bodyWidth: number,
-  bodyHeight: number
+  bodyWidth: number
 ): string {
   // Very simple approximation - would need calibration data for accuracy
   if (bodyWidth < 100) return 'XS';

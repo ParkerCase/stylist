@@ -59,6 +59,6 @@ describe('ChatWidget', () => {
     );
     
     // Header should be visible
-    expect(screen.getByText('The Stylist')).toBeInTheDocument();
+    expect(screen.getByText('Personalized Stylist')).toBeInTheDocument();
   });
 });

@@ -59,7 +59,7 @@ const TryOnCanvas: React.FC<TryOnCanvasProps> = ({
   useEffect(() => {
     const detectCapabilities = async () => {
       try {
-        const capabilities = await getDeviceCapabilities();
+        await getDeviceCapabilities();
         const performanceTier = getPerformanceTier();
         
         // Check if high-quality features should be enabled
@@ -354,11 +354,14 @@ const TryOnCanvas: React.FC<TryOnCanvasProps> = ({
         ref={canvasRef}
         width={canvasWidth}
         height={canvasHeight}
-        className={`stylist-try-on-canvas__canvas ${isDragging ? 'stylist-try-on-canvas__canvas--dragging' : ''} ${isRendering ? 'stylist-try-on-canvas__canvas--rendering' : ''}`}
+        className={`stylist-try-on-canvas__canvas${isRendering ? ' stylist-try-on-canvas__canvas--rendering' : ''}`}
+        role="img"
+        aria-label="Virtual try-on canvas"
         onClick={handleCanvasClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        tabIndex={0}
       />
       
       {showBodyGuide && !userImage && (

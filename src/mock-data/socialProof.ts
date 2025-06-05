@@ -1,26 +1,63 @@
 // Mock data for social proof-related endpoints
 import { mockData } from '../utils/mockData';
-import { 
-  SocialProofItem, 
-  SocialProofMatch,
-  ProductRecommendation,
-  RecommendationItem 
-} from '../types';
+import { SocialProofMatch } from '../types';
 
 // Use the existing mock data
 const { socialProofItems, products } = mockData;
+
+// Define a local UI type for social proof items
+interface ProductRecommendation {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  brand: string;
+  category: string;
+  imageUrl: string;
+  matchScore?: number;
+  matchReasons?: string[];
+}
+interface UISocialProofItem {
+  id: string;
+  celebrity: string;
+  event: string;
+  outfitTags: string[];
+  patterns?: string[];
+  colors?: string[];
+  timestamp: string;
+  matchedProducts: ProductRecommendation[];
+}
 
 /**
  * Get celebrity social proof items
  */
 const getCelebrities = (options: any = {}): { 
-  items: SocialProofItem[],
+  items: UISocialProofItem[],
   total: number 
 } => {
   const { limit = 20, offset = 0 } = options;
   
   // Apply pagination
-  const paginatedItems = socialProofItems.slice(offset, offset + limit);
+  const paginatedItems: UISocialProofItem[] = socialProofItems.slice(offset, offset + limit).map(item => ({
+    id: item.id,
+    celebrity: item.celebrity,
+    event: item.event,
+    outfitTags: item.outfitTags,
+    patterns: item.patterns,
+    colors: item.colors,
+    timestamp: item.timestamp,
+    matchedProducts: (item.matchedProducts || []).map(mp => ({
+      id: mp.id,
+      name: mp.name || '',
+      description: mp.description || '',
+      price: mp.price || 0,
+      brand: mp.brand || '',
+      category: mp.category || '',
+      imageUrl: mp.imageUrl || '',
+      matchScore: mp.matchScore,
+      matchReasons: mp.matchReasons || [],
+    }))
+  }));
   
   // Sort by most recent first
   paginatedItems.sort((a, b) => 
@@ -37,7 +74,7 @@ const getCelebrities = (options: any = {}): {
  * Get celebrity outfits
  */
 const getOutfits = (options: any = {}): {
-  items: SocialProofItem[],
+  items: UISocialProofItem[],
   total: number 
 } => {
   const { 
@@ -55,8 +92,27 @@ const getOutfits = (options: any = {}): {
     );
   }
   
-  // Apply pagination
-  const paginatedItems = filteredItems.slice(offset, offset + limit);
+  // Apply pagination and map matchedProducts
+  const paginatedItems: UISocialProofItem[] = filteredItems.slice(offset, offset + limit).map(item => ({
+    id: item.id,
+    celebrity: item.celebrity,
+    event: item.event,
+    outfitTags: item.outfitTags,
+    patterns: item.patterns,
+    colors: item.colors,
+    timestamp: item.timestamp,
+    matchedProducts: (item.matchedProducts || []).map(mp => ({
+      id: mp.id,
+      name: mp.name || '',
+      description: mp.description || '',
+      price: mp.price || 0,
+      brand: mp.brand || '',
+      category: mp.category || '',
+      imageUrl: mp.imageUrl || '',
+      matchScore: mp.matchScore,
+      matchReasons: mp.matchReasons || [],
+    }))
+  }));
   
   return {
     items: paginatedItems,
@@ -73,7 +129,6 @@ const getMatches = (options: any = {}): {
 } => {
   const { 
     itemId,
-    imageUrl,
     colors = [],
     patterns = [],
     category = '',
@@ -84,7 +139,7 @@ const getMatches = (options: any = {}): {
   // For mock data, we'll just return a selection of matches
   
   // If itemId is provided, find the specific product
-  let itemMatches: SocialProofMatch[] = [];
+  const itemMatches: SocialProofMatch[] = [];
   if (itemId) {
     // Find the product
     const product = products.find(p => p.id === itemId);
@@ -202,6 +257,36 @@ const getMatches = (options: any = {}): {
     exact: itemMatches.slice(0, limit),
     similar: similarMatches.slice(0, limit)
   };
+};
+
+// Example SocialProofItem mock
+export const socialProofMock = {
+  getCelebrities: () => ({
+    items: [
+      {
+        id: 'sp1',
+        celebrity: 'Zendaya',
+        event: 'Met Gala',
+        outfitTags: ['gown', 'couture'],
+        patterns: ['floral'],
+        colors: ['red', 'gold'],
+        timestamp: '2024-06-01T12:00:00Z',
+        matchedProducts: [
+          {
+            id: 'prod1',
+            name: 'Balenciaga City Bag',
+            description: 'Iconic designer bag',
+            price: 850,
+            brand: 'Balenciaga',
+            category: 'bags',
+            imageUrl: 'citybag.jpg',
+            matchScore: 0.98,
+            matchReasons: ['Exact match from event']
+          }
+        ]
+      }
+    ]
+  })
 };
 
 export default {

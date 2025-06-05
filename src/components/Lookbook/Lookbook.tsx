@@ -172,6 +172,7 @@ const Lookbook: React.FC<LookbookProps> = ({
                   primaryColor={primaryColor}
                   onClick={() => handleItemClick(item)}
                   onTryOn={() => handleTryOn(item)}
+                  data-cy="lookbook-item-card"
                 />
               ))
             ) : (
@@ -351,7 +352,7 @@ const Lookbook: React.FC<LookbookProps> = ({
   };
 
   return (
-    <div className="stylist-lookbook">
+    <div className="stylist-lookbook" data-cy="lookbook">
       <div className="stylist-lookbook__header">
         <h3 className="stylist-lookbook__title">Your Lookbook</h3>
         <div className="stylist-lookbook__tabs">

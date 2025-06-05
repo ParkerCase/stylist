@@ -76,6 +76,7 @@ const SuggestionGrid: React.FC<SuggestionGridProps> = ({
       onAddToCart={onAddToCart ? () => onAddToCart(item) : undefined}
       onClick={onItemClick ? () => onItemClick(item) : undefined}
       primaryColor={primaryColor}
+      data-cy="item-card"
     />
   ));
   
@@ -97,11 +98,12 @@ const SuggestionGrid: React.FC<SuggestionGridProps> = ({
       onClick={onItemClick ? () => onItemClick(item) : undefined}
       primaryColor={primaryColor}
       className="stylist-suggestion-grid__requested-item"
+      data-cy="item-card"
     />
   ));
   
   return (
-    <div className="stylist-suggestion-grid">
+    <div className="stylist-suggestion-grid" data-cy="suggestion-grid">
       {onGenerate && (
         <div className="stylist-suggestion-grid__generate-btn-row">
           <button
@@ -109,6 +111,7 @@ const SuggestionGrid: React.FC<SuggestionGridProps> = ({
             onClick={onGenerate}
             disabled={isLoading}
             style={primaryColor ? { backgroundColor: primaryColor } : {}}
+            data-cy="generate-suggestions"
           >
             {isLoading ? (
               <span className="stylist-suggestion-grid__spinner" />
@@ -139,6 +142,7 @@ const SuggestionGrid: React.FC<SuggestionGridProps> = ({
         showRequestedSection={requestedItems.length > 0}
         requestedItems={requestedItemComponents}
         items={itemComponents}
+        data-cy="suggestion-grid-layout"
       />
     </div>
   );

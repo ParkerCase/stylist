@@ -8,7 +8,7 @@ import './MockDataToggle.scss';
  * Only visible in development mode or when forced demo mode is enabled
  */
 const MockDataToggle: React.FC = () => {
-  // Initialize state based on localStorage
+  // All hooks must be called before any return
   const [isMockEnabled, setIsMockEnabled] = useState<boolean>(() => {
     try {
       return localStorage.getItem('STYLIST_DATA_MODE') === 'demo';
@@ -19,9 +19,9 @@ const MockDataToggle: React.FC = () => {
 
   // Update state when localStorage changes (for sync across tabs)
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'STYLIST_DATA_MODE') {
-        setIsMockEnabled(e.newValue === 'demo');
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'STYLIST_DATA_MODE') {
+        setIsMockEnabled(event.newValue === 'demo');
       }
     };
 
@@ -37,9 +37,8 @@ const MockDataToggle: React.FC = () => {
   };
 
   // Only show in development or when forced demo mode is enabled
-  if (process.env.NODE_ENV !== 'development' && !FORCE_DEMO_MODE) {
-    return null;
-  }
+  const shouldRender = process.env.NODE_ENV === 'development' || FORCE_DEMO_MODE;
+  if (!shouldRender) return null;
 
   return (
     <div className="stylist-mock-data-toggle">

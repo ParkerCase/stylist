@@ -1,5 +1,5 @@
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use '../../styles/variables.scss' as variables;
+@use '../../styles/mixins.scss' as mixins;
 
 .celebrity-detail-backdrop {
   position: fixed;
@@ -36,18 +36,18 @@
     border: none;
     font-size: 1.75rem;
     line-height: 1;
-    color: $color-text-secondary;
+    color: variables.$color-text-secondary;
     cursor: pointer;
     z-index: 2;
     
     &:hover {
-      color: $color-text-primary;
+      color: variables.$color-text-primary;
     }
   }
   
   &__header {
     padding: 1.5rem 2rem;
-    border-bottom: 1px solid $color-border;
+    border-bottom: 1px solid variables.$color-border;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -73,13 +73,13 @@
   &__subtitle {
     font-size: 0.875rem;
     font-weight: 400;
-    color: $color-text-secondary;
+    color: variables.$color-text-secondary;
     margin-top: 0.25rem;
   }
   
   &__date {
     font-size: 0.875rem;
-    color: $color-text-secondary;
+    color: variables.$color-text-secondary;
   }
   
   &__content {
@@ -141,7 +141,7 @@
   
   &__tabs {
     display: flex;
-    border-bottom: 1px solid $color-border;
+    border-bottom: 1px solid variables.$color-border;
     margin-top: 1.5rem;
     
     @media (max-width: 768px) {
@@ -156,16 +156,16 @@
     border-bottom: 3px solid transparent;
     font-size: 0.9rem;
     font-weight: 500;
-    color: $color-text-secondary;
+    color: variables.$color-text-secondary;
     cursor: pointer;
     transition: color 0.2s ease, border-color 0.2s ease;
     
     &:hover {
-      color: $color-text-primary;
+      color: variables.$color-text-primary;
     }
     
     &--active {
-      color: $color-text-primary;
+      color: variables.$color-text-primary;
       font-weight: 600;
     }
     
@@ -184,7 +184,7 @@
   &__description {
     font-size: 0.9rem;
     line-height: 1.6;
-    color: $color-text-primary;
+    color: variables.$color-text-primary;
     margin-bottom: 1.5rem;
   }
   
@@ -207,7 +207,7 @@
     overflow: hidden;
     
     &--selected {
-      border-color: $color-border;
+      border-color: variables.$color-border;
     }
   }
   

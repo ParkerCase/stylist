@@ -12,13 +12,6 @@ import { Recommendation } from '@/types';
 import { preloadBodyPixModel } from '@/services/background-removal/utils';
 import { useRecommendationStore } from '@/store/recommendationStore';
 import AdaptiveImage from '@/components/common/AdaptiveImage';
-import { getDeviceCapabilities } from '@/utils/deviceCapabilities';
-
-// Define CameraFacing enum since it might not be exported from ImageUploader
-enum CameraFacing {
-  FRONT = 'user',
-  BACK = 'environment'
-}
 
 // Try-on flow steps
 enum TryOnStep {
@@ -450,20 +443,7 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({
   };
 
   return (
-    <div className="stylist-virtual-try-on">
-      <div className="stylist-virtual-try-on__header" style={{ backgroundColor: primaryColor }}>
-        <h2 className="stylist-virtual-try-on__title">Virtual Try-On</h2>
-        <button
-          className="stylist-virtual-try-on__close-btn"
-          onClick={handleClose}
-          aria-label="Close"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-          </svg>
-        </button>
-      </div>
-
+    <div className="stylist-virtual-try-on" data-cy="virtual-try-on">
       {/* Step indicator */}
       {renderStepIndicator()}
 
@@ -476,7 +456,7 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({
             countdownDuration={5}
           />
         ) : (
-          <div className="stylist-virtual-try-on__canvas-container">
+          <div className="stylist-virtual-try-on__canvas-container" data-cy="try-on-grid">
             {/* Review mode displays the captured image */}
             {reviewMode && capturedImage ? (
               <div className="stylist-virtual-try-on__review">
@@ -501,6 +481,25 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({
                   >
                     Save to Lookbook
                   </button>
+                  <button
+                    className="stylist-virtual-try-on__review-action stylist-virtual-try-on__review-action--share"
+                    onClick={() => {
+                      if (navigator.share) {
+                        navigator.share({
+                          title: 'Check out my virtual try-on!',
+                          text: 'Here is my look from the Stylist Virtual Try-On!',
+                          url: capturedImage
+                        });
+                      } else {
+                        navigator.clipboard.writeText(capturedImage || '').then(() => {
+                          alert('Image URL copied! Share it anywhere.');
+                        });
+                      }
+                    }}
+                    style={{ backgroundColor: '#4267B2', color: '#fff' }}
+                  >
+                    Share
+                  </button>
                 </div>
                 <div className="stylist-virtual-try-on__review-feedback">
                   <p>How does it look?</p>
@@ -522,6 +521,7 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({
                 setCanvasRef={setCanvasRef}
                 onGarmentSelect={setActiveGarmentId}
                 showBodyGuide={!userImage}
+                data-cy="item-card"
               />
             )}
 
@@ -548,7 +548,7 @@ const VirtualTryOn: React.FC<VirtualTryOnProps> = ({
             )}
 
             {webglSupported === false && userImage && (
-              <div className="stylist-virtual-try-on__warning">
+              <div className="stylist-virtual-try-on__warning" data-cy="device-limitation-message">
                 <p>
                   <strong>Note:</strong> 3D graphics acceleration (WebGL) may not be fully supported in your browser.
                   Background removal might use the original image.

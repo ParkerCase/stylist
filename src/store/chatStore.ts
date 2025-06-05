@@ -28,7 +28,7 @@ interface ChatState {
 
 export const useChatStore = create<ChatState>((set, get) => ({
   messages: [],
-  isOpen: true, // Set to true by default to show the widget
+  isOpen: false, // Set to false by default so the widget is closed initially
   isMinimized: false,
   isLoading: false,
   error: null,

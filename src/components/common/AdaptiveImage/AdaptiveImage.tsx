@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, memo } from 'react';
-import { getDeviceCapabilities } from '../../../utils/deviceCapabilities';
 import { performanceMonitor } from '../../../utils/performanceMonitoring';
 import './AdaptiveImage.scss';
 
@@ -168,6 +167,7 @@ const AdaptiveImage: React.FC<AdaptiveImageProps> = ({
         onError={handleError}
         className={`adaptive-image__img ${loaded ? 'visible' : ''}`}
         style={{ opacity: loaded ? 1 : 0 }}
+        data-testid="adaptive-image-img"
       />
     </div>
   );

@@ -35,7 +35,7 @@ const GridLayout: React.FC<GridLayoutProps> = ({
   };
 
   return (
-    <div className={`stylist-grid-layout ${getGridClassName()} ${className}`}>
+    <div className={`stylist-grid-layout ${getGridClassName()} ${className}`} data-cy={size === '2x50' ? 'trending-grid' : 'suggestion-grid'}>
       {(title || categoryDropdown) && (
         <div className="stylist-grid-layout__header">
           {title && <h2 className="stylist-grid-layout__title">{title}</h2>}
@@ -50,7 +50,7 @@ const GridLayout: React.FC<GridLayoutProps> = ({
       {showRequestedSection && requestedItems.length > 0 && (
         <div className="stylist-grid-layout__section">
           <h3 className="stylist-grid-layout__section-title">Requested Items</h3>
-          <div className="stylist-grid-layout__requested-grid">
+          <div className="stylist-grid-layout__requested-grid" data-cy="requested-grid">
             {requestedItems.map((item, index) => (
               <div key={`requested-${index}`} className="stylist-grid-layout__item">
                 {item}
@@ -60,9 +60,9 @@ const GridLayout: React.FC<GridLayoutProps> = ({
         </div>
       )}
 
-      <div className="stylist-grid-layout__grid">
+      <div className="stylist-grid-layout__grid" data-cy={size === '2x50' ? 'trending-grid' : 'suggestion-grid'}>
         {items.map((item, index) => (
-          <div key={`item-${index}`} className="stylist-grid-layout__item">
+          <div key={`item-${index}`} className="stylist-grid-layout__item" data-cy="item-card">
             {item}
           </div>
         ))}

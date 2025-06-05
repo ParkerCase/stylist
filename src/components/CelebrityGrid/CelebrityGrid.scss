@@ -1,5 +1,5 @@
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use '../../styles/variables.scss' as variables;
+@use '../../styles/mixins.scss' as mixins;
 
 .celebrity-grid {
   width: 100%;
@@ -22,7 +22,7 @@
   
   &__subtitle {
     font-size: 1rem;
-    color: $color-text-secondary;
+    color: variables.$color-text-secondary;
     margin-bottom: 0.75rem;
   }
   
@@ -31,7 +31,7 @@
     display: flex;
     justify-content: center;
     gap: 0.5rem;
-    color: $color-text-secondary;
+    color: variables.$color-text-secondary;
     
     &-label {
       font-weight: 500;
@@ -184,7 +184,7 @@
   
   &__look {
     font-size: 0.875rem;
-    color: $color-text-secondary;
+    color: variables.$color-text-secondary;
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -195,14 +195,14 @@
   &__empty {
     text-align: center;
     padding: 3rem 1rem;
-    color: $color-text-secondary;
+    color: variables.$color-text-secondary;
     
     p {
       margin-bottom: 0.5rem;
       
       &:first-child {
         font-weight: 500;
-        color: $color-text-primary;
+        color: variables.$color-text-primary;
       }
     }
   }

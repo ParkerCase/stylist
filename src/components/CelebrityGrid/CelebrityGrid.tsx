@@ -51,7 +51,7 @@ const CelebrityGrid: React.FC<CelebrityGridProps> = ({
   };
 
   return (
-    <div className="celebrity-grid">
+    <div className="celebrity-grid" data-cy="celebrity-grid">
       <div className="celebrity-grid__header" style={{ borderColor: primaryColor }}>
         <h2 className="celebrity-grid__title">{title}</h2>
         <p className="celebrity-grid__subtitle">{subtitle}</p>
@@ -73,6 +73,7 @@ const CelebrityGrid: React.FC<CelebrityGridProps> = ({
                 onMouseEnter={() => handleMouseEnter(celebrity.id)}
                 onMouseLeave={handleMouseLeave}
                 onClick={() => onCelebrityClick(celebrity)}
+                data-cy="celebrity-card"
               >
                 <div className="celebrity-grid__image-container">
                   <img 

@@ -4,28 +4,24 @@ import CelebrityDetail from '@/components/CelebrityDetail';
 import SocialProofArchive from '@/components/SocialProofArchive';
 import ShopTheLook from '@/components/ShopTheLook';
 import { Recommendation } from '@/types';
-import { getCelebrities, getCelebrityById } from '@/utils/celebrity-demo-data';
+import { getCelebrities } from '@/utils/celebrity-demo-data';
 import SocialProofUpdateScheduler, { ArchivedUpdate } from '@/services/social-proof/updateScheduler';
-import { SocialProofItem } from '@/services/social-proof/types';
-import findSimilarItems from '@/services/social-proof/findSimilarItems';
-import findExactItems from '@/services/social-proof/findExactItems';
+import { fetchCelebrityData } from '@/utils/fetchCelebrityData';
 
 interface SocialProofContainerProps {
   onAddToCart: (product: Recommendation.RecommendationItem) => void;
   onAddToWishlist: (product: Recommendation.RecommendationItem) => void;
   onItemFeedback?: (itemId: string, liked: boolean) => void;
   primaryColor?: string;
-  retailerId?: string;
 }
 
 const SocialProofContainer: React.FC<SocialProofContainerProps> = ({
   onAddToCart,
   onAddToWishlist,
   onItemFeedback,
-  primaryColor = '#000000',
-  retailerId = 'demo_retailer'
+  primaryColor = '#000000'
 }) => {
-  const [celebrities, setCelebrities] = useState(getCelebrities());
+  const [celebrities, setCelebrities] = useState<any[]>([]);
   const [selectedCelebrity, setSelectedCelebrity] = useState<any | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
@@ -34,32 +30,63 @@ const SocialProofContainer: React.FC<SocialProofContainerProps> = ({
   const [archivedUpdates, setArchivedUpdates] = useState<ArchivedUpdate[]>([]);
   const [lastUpdated, setLastUpdated] = useState<string>(new Date().toISOString());
   const [scheduler] = useState(() => new SocialProofUpdateScheduler());
+  const [loading, setLoading] = useState(true);
 
-  // Initialize with demo data and scheduler
   useEffect(() => {
-    // Get celebrities
-    const allCelebrities = getCelebrities();
-    setCelebrities(allCelebrities);
-
-    // Set up demo archived updates if none exist
+    let isMounted = true;
+    async function loadCelebrities() {
+      setLoading(true);
+      // Use real API in production, mock in dev/demo
+      const isDemo = process.env.NODE_ENV !== 'production';
+      try {
+        let apiCelebs: any[] = [];
+        if (!isDemo) {
+          apiCelebs = await fetchCelebrityData(20);
+        }
+        // Map API data to CelebrityGrid shape
+        if (apiCelebs && apiCelebs.length > 0) {
+          const mapped = apiCelebs.map((item: any) => ({
+            id: item.id,
+            name: item.celebrity,
+            imageUrl: item.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.celebrity || 'Celebrity')}&background=eee&color=555&size=256`,
+            latestLook: item.outfitTags && item.outfitTags.length > 0 ? item.outfitTags[0] : 'Celebrity Look',
+            event: item.event || '',
+            description: item.outfitTags && item.outfitTags.length > 1 ? item.outfitTags.slice(1).join(', ') : '',
+            timestamp: item.timestamp || new Date().toISOString(),
+            tags: item.outfitTags || [],
+            matchedProducts: item.matchedProducts || [],
+          }));
+          if (isMounted) setCelebrities(mapped);
+        } else {
+          // Fallback to mock/demo data
+          const demoCelebs = getCelebrities(20);
+          if (isMounted) setCelebrities(demoCelebs);
+        }
+      } catch {
+        // Fallback to mock/demo data
+        const demoCelebs = getCelebrities(20);
+        if (isMounted) setCelebrities(demoCelebs);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    loadCelebrities();
+    // Archive/demo logic (unchanged, only used for archive modal)
     const existingArchives = scheduler.getArchivedUpdates();
     if (existingArchives.length === 0) {
       createDemoArchives();
     } else {
       setArchivedUpdates(existingArchives);
     }
-
-    // Set last updated date
     const latestUpdate = scheduler.getLatestUpdate();
     if (latestUpdate) {
       setLastUpdated(latestUpdate.publishedAt.toString());
     }
-
-    // Check for any scheduled updates that should be published
     const pendingUpdates = scheduler.checkForPendingUpdates();
     pendingUpdates.forEach(update => {
       scheduler.publishUpdate(update.id);
     });
+    return () => { isMounted = false; };
   }, []);
 
   // Create demo archived updates for previous weeks
@@ -175,14 +202,18 @@ const SocialProofContainer: React.FC<SocialProofContainerProps> = ({
   return (
     <div className="social-proof-container">
       {/* Celebrity Grid */}
-      <CelebrityGrid
-        celebrities={celebrities}
-        onCelebrityClick={handleCelebrityClick}
-        primaryColor={primaryColor}
-        title="Celebrity Style Inspiration"
-        subtitle="Shop your favorite celebrity looks"
-        lastUpdated={lastUpdated}
-      />
+      {loading ? (
+        <div className="celebrity-grid__empty"><p>Loading celebrity style inspiration...</p></div>
+      ) : (
+        <CelebrityGrid
+          celebrities={celebrities}
+          onCelebrityClick={handleCelebrityClick}
+          primaryColor={primaryColor}
+          title="Celebrity Style Inspiration"
+          subtitle="Shop your favorite celebrity looks"
+          lastUpdated={lastUpdated}
+        />
+      )}
 
       {/* View Archive Button */}
       <div className="social-proof-container__archive-button">

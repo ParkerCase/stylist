@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getDeviceCapabilities } from '../../../utils/deviceCapabilities';
 import { getAnimationComplexity } from '../../../utils/animationUtils';
 import './TransitionSmoother.scss';
 
@@ -113,6 +112,7 @@ const TransitionSmoother: React.FC<TransitionSmootherProps> = ({
       style={{ 
         '--transition-duration': `${actualDuration}ms`,
       } as React.CSSProperties}
+      data-testid="content"
     >
       {children}
     </div>

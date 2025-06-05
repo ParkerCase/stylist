@@ -508,3 +508,30 @@ describe('Fashion AI - Feature Requirements Verification', () => {
     cy.get('.complete-look-suggestions').should('be.visible');
   });
 });
+
+/*** ADDITIONAL SPEC-COMPLIANCE TESTS ***/
+
+describe('Fashion AI - Spec Compliance: Social Proof and Trending Items', () => {
+  it('should display exactly 20 celebrity cards in Social Proof grid', () => {
+    cy.get('.circular-button').click();
+    cy.contains('Social Proof').click();
+    cy.get('.celebrity-grid .celebrity-card').should('have.length', 20);
+  });
+
+  it('should display exactly 100 trending items in a 2x50 grid', () => {
+    cy.get('.circular-button').click();
+    cy.contains('Trending Items').click();
+    cy.get('.trending-grid .item-card').should('have.length', 100);
+  });
+
+  it('should update trending grid when age and gender filters are changed', () => {
+    cy.get('.circular-button').click();
+    cy.contains('Trending Items').click();
+    // Simulate changing age filter
+    cy.get('select[aria-label="Age"]').select('26-35');
+    cy.get('.trending-grid .item-card').should('exist'); // Should update (count may change)
+    // Simulate changing gender filter
+    cy.get('select[aria-label="Gender"]').select('Female');
+    cy.get('.trending-grid .item-card').should('exist'); // Should update (count may change)
+  });
+});

@@ -14,22 +14,40 @@ interface StyleQuizModalProps {
   onSubmit: (answers: StyleQuizAnswer[]) => void;
   onClose: () => void;
   primaryColor?: string;
+  asTab?: boolean;
 }
 
 const StyleQuizModal: React.FC<StyleQuizModalProps> = ({ 
   onSubmit, 
   onClose,
-  primaryColor
+  primaryColor,
+  asTab
 }) => {
-  // Store current answers to track abandonment
+  // All hooks must be called before any return or conditional rendering
   const [currentAnswers, setCurrentAnswers] = useState<StyleQuizAnswer[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [finalSubmission, setFinalSubmission] = useState(false);
-  
-  // Get user and sync service
   const userStore = useUserStore();
   const syncedStore = useSyncedStore();
-
+  // Defensive: always call hooks, even if modal is closed or results are shown
+  useEffect(() => {
+    const handleEscapeKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        handleClose();
+      }
+    };
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [onClose, currentAnswers, finalSubmission]);
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+  
   // Wrapped onSubmit to track answers before submitting
   const handleSubmit = (answers: StyleQuizAnswer[]) => {
     setCurrentAnswers(answers);
@@ -110,40 +128,17 @@ const StyleQuizModal: React.FC<StyleQuizModalProps> = ({
     });
   };
   
-  // Handle escape key
-  useEffect(() => {
-    const handleEscapeKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        handleClose();
-      }
-    };
-    
-    document.addEventListener('keydown', handleEscapeKey);
-    
-    return () => {
-      document.removeEventListener('keydown', handleEscapeKey);
-    };
-  }, [onClose, currentAnswers, finalSubmission]);
-  
-  // Prevent body scrolling when modal is open
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, []);
-  
   return (
-    <div className="stylist-style-quiz-modal">
-      <div className="stylist-style-quiz-modal__overlay" onClick={handleClose}></div>
-      <div className="stylist-style-quiz-modal__container">
-        <button 
-          className="stylist-style-quiz-modal__close-button" 
-          onClick={handleClose}
-          aria-label="Close style quiz"
-        ></button>
-        
+    <div className={asTab ? "stylist-style-quiz-tab" : "stylist-style-quiz-modal"} data-cy="style-quiz-section">
+      {!asTab && <div className="stylist-style-quiz-modal__overlay" onClick={handleClose}></div>}
+      <div className={asTab ? "stylist-style-quiz-tab__container" : "stylist-style-quiz-modal__container"} style={asTab ? {background: '#fff', minHeight: '100%', boxShadow: 'none'} : {}} data-cy="style-quiz-container">
+        {!asTab && (
+          <button 
+            className="stylist-style-quiz-modal__close-button" 
+            onClick={handleClose}
+            aria-label="Close style quiz"
+          ></button>
+        )}
         {showResults ? (
           <StyleQuizResults
             answers={currentAnswers}

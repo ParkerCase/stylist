@@ -1,8 +1,8 @@
 // src/components/DemoGuide/DemoGuide.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './DemoGuide.scss';
-import { demoFlows, DemoFlow, DemoStep } from '../../utils/demoFlows';
+import { demoFlows, DemoFlow } from '../../utils/demoFlows';
 import { getDebugMode } from '../../utils/debugMode';
 
 interface DemoGuideProps {
@@ -25,11 +25,14 @@ const DemoGuide: React.FC<DemoGuideProps> = ({
   position = 'right',
   showControls = true
 }) => {
-  // State
+  // All hooks must be called before any return
   const [selectedFlow, setSelectedFlow] = useState<DemoFlow>(demoFlows[flowId]);
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
   const [isMinimized, setIsMinimized] = useState<boolean>(false);
   const [isVisible, setIsVisible] = useState<boolean>(true);
+
+  // Only render if debug mode or showControls is true, and isVisible
+  const shouldRender = (getDebugMode() || showControls) && isVisible;
 
   // Current step
   const currentStep = selectedFlow.steps[currentStepIndex];
@@ -67,15 +70,7 @@ const DemoGuide: React.FC<DemoGuideProps> = ({
     }
   };
 
-  // Only show in debug mode or when explicitly enabled
-  if (!getDebugMode() && !showControls) {
-    return null;
-  }
-
-  // Don't render if not visible
-  if (!isVisible) {
-    return null;
-  }
+  if (!shouldRender) return null;
 
   return (
     <div className={`stylist-demo-guide stylist-demo-guide--${position} ${isMinimized ? 'stylist-demo-guide--minimized' : ''}`}>

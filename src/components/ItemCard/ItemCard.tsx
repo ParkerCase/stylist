@@ -4,15 +4,11 @@ import './ItemCard.scss';
 import { Recommendation } from '@/types/index';
 import { formatPrice } from '@/utils/formatters';
 import FeedbackControls from '../FeedbackControls';
-import TryOnButton from '../TryOnButton/TryOnButton';
-import { mapProductTypeToGarmentType } from '@/utils/productMappings';
-import { GarmentType } from '@/types/tryOn';
 import ItemHoverMenu from './ItemHoverMenu';
 import ItemFeedbackOverlay from './ItemFeedbackOverlay';
 import SizeAvailability from './SizeAvailability';
 import CompleteLookModal from '../CompleteLookModal';
 import AdaptiveImage from '../common/AdaptiveImage';
-import { getDeviceCapabilities, DeviceCapabilities } from '@/utils/deviceCapabilities';
 import { getAnimationComplexity } from '@/utils/animationUtils';
 
 // Define a simpler item type for closet items
@@ -237,9 +233,6 @@ const ItemCard: React.FC<ItemCardProps> = ({
     ['top', 'bottom', 'dress', 'outerwear', 'shoes', 'accessory'].includes(category.toLowerCase())
     : false;
     
-  // Get garment type for try-on
-  const garmentType = category ? mapProductTypeToGarmentType(category) : GarmentType.TOP;
-  
   // Determine available sizes
   const availableSizes = inStock ? sizes : [];
 
@@ -255,7 +248,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
   }, []);
   
   return (
-    <div className={`stylist-item-card ${animateItem ? 'stylist-item-card--animate' : ''} ${animationClass} ${className || ''}`}>
+    <div className={`stylist-item-card ${animateItem ? 'stylist-item-card--animate' : ''} ${animationClass} ${className || ''}`} data-cy="item-card" onClick={handleItemClick}>
       <div className="stylist-item-card__image-container" onClick={handleItemClick}>
         {imageUrl ? (
           <AdaptiveImage
@@ -444,12 +437,12 @@ const ItemCard: React.FC<ItemCardProps> = ({
             
             {onAddToCart && (
               <button
-                className="stylist-item-card__cart-btn"
+                className="stylist-item-card__add-to-cart-btn"
                 onClick={handleAddToCart}
                 aria-label="Add to cart"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                  <path d="M11 9h2V6h3V4h-3V1h-2v3H8v2h3v3zm-4 9c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2zm-9.83-3.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.86-7.01L19.42 4h-.01l-1.1 2-2.76 5H8.53l-.13-.27L6.16 6l-.95-2-.94-2H1v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.13 0-.25-.11-.25-.25z"/>
+                  <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2zM7.16 14.26l.03-.12L7.9 12h8.45c.75 0 1.41-.41 1.75-1.03l3.24-5.88a1 1 0 0 0-.89-1.47H5.21l-.94-2H1v2h2l3.6 7.59-1.35 2.44C4.52 16.37 5.48 18 7 18h12v-2H7.42c-.14 0-.25-.11-.28-.25z"/>
                 </svg>
               </button>
             )}
@@ -463,7 +456,7 @@ const ItemCard: React.FC<ItemCardProps> = ({
           isOpen={showCompleteLookModal}
           onClose={() => setShowCompleteLookModal(false)}
           selectedItem={item as Recommendation.RecommendationItem}
-          complementaryItems={complementaryItems}
+          complementaryItems={complementaryItems.slice(0, Math.max(3, Math.min(5, complementaryItems.length)))}
           onAddToCart={onAddToCart!}
           onAddAllToCart={handleAddAllToCart}
           primaryColor={primaryColor}

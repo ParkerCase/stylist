@@ -1,5 +1,5 @@
-@import '../../styles/variables.scss';
-@import '../../styles/mixins.scss';
+@use '../../styles/variables.scss' as variables;
+@use '../../styles/mixins.scss' as mixins;
 
 .stylist-suggestion-grid {
   width: 100%;
@@ -12,7 +12,7 @@
       position: absolute;
       top: 8px;
       left: 8px;
-      background-color: $accent-color;
+      background-color: variables.$accent-color;
       color: white;
       font-size: 10px;
       font-weight: 600;

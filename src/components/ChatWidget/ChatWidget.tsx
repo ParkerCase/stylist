@@ -5,7 +5,6 @@ import './ChatWidget.scss';
 import ChatHeader from '@/components/ChatHeader';
 import ChatBody from '@/components/ChatBody';
 import ChatInput from '@/components/ChatInput';
-import HomeButton from '@/components/HomeButton';
 import TabNavigation, { TabId } from '@/components/TabNavigation';
 import { useChatStore, useUserStore, useRecommendationStore } from '@/store/index';
 import { useFeedbackStore } from '@/store/feedbackStore';
@@ -18,14 +17,15 @@ import { getUserId } from '@/utils/localStorage';
 import AsyncComponentLoader from '@/components/common/AsyncComponentLoader';
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import TransitionSmoother from '@/components/common/TransitionSmoother';
-import { USE_LAZY_LOADING, USE_PARALLEL_INIT } from '@/index';
+import { USE_PARALLEL_INIT } from '@/index';
 import SuggestionGrid from '@/components/SuggestionGrid';
+import socialProofMock from '@/mock-data/socialProof';
+import { fetchCelebrityData } from '../../utils/fetchCelebrityData';
 
 // Initialize widget lifecycle log
 console.log('[LIFECYCLE:ChatWidget] Module load started');
 
 // Import non-lazy versions for fallback
-import TryOnModalRegular from '@/components/TryOnModal';
 import StyleQuizModalRegular from '@/components/StyleQuiz/StyleQuizModal';
 import LookbookRegular from '@/components/Lookbook';
 import MyClosetRegular from '@/components/MyCloset';
@@ -34,19 +34,6 @@ import TrendingItemsRegular from '@/components/TrendingItems';
 import SocialProofRegular from '@/components/SocialProof/SocialProofRenderer';
 
 // Create lazy-loaded versions with fallbacks to non-lazy versions
-const TryOnModalLazy = lazy(() => {
-  console.log('[LIFECYCLE:ChatWidget] TryOnModalLazy import starting');
-  return import('@/components/TryOnModal')
-    .then(module => {
-      console.log('[LIFECYCLE:ChatWidget] TryOnModalLazy successfully loaded');
-      return module;
-    })
-    .catch(error => {
-      console.error('[LIFECYCLE:ChatWidget] Failed to load TryOnModal component:', error);
-      return { default: TryOnModalRegular };
-    });
-});
-
 const StyleQuizModalLazy = lazy(() => {
   console.log('[LIFECYCLE:ChatWidget] StyleQuizModalLazy import starting');
   return import('@/components/StyleQuiz/StyleQuizModal')
@@ -141,7 +128,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
   retailerId,
   apiUrl,
   position = 'bottom-right',
-  primaryColor = '#4361ee',
+  primaryColor = '#000000',
   greeting = "Hi there! I'm your AI style assistant. How can I help you today?",
   onFirstPaint,
   showDemoToggle = false
@@ -215,7 +202,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
         // Try to get existing user profile
         userProfile = await api.user.getUserProfile(userId);
         console.log('[LIFECYCLE:ChatWidget] Found existing user profile');
-      } catch (e) {
+      } catch {
         console.log('[LIFECYCLE:ChatWidget] No existing profile found, creating new user');
         // Create a new user profile if not found
         userProfile = await api.user.createUser();
@@ -262,8 +249,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
         } as NonNullable<typeof window.__STYLIST_PENDING_INITIALIZATIONS>;
       }
       console.log('[LIFECYCLE:ChatWidget] initializeUser completed successfully');
-    } catch (error) {
-      console.error('[LIFECYCLE:ChatWidget] Error initializing user:', error);
+    } catch {
+      console.error('[LIFECYCLE:ChatWidget] Error initializing user:');
       setError('Sorry, I had trouble connecting. Please try again later.');
       addTextMessage(
         'Sorry, I had trouble connecting. Please try again later.',
@@ -348,8 +335,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
       }
 
       console.log('[LIFECYCLE:ChatWidget] fetchInitialRecommendations completed successfully');
-    } catch (error) {
-      console.error('[LIFECYCLE:ChatWidget] Error fetching initial recommendations:', error);
+    } catch {
+      console.error('[LIFECYCLE:ChatWidget] Error fetching initial recommendations:');
       // Silently fail - we'll show recommendations when the user asks for them
     }
   };
@@ -623,16 +610,43 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
 
     if (!user || !chatService) return;
 
-    // Start loading state
     setLoading(true);
 
-    // Handle specific commands
-    const lowerText = text.toLowerCase();
+    // Slash command parsing
+    if (text.startsWith('/')) {
+      const [command] = text.slice(1).split(' ');
+      switch (command.toLowerCase()) {
+        case 'outfit':
+          // Handle /outfit command
+          await new Promise(resolve => setTimeout(resolve, 500));
+          addTextMessage('Generating a personalized outfit for you...', 'assistant');
+          // Optionally trigger outfit generation logic here
+          setLoading(false);
+          return;
+        case 'trends':
+          await new Promise(resolve => setTimeout(resolve, 500));
+          addTextMessage('Here are the current trending items for you!', 'assistant');
+          setCurrentView('lookbook');
+          setLoading(false);
+          return;
+        case 'quiz':
+          await new Promise(resolve => setTimeout(resolve, 500));
+          addTextMessage("Let's start your style quiz!", 'assistant');
+          setShowStyleQuiz(true);
+          setLoading(false);
+          return;
+        // Add more slash commands as needed
+        default:
+          addTextMessage(`Unknown command: /${command}`, 'system');
+          setLoading(false);
+          return;
+      }
+    }
 
     // Handle "show lookbook" command
-    if (lowerText.includes('lookbook') ||
-        lowerText.includes('show recommendations') ||
-        lowerText.includes('show items')) {
+    if (text.includes('lookbook') ||
+        text.includes('show recommendations') ||
+        text.includes('show items')) {
       await new Promise(resolve => setTimeout(resolve, 500));
       addTextMessage(
         'Here\'s your lookbook with all recommended items and outfits!',
@@ -644,8 +658,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
     }
 
     // Handle "back to chat" command
-    if (lowerText.includes('back to chat') ||
-        lowerText.includes('return to chat')) {
+    if (text.includes('back to chat') ||
+        text.includes('return to chat')) {
       await new Promise(resolve => setTimeout(resolve, 500));
       addTextMessage(
         'Switching back to chat view. How else can I help you?',
@@ -657,9 +671,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
     }
 
     // Handle style quiz command
-    if (lowerText.includes('quiz') ||
-        lowerText.includes('style profile') ||
-        lowerText.includes('preferences')) {
+    if (text.includes('quiz') ||
+        text.includes('style profile') ||
+        text.includes('preferences')) {
       await new Promise(resolve => setTimeout(resolve, 500));
       addTextMessage(
         'Let\'s find out more about your style preferences! Please answer a few quick questions.',
@@ -750,13 +764,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
           }
         }
       }
-    } catch (error) {
-      console.error('Error processing message:', error);
-      setError(error instanceof Error ? error.message : String(error));
-      addTextMessage(
-        'Sorry, I encountered an error while processing your request. Please try again.',
-        'system'
-      );
+    } catch {
+      console.error('Error processing message:');
+      setError('Sorry, I encountered an error while processing your request. Please try again.');
     } finally {
       // End loading state
       setLoading(false);
@@ -811,13 +821,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
           setRecommendedItems(convertedItems);
         }
       }
-    } catch (error) {
-      console.error('Error processing image:', error);
-      setError(error instanceof Error ? error.message : String(error));
-      addTextMessage(
-        'Sorry, I encountered an error while processing your image. Please try again.',
-        'system'
-      );
+    } catch {
+      console.error('Error processing image:');
+      setError('Sorry, I encountered an error while processing your image. Please try again.');
     } finally {
       // End loading state
       setLoading(false);
@@ -872,13 +878,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
           setRecommendedItems(convertedItems);
         }
       }
-    } catch (error) {
-      console.error('Error processing URL:', error);
-      setError(error instanceof Error ? error.message : String(error));
-      addTextMessage(
-        'Sorry, I encountered an error while processing your URL. Please try again.',
-        'system'
-      );
+    } catch {
+      console.error('Error processing URL:');
+      setError('Sorry, I encountered an error while processing your URL. Please try again.');
     } finally {
       // End loading state
       setLoading(false);
@@ -922,8 +924,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
           MessageSender.ASSISTANT
         );
       }
-    } catch (error) {
-      console.error('Error submitting item feedback:', error);
+    } catch {
+      console.error('Error submitting item feedback:');
       setError('Failed to save your feedback. Please try again.');
     }
   };
@@ -954,8 +956,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
           'assistant'
         );
       }
-    } catch (error) {
-      console.error('Error submitting outfit feedback:', error);
+    } catch {
+      console.error('Error submitting outfit feedback:');
       setError('Failed to save your feedback. Please try again.');
     }
   };
@@ -984,8 +986,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
       // });
       
       // No response needed as the thumbs up component will show its own feedback
-    } catch (error) {
-      console.error('Error saving message feedback:', error);
+    } catch {
+      console.error('Error saving message feedback:');
       // Silently fail - local storage will still have the feedback
     }
   };
@@ -1009,8 +1011,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
       }
       
       trackEvent(AnalyticsEventType.ADD_TO_WISHLIST, user.userId, { itemId: item.id });
-    } catch (error) {
-      console.error('Error adding to wishlist:', error);
+    } catch {
+      console.error('Error adding to wishlist:');
       setError('Failed to add item to wishlist. Please try again.');
     }
   };
@@ -1054,8 +1056,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
         size,
         color
       });
-    } catch (error) {
-      console.error('Error adding to cart:', error);
+    } catch {
+      console.error('Error adding to cart:');
       setError('Failed to add item to cart. Please try again.');
     }
   };
@@ -1081,8 +1083,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
       }
       
       trackEvent(AnalyticsEventType.OUTFIT_SAVE, user.userId, { outfitId: outfit.id });
-    } catch (error) {
-      console.error('Error saving outfit:', error);
+    } catch {
+      console.error('Error saving outfit:');
       setError('Failed to save outfit. Please try again.');
     }
   };
@@ -1114,15 +1116,15 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
       // Clear any saved progress from local storage
       try {
         localStorage.removeItem('stylist_quiz_progress_style-quiz-1');
-      } catch (e) {
-        console.error('Error clearing quiz progress:', e);
+      } catch {
+        console.error('Error clearing quiz progress:');
       }
       
       // Submit quiz answers to API
       try {
         await api.user.submitStyleQuiz(user.userId, answers);
-      } catch (error) {
-        console.error('Error submitting style quiz:', error);
+      } catch {
+        console.error('Error submitting style quiz:');
         // Show error but don't return yet - we have fallback behavior
         setError('There was an issue saving your style preferences, but we can still provide recommendations.');
       }
@@ -1144,8 +1146,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
           limit: 4,
           includeOutfits: true
         });
-      } catch (error) {
-        console.error('Error fetching recommendations:', error);
+      } catch {
+        console.error('Error fetching recommendations:');
         setError('Sorry, there was an issue getting your personalized recommendations.');
         setLoading(false);
         return;
@@ -1268,8 +1270,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
         'You can see all your recommendations in your lookbook. Would you like to view it now?',
         'assistant'
       );
-    } catch (error) {
-      console.error('Unexpected error processing quiz:', error);
+    } catch {
+      console.error('Unexpected error processing quiz:');
       setError('Failed to process the style quiz. Please try again later.');
       
       // Close quiz modal
@@ -1293,34 +1295,20 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
     );
   };
   
-  // Handle switching views (legacy function, used for compatibility)
-  const handleSwitchView = (view: 'chat' | 'lookbook') => {
-    // Use the store's setCurrentView instead of local state
-    setCurrentView(view);
-    
-    // Update the active tab to match the view
-    setActiveTab(view as TabId);
-    
-    if (view === 'lookbook') {
-      trackEvent(AnalyticsEventType.VIEW_LOOKBOOK, user?.userId || 'anonymous');
-    }
-  };
-  
   // Handle tab change in the new navigation system
   const handleTabChange = (tabId: TabId) => {
     setActiveTab(tabId);
-    
-    // For backward compatibility - update currentView for chat and lookbook
+    // For backward compatibility - update currentView for chat and lookbook only
     if (tabId === 'chat' || tabId === 'lookbook') {
       setCurrentView(tabId);
     }
     
     // Track analytics for tab changes
     const analyticsMap: { [key in TabId]?: AnalyticsEventType } = {
-      'lookbook': AnalyticsEventType.VIEW_LOOKBOOK,
       'myCloset': AnalyticsEventType.VIEW_MY_CLOSET,
       'tryOn': AnalyticsEventType.VIEW_VIRTUAL_TRY_ON,
-      'social': AnalyticsEventType.VIEW_SOCIAL_PROOF,
+      'socialProof': AnalyticsEventType.VIEW_SOCIAL_PROOF,
+      'styleQuiz': AnalyticsEventType.VIEW_STYLE_QUIZ,
       'trending': AnalyticsEventType.VIEW_TRENDING_ITEMS
     };
     
@@ -1340,14 +1328,15 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
   // Get appropriate title for the current tab
   const getTitleForTab = (tabId: TabId): string => {
     const titleMap: { [key in TabId]: string } = {
-      'chat': 'The Stylist',
-      'lookbook': 'Your Lookbook',
-      'myCloset': 'My Wardrobe',
+      'chat': 'Personalized Stylist',
+      'trending': 'Trending Items',
       'tryOn': 'Virtual Try-On',
-      'social': 'Celebrity Styles',
-      'trending': 'Trending Items'
+      'myCloset': 'My Wardrobe',
+      'socialProof': 'Celebrity Styles',
+      'styleQuiz': 'Style Quiz',
+      'lookbook': 'Lookbook',
+      'recommendations': 'Recommendations',
     };
-    
     return titleMap[tabId] || 'The Stylist';
   };
   
@@ -1365,9 +1354,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-  
-  const widgetClasses = `stylist-chat-widget ${positionClasses[position]} ${isMinimized ? 'stylist-chat-widget--minimized' : ''}`;
+  const widgetClasses = `stylist-chat-widget ${positionClasses[position]} ${isMinimized ? 'stylist-chat-widget--minimized' : ''} ${!isOpen ? 'stylist-chat-widget--hidden' : ''}`;
   
   // Determine if we should show the non-essential components based on init strategy
   const shouldRenderNonEssentialComponents = () => {
@@ -1390,14 +1377,36 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
     }
   }, []);
 
+  // Social Proof state
+  const [socialProofItems, setSocialProofItems] = useState<any[]>([]);
+  const [isLoadingSocialProof, setIsLoadingSocialProof] = useState(false);
+  const [socialProofError, setSocialProofError] = useState<string | null>(null);
+
+  // Fetch real celebrity data when Social Proof tab is opened
+  useEffect(() => {
+    if (activeTab === 'socialProof' && socialProofItems.length === 0 && !isLoadingSocialProof) {
+      setIsLoadingSocialProof(true);
+      setSocialProofError(null);
+      fetchCelebrityData(20)
+        .then((items) => {
+          setSocialProofItems(items);
+          setIsLoadingSocialProof(false);
+        })
+        .catch(() => {
+          setSocialProofError('Failed to load real celebrity data. Showing mock data.');
+          setIsLoadingSocialProof(false);
+        });
+    }
+  }, [activeTab, socialProofItems.length, isLoadingSocialProof]);
+
   return (
     <>
-      <div className={widgetClasses} data-testid="stylist-chat-widget">
+      <div className={widgetClasses} data-cy="widget-container" data-testid="stylist-chat-widget" style={!isOpen ? { display: 'none' } : {}}>
         <ChatHeader
           title={getTitleForTab(activeTab)}
           primaryColor={primaryColor}
-          onSwitchView={handleSwitchView}
-          currentView={currentView}
+          onSwitchView={undefined}
+          currentView="chat"
           showDemoToggle={showDemoToggle}
           activeTab={activeTab}
         />
@@ -1407,20 +1416,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
           activeTab={activeTab}
           onTabChange={handleTabChange}
           primaryColor={primaryColor}
-          enabledFeatures={{
-            chat: true,
-            recommendations: true,
-            lookbook: true,
-            myCloset: true,
-            tryOn: true,
-            social: true,
-            trending: true
-          }}
-        />
-        
-        <HomeButton
-          onClick={() => handleTabChange('chat')}
-          primaryColor={primaryColor}
+          dataCyPrefix="nav-tab-"
         />
         
         <div className="stylist-chat-widget__content">
@@ -1445,6 +1441,13 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
                 </div>
               }
             >
+              <button
+                className="stylist-style-quiz__start-btn"
+                style={{ margin: '1rem auto', display: 'block', backgroundColor: primaryColor, color: '#fff', border: 'none', borderRadius: '4px', padding: '0.75rem 1.5rem', fontSize: '1rem', cursor: 'pointer' }}
+                onClick={() => setShowStyleQuiz(true)}
+              >
+                Start Style Quiz
+              </button>
               <ChatBody
                 messages={messages}
                 onItemFeedback={handleItemFeedback}
@@ -1471,8 +1474,32 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
                 placeholder="Type your question here..."
                 disabled={isLoading}
                 primaryColor={primaryColor}
+                data-cy="chat-input"
               />
             </ErrorBoundary>
+          </TransitionSmoother>
+          
+          {/* Style Quiz Tab View (full tab, not modal) */}
+          <TransitionSmoother
+            show={activeTab === 'styleQuiz'}
+            type="fade"
+            duration={300}
+            className="stylist-chat-widget__view"
+          >
+            {shouldRenderNonEssentialComponents() ? (
+              <React.Suspense fallback={<div className="stylist-loading-container"><div className="stylist-loading-spinner"></div><p>Loading style quiz...</p></div>}>
+                <StyleQuizModalLazy
+                  onSubmit={handleQuizSubmit}
+                  onClose={() => handleTabChange('chat')}
+                  asTab={true}
+                  primaryColor={primaryColor}
+                />
+              </React.Suspense>
+            ) : (
+              <div className="stylist-chat-widget__loading">
+                <p>Initializing style quiz...</p>
+              </div>
+            )}
           </TransitionSmoother>
           
           {/* Lookbook View */}
@@ -1504,31 +1531,17 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
                       </div>
                     }
                   >
-                    {USE_LAZY_LOADING ? (
-                      <LookbookLazy
-                        items={recommendedItems}
-                        outfits={recommendedOutfits}
-                        savedOutfits={savedOutfits}
-                        onItemFeedback={handleItemFeedback}
-                        onOutfitFeedback={handleOutfitFeedback}
-                        onAddToWishlist={handleAddToWishlist}
-                        onAddToCart={handleAddToCart}
-                        onSaveOutfit={handleSaveOutfit}
-                        primaryColor={primaryColor}
-                      />
-                    ) : (
-                      <LookbookRegular
-                        items={recommendedItems}
-                        outfits={recommendedOutfits}
-                        savedOutfits={savedOutfits}
-                        onItemFeedback={handleItemFeedback}
-                        onOutfitFeedback={handleOutfitFeedback}
-                        onAddToWishlist={handleAddToWishlist}
-                        onAddToCart={handleAddToCart}
-                        onSaveOutfit={handleSaveOutfit}
-                        primaryColor={primaryColor}
-                      />
-                    )}
+                    <LookbookLazy
+                      items={recommendedItems}
+                      outfits={recommendedOutfits}
+                      savedOutfits={savedOutfits}
+                      onItemFeedback={handleItemFeedback}
+                      onOutfitFeedback={handleOutfitFeedback}
+                      onAddToWishlist={handleAddToWishlist}
+                      onAddToCart={handleAddToCart}
+                      onSaveOutfit={handleSaveOutfit}
+                      primaryColor={primaryColor}
+                    />
                   </ErrorBoundary>
                 </React.Suspense>
               </>
@@ -1568,23 +1581,13 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
                       </div>
                     }
                   >
-                    {USE_LAZY_LOADING ? (
-                      <MyClosetLazy
-                        onSelectItem={(item) => {
-                          // Handle item selection
-                          handleTabChange('chat');
-                          addTextMessage(`I'd like to know more about this ${item.category} in my closet.`, 'user');
-                        }}
-                      />
-                    ) : (
-                      <MyClosetRegular
-                        onSelectItem={(item) => {
-                          // Handle item selection
-                          handleTabChange('chat');
-                          addTextMessage(`I'd like to know more about this ${item.category} in my closet.`, 'user');
-                        }}
-                      />
-                    )}
+                    <MyClosetLazy
+                      onSelectItem={(item) => {
+                        // Handle item selection
+                        handleTabChange('chat');
+                        addTextMessage(`I'd like to know more about this ${item.category} in my closet.`, 'user');
+                      }}
+                    />
                   </ErrorBoundary>
                 </React.Suspense>
               </>
@@ -1624,19 +1627,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
                       </div>
                     }
                   >
-                    {USE_LAZY_LOADING ? (
-                      <VirtualTryOnLazy
-                        onClose={() => handleTabChange('chat')}
-                        onSave={handleTryOnSave}
-                        primaryColor={primaryColor}
-                      />
-                    ) : (
-                      <VirtualTryOnRegular
-                        onClose={() => handleTabChange('chat')}
-                        onSave={handleTryOnSave}
-                        primaryColor={primaryColor}
-                      />
-                    )}
+                    <VirtualTryOnLazy
+                      onClose={() => handleTabChange('chat')}
+                      onSave={handleTryOnSave}
+                      primaryColor={primaryColor}
+                    />
                   </ErrorBoundary>
                 </React.Suspense>
               </>
@@ -1649,7 +1644,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
           
           {/* Social Proof View */}
           <TransitionSmoother
-            show={activeTab === 'social'}
+            show={activeTab === 'socialProof'}
             type="fade"
             duration={300}
             className="stylist-chat-widget__view"
@@ -1671,30 +1666,25 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
                           onClick={() => handleTabChange('chat')}
                           className="stylist-error-retry-button"
                         >
-                          Return to Chat
+                          Return to Home
                         </button>
                       </div>
                     }
                   >
-                    {USE_LAZY_LOADING ? (
-                      <SocialProofLazy
-                        items={[]}  // Should be populated with real data
-                        onItemFeedback={handleItemFeedback}
-                        onAddToWishlist={handleAddToWishlist}
-                        onAddToCart={handleAddToCart}
-                        primaryColor={primaryColor}
-                        isExpanded={true}
-                      />
-                    ) : (
-                      <SocialProofRegular
-                        items={[]}  // Should be populated with real data
-                        onItemFeedback={handleItemFeedback}
-                        onAddToWishlist={handleAddToWishlist}
-                        onAddToCart={handleAddToCart}
-                        primaryColor={primaryColor}
-                        isExpanded={true}
-                      />
-                    )}
+                    <SocialProofLazy
+                      items={
+                        isLoadingSocialProof
+                          ? []
+                          : socialProofError
+                            ? socialProofMock.getCelebrities().items
+                            : socialProofItems
+                      }
+                      onItemFeedback={handleItemFeedback}
+                      onAddToWishlist={handleAddToWishlist}
+                      onAddToCart={handleAddToCart}
+                      primaryColor={primaryColor}
+                      isExpanded={true}
+                    />
                   </ErrorBoundary>
                 </React.Suspense>
               </>
@@ -1734,27 +1724,15 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
                       </div>
                     }
                   >
-                    {USE_LAZY_LOADING ? (
-                      <TrendingItemsLazy
-                        apiKey={apiKey}
-                        retailerId={retailerId}
-                        apiUrl={apiUrl}
-                        onItemFeedback={handleItemFeedback}
-                        onAddToWishlist={handleAddToWishlist}
-                        onAddToCart={handleAddToCart}
-                        primaryColor={primaryColor}
-                      />
-                    ) : (
-                      <TrendingItemsRegular
-                        apiKey={apiKey}
-                        retailerId={retailerId}
-                        apiUrl={apiUrl}
-                        onItemFeedback={handleItemFeedback}
-                        onAddToWishlist={handleAddToWishlist}
-                        onAddToCart={handleAddToCart}
-                        primaryColor={primaryColor}
-                      />
-                    )}
+                    <TrendingItemsLazy
+                      apiKey={apiKey}
+                      retailerId={retailerId}
+                      apiUrl={apiUrl}
+                      onItemFeedback={handleItemFeedback}
+                      onAddToWishlist={handleAddToWishlist}
+                      onAddToCart={handleAddToCart}
+                      primaryColor={primaryColor}
+                    />
                   </ErrorBoundary>
                 </React.Suspense>
               </>
@@ -1783,6 +1761,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
                   primaryColor={primaryColor}
                   onGenerate={handleGenerateSuggestions}
                   isLoading={isGeneratingSuggestions}
+                  data-cy="suggestion-grid"
                 />
               ) : (
                 <div className="stylist-chat-widget__loading">
@@ -1794,89 +1773,22 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({
         </div>
       </div>
 
-      {/* Only render non-essential components after first paint in optimized mode */}
-      {console.log('[LIFECYCLE:ChatWidget] Checking if non-essential components should render:', shouldRenderNonEssentialComponents())}
-      {shouldRenderNonEssentialComponents() && (
-        <>
-          {/* Virtual Try-On Modal */}
-          {console.log('[LIFECYCLE:ChatWidget] Rendering TryOnModal with AsyncComponentLoader')}
-          <React.Suspense fallback={
-  <div className="stylist-loading-container">
-    <div className="stylist-loading-spinner"></div>
-    <p>Loading virtual try-on...</p>
-  </div>
-}>
-  <AsyncComponentLoader
-    loadingMessage="Loading virtual try-on..."
-    onLoadStart={() => console.log('[LIFECYCLE:ChatWidget] TryOnModal loader starting')}
-    onLoadComplete={() => console.log('[LIFECYCLE:ChatWidget] TryOnModal loader completed')}
-    onLoadError={(error) => console.error('[LIFECYCLE:ChatWidget] TryOnModal loading error:', error)}
-  >
-    {(() => {
-      console.log('[LIFECYCLE:ChatWidget] Before TryOnModal render');
-      return null;
-    })()}
-    {USE_LAZY_LOADING ? (
-      <TryOnModalLazy onSave={handleTryOnSave} />
-    ) : (
-      <TryOnModalRegular onSave={handleTryOnSave} />
-    )}
-    {(() => {
-      console.log('[LIFECYCLE:ChatWidget] After TryOnModal render');
-      return null;
-    })()}
-  </AsyncComponentLoader>
-</React.Suspense>
-
-          {/* Style Quiz Modal */}
-          {(() => {
-            console.log('[LIFECYCLE:ChatWidget] Checking if StyleQuizModal should render:', showStyleQuiz);
-            return null;
-          })()}
-          {showStyleQuiz && (
-            <>
-              {(() => {
-                console.log('[LIFECYCLE:ChatWidget] Rendering StyleQuizModal with AsyncComponentLoader');
-                return null;
-              })()}
-              <React.Suspense fallback={
-  <div className="stylist-loading-container">
-    <div className="stylist-loading-spinner"></div>
-    <p>Loading style quiz...</p>
-  </div>
-}>
-  <AsyncComponentLoader
-    loadingMessage="Loading style quiz..."
-    onLoadStart={() => console.log('[LIFECYCLE:ChatWidget] StyleQuizModal loader starting')}
-    onLoadComplete={() => console.log('[LIFECYCLE:ChatWidget] StyleQuizModal loader completed')}
-    onLoadError={(error) => console.error('[LIFECYCLE:ChatWidget] StyleQuizModal loading error:', error)}
-  >
-    {(() => {
-      console.log('[LIFECYCLE:ChatWidget] Before StyleQuizModal render');
-      return null;
-    })()}
-    {USE_LAZY_LOADING ? (
-      <StyleQuizModalLazy
-        onSubmit={handleQuizSubmit}
-        onClose={() => setShowStyleQuiz(false)}
-        primaryColor={primaryColor}
-      />
-    ) : (
-      <StyleQuizModalRegular
-        onSubmit={handleQuizSubmit}
-        onClose={() => setShowStyleQuiz(false)}
-        primaryColor={primaryColor}
-      />
-    )}
-    {(() => {
-      console.log('[LIFECYCLE:ChatWidget] After StyleQuizModal render');
-      return null;
-    })()}
-  </AsyncComponentLoader>
-</React.Suspense>
-            </>
-          )}
-        </>
+      {/* Style Quiz Modal (only when triggered from chat) */}
+      {shouldRenderNonEssentialComponents() && showStyleQuiz && (
+        <React.Suspense fallback={<div className="stylist-loading-container"><div className="stylist-loading-spinner"></div><p>Loading style quiz...</p></div>}>
+          <AsyncComponentLoader
+            loadingMessage="Loading style quiz..."
+            onLoadStart={() => console.log('[LIFECYCLE:ChatWidget] StyleQuizModal loader starting')}
+            onLoadComplete={() => console.log('[LIFECYCLE:ChatWidget] StyleQuizModal loader completed')}
+            onLoadError={(error) => console.error('[LIFECYCLE:ChatWidget] StyleQuizModal loading error:', error)}
+          >
+            <StyleQuizModalLazy
+              onSubmit={handleQuizSubmit}
+              onClose={() => setShowStyleQuiz(false)}
+              primaryColor={primaryColor}
+            />
+          </AsyncComponentLoader>
+        </React.Suspense>
       )}
     </>
   );

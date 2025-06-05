@@ -163,12 +163,14 @@ const TryOnFeedback: React.FC<TryOnFeedbackProps> = ({
             className="stylist-try-on-feedback__button stylist-try-on-feedback__button--like"
             onClick={handleLike}
             style={buttonStyle}
+            data-cy="tryon-like-button"
           >
             <span role="img" aria-label="Like">👍</span>
           </button>
           <button
             className="stylist-try-on-feedback__button stylist-try-on-feedback__button--dislike"
             onClick={handleDislike}
+            data-cy="tryon-dislike-button"
           >
             <span role="img" aria-label="Dislike">👎</span>
           </button>
@@ -179,6 +181,7 @@ const TryOnFeedback: React.FC<TryOnFeedbackProps> = ({
             className="stylist-try-on-feedback__option-button"
             onClick={handleAddToWishlist}
             style={buttonStyle}
+            data-cy="tryon-add-to-wishlist"
           >
             Add to Wishlist
           </button>
@@ -186,6 +189,7 @@ const TryOnFeedback: React.FC<TryOnFeedbackProps> = ({
             className="stylist-try-on-feedback__option-button"
             onClick={handleAddToCart}
             style={buttonStyle}
+            data-cy="tryon-add-to-cart"
           >
             Add to Cart
           </button>
@@ -193,6 +197,7 @@ const TryOnFeedback: React.FC<TryOnFeedbackProps> = ({
             className="stylist-try-on-feedback__option-button"
             onClick={() => setShowNoteInput(true)}
             style={buttonStyle}
+            data-cy="tryon-save-note"
           >
             Just Save a Note
           </button>

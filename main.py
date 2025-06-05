@@ -7,15 +7,35 @@ import logging
 import json
 from datetime import datetime
 from typing import Dict, Any
-from fastapi import FastAPI, HTTPException, Request, Depends, Header, UploadFile, File, Body, WebSocket, WebSocketDisconnect
+from fastapi import (
+    FastAPI,
+    HTTPException,
+    Request,
+    Depends,
+    Header,
+    UploadFile,
+    File,
+    Body,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 import uvicorn
+from apscheduler.schedulers.background import BackgroundScheduler
+import subprocess
+import atexit
 
 # Import config - this will load environment variables
 from config import (
-    API_KEY, DEBUG, API_VERSION, PORT, USE_MOCK_RETAILER, JWT_SECRET, ANTHROPIC_API_KEY
+    API_KEY,
+    DEBUG,
+    API_VERSION,
+    PORT,
+    USE_MOCK_RETAILER,
+    JWT_SECRET,
+    ANTHROPIC_API_KEY,
 )
 
 # Import API routes
@@ -36,7 +56,11 @@ from api.retailer_routes import (
     test_retailer_connection,
     clear_retailer_cache,
 )
-from api.inventory_routes import get_inventory, search_items as search_inventory, get_item
+from api.inventory_routes import (
+    get_inventory,
+    search_items as search_inventory,
+    get_item,
+)
 from api.user_routes import (
     register_user,
     login_user,
@@ -58,6 +82,7 @@ from api.closet_routes import (
     get_saved_outfits,
     delete_saved_outfit,
 )
+from api.social_proof_routes import router as social_proof_router
 
 # Import mock retailer initialization
 from initialize_mock_retailer import initialize_mock_retailer
@@ -87,6 +112,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # API key validation
 async def verify_api_key(x_api_key: str = Header(None)):
     """Verify the API key."""
@@ -96,21 +122,23 @@ async def verify_api_key(x_api_key: str = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid API key")
     return x_api_key
 
+
 # JWT Token validation
 async def verify_auth_token(authorization: str = Header(None)):
     """Verify JWT authentication token from Authorization header.
-    
+
     Format: 'Bearer {token}'
     """
     if not authorization:
         raise HTTPException(status_code=401, detail="Authorization header missing")
-    
+
     parts = authorization.split()
     if len(parts) != 2 or parts[0].lower() != "bearer":
         raise HTTPException(status_code=401, detail="Invalid authorization header")
-    
+
     token = parts[1]
     return verify_token(token)
+
 
 # Error handling
 @app.exception_handler(Exception)
@@ -122,6 +150,7 @@ async def generic_exception_handler(request: Request, exc: Exception):
         content={"error": "Internal server error", "detail": str(exc)},
     )
 
+
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     """Handle HTTP exceptions."""
@@ -130,6 +159,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         content={"error": exc.detail},
     )
 
+
 @app.exception_handler(ValueError)
 async def value_error_handler(request: Request, exc: ValueError):
     """Handle ValueError exceptions."""
@@ -137,6 +167,7 @@ async def value_error_handler(request: Request, exc: ValueError):
         status_code=400,
         content={"error": "Invalid request", "detail": str(exc)},
     )
+
 
 # Root endpoint
 @app.get("/")
@@ -148,15 +179,17 @@ async def root():
         "docs": "/api/docs",
     }
 
+
 # Health check endpoint
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy", "version": "1.0.0", "configuration": {
-        "api_version": API_VERSION,
-        "port": PORT,
-        "debug": DEBUG
-    }}
+    return {
+        "status": "healthy",
+        "version": "1.0.0",
+        "configuration": {"api_version": API_VERSION, "port": PORT, "debug": DEBUG},
+    }
+
 
 # WebSocket chat endpoint
 @app.websocket("/ws/chat/{user_id}")
@@ -173,7 +206,7 @@ async def websocket_chat_endpoint(websocket: WebSocket, user_id: str):
             response = {
                 "type": "message",
                 "sender": "assistant",
-                "text": f"Echo: {data.get('text', 'No message provided')}"
+                "text": f"Echo: {data.get('text', 'No message provided')}",
             }
             # Send response
             await websocket.send_json(response)
@@ -188,7 +221,9 @@ async def websocket_chat_endpoint(websocket: WebSocket, user_id: str):
         except:
             pass
 
+
 # API routes
+
 
 # Authentication routes - no API key required for these
 @app.post(f"/api/{API_VERSION}/auth/register")
@@ -196,25 +231,30 @@ async def api_register_user(registration_data: Dict[str, Any] = Body(...)):
     """Register a new user."""
     return await register_user(registration_data)
 
+
 @app.post(f"/api/{API_VERSION}/auth/login")
 async def api_login_user(login_data: Dict[str, Any] = Body(...)):
     """Log in a user."""
     return await login_user(login_data)
+
 
 @app.post(f"/api/{API_VERSION}/auth/password-reset-request")
 async def api_request_password_reset(reset_data: Dict[str, Any] = Body(...)):
     """Request a password reset."""
     return await request_password_reset(reset_data)
 
+
 @app.post(f"/api/{API_VERSION}/auth/password-reset")
 async def api_reset_password(reset_data: Dict[str, Any] = Body(...)):
     """Reset a password."""
     return await reset_password(reset_data)
 
+
 @app.post(f"/api/{API_VERSION}/auth/social/{{provider}}")
 async def api_social_auth(provider: str, auth_data: Dict[str, Any] = Body(...)):
     """Authenticate with a social provider (stub)."""
     return await social_auth_stub(provider, auth_data)
+
 
 # User routes - requires JWT token
 @app.get(f"/api/{API_VERSION}/users/me")
@@ -223,14 +263,16 @@ async def api_get_current_user(payload: Dict[str, Any] = Depends(verify_auth_tok
     user_id = payload["sub"]
     return await get_user_profile(user_id)
 
+
 @app.put(f"/api/{API_VERSION}/users/me")
 async def api_update_current_user(
     payload: Dict[str, Any] = Depends(verify_auth_token),
-    profile_data: Dict[str, Any] = Body(...)
+    profile_data: Dict[str, Any] = Body(...),
 ):
     """Update the current user's profile."""
     user_id = payload["sub"]
     return await update_user_profile(user_id, profile_data)
+
 
 # Legacy user routes - uses API key for compatibility
 @app.post(f"/api/{API_VERSION}/users", dependencies=[Depends(verify_api_key)])
@@ -238,73 +280,129 @@ async def api_create_user(user_data: Dict[str, Any]):
     """Create a new user profile (legacy)."""
     return create_user(user_data)
 
-@app.put(f"/api/{API_VERSION}/users/{{user_id}}", dependencies=[Depends(verify_api_key)])
+
+@app.put(
+    f"/api/{API_VERSION}/users/{{user_id}}", dependencies=[Depends(verify_api_key)]
+)
 async def api_update_user(user_id: str, user_data: Dict[str, Any]):
     """Update an existing user profile (legacy)."""
     return update_user(user_id, user_data)
 
+
 # Recommendation routes
-@app.get(f"/api/{API_VERSION}/users/{{user_id}}/recommendations", dependencies=[Depends(verify_api_key)])
+@app.get(
+    f"/api/{API_VERSION}/users/{{user_id}}/recommendations",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_get_recommendations(user_id: str, context: str = None):
     """Get personalized recommendations for a user."""
     return get_recommendations(user_id, context)
 
-@app.post(f"/api/{API_VERSION}/users/{{user_id}}/feedback/items/{{item_id}}", dependencies=[Depends(verify_api_key)])
-async def api_add_item_feedback(user_id: str, item_id: str, feedback_data: Dict[str, Any]):
+
+@app.post(
+    f"/api/{API_VERSION}/users/{{user_id}}/feedback/items/{{item_id}}",
+    dependencies=[Depends(verify_api_key)],
+)
+async def api_add_item_feedback(
+    user_id: str, item_id: str, feedback_data: Dict[str, Any]
+):
     """Add user feedback for an item."""
     return add_item_feedback(user_id, item_id, feedback_data)
 
-@app.post(f"/api/{API_VERSION}/users/{{user_id}}/outfits", dependencies=[Depends(verify_api_key)])
+
+@app.post(
+    f"/api/{API_VERSION}/users/{{user_id}}/outfits",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_save_outfit(user_id: str, outfit_data: Dict[str, Any]):
     """Save an outfit to the user's saved outfits."""
     outfit_items = outfit_data.get("items", [])
     return save_outfit(user_id, outfit_items)
 
+
 # Closet routes
-@app.post(f"/api/{API_VERSION}/users/{{user_id}}/closet", dependencies=[Depends(verify_api_key)])
+@app.post(
+    f"/api/{API_VERSION}/users/{{user_id}}/closet",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_add_closet_item(user_id: str, item_data: Dict[str, Any]):
     """Add an item to the user's closet."""
     return await add_closet_item(user_id, item_data)
 
-@app.post(f"/api/{API_VERSION}/users/{{user_id}}/closet/detect", dependencies=[Depends(verify_api_key)])
+
+@app.post(
+    f"/api/{API_VERSION}/users/{{user_id}}/closet/detect",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_detect_clothing(user_id: str, file: UploadFile = File(...)):
     """Detect clothing attributes from an uploaded image."""
     return await detect_clothing(user_id, file)
 
-@app.get(f"/api/{API_VERSION}/users/{{user_id}}/closet", dependencies=[Depends(verify_api_key)])
+
+@app.get(
+    f"/api/{API_VERSION}/users/{{user_id}}/closet",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_get_closet_items(user_id: str):
     """Get all items in the user's closet."""
     return await get_closet_items(user_id)
 
-@app.delete(f"/api/{API_VERSION}/users/{{user_id}}/closet/{{item_id}}", dependencies=[Depends(verify_api_key)])
+
+@app.delete(
+    f"/api/{API_VERSION}/users/{{user_id}}/closet/{{item_id}}",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_remove_closet_item(user_id: str, item_id: str):
     """Remove an item from the user's closet."""
     return await remove_closet_item(user_id, item_id)
 
-@app.put(f"/api/{API_VERSION}/users/{{user_id}}/closet/{{item_id}}", dependencies=[Depends(verify_api_key)])
+
+@app.put(
+    f"/api/{API_VERSION}/users/{{user_id}}/closet/{{item_id}}",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_update_closet_item(user_id: str, item_id: str, item_data: Dict[str, Any]):
     """Update a closet item."""
     return await update_closet_item(user_id, item_id, item_data)
 
-@app.put(f"/api/{API_VERSION}/users/{{user_id}}/closet/{{item_id}}/favorite", dependencies=[Depends(verify_api_key)])
-async def api_toggle_favorite_item(user_id: str, item_id: str, favorite_data: Dict[str, bool]):
+
+@app.put(
+    f"/api/{API_VERSION}/users/{{user_id}}/closet/{{item_id}}/favorite",
+    dependencies=[Depends(verify_api_key)],
+)
+async def api_toggle_favorite_item(
+    user_id: str, item_id: str, favorite_data: Dict[str, bool]
+):
     """Toggle the favorite status of a closet item."""
     return await toggle_favorite_item(user_id, item_id, favorite_data)
 
-@app.post(f"/api/{API_VERSION}/users/{{user_id}}/closet/outfits", dependencies=[Depends(verify_api_key)])
+
+@app.post(
+    f"/api/{API_VERSION}/users/{{user_id}}/closet/outfits",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_save_closet_outfit(user_id: str, outfit_data: Dict[str, Any]):
     """Save an outfit composed of closet items."""
     return await save_closet_outfit(user_id, outfit_data)
 
-@app.get(f"/api/{API_VERSION}/users/{{user_id}}/closet/outfits", dependencies=[Depends(verify_api_key)])
+
+@app.get(
+    f"/api/{API_VERSION}/users/{{user_id}}/closet/outfits",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_get_saved_outfits(user_id: str):
     """Get all saved outfits for a user."""
     return await get_saved_outfits(user_id)
 
-@app.delete(f"/api/{API_VERSION}/users/{{user_id}}/closet/outfits/{{outfit_id}}", dependencies=[Depends(verify_api_key)])
+
+@app.delete(
+    f"/api/{API_VERSION}/users/{{user_id}}/closet/outfits/{{outfit_id}}",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_delete_saved_outfit(user_id: str, outfit_id: int):
     """Delete a saved outfit."""
     return await delete_saved_outfit(user_id, outfit_id)
+
 
 # Retailer routes
 @app.get(f"/api/{API_VERSION}/retailers", dependencies=[Depends(verify_api_key)])
@@ -312,51 +410,87 @@ async def api_list_retailers():
     """List all retailer configurations."""
     return list_retailers()
 
+
 @app.post(f"/api/{API_VERSION}/retailers", dependencies=[Depends(verify_api_key)])
 async def api_add_retailer(config_data: Dict[str, Any]):
     """Add a new retailer configuration."""
     return add_retailer(config_data)
 
-@app.get(f"/api/{API_VERSION}/retailers/{{retailer_id}}", dependencies=[Depends(verify_api_key)])
+
+@app.get(
+    f"/api/{API_VERSION}/retailers/{{retailer_id}}",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_get_retailer(retailer_id: str):
     """Get retailer configuration."""
     return get_retailer(retailer_id)
 
-@app.put(f"/api/{API_VERSION}/retailers/{{retailer_id}}", dependencies=[Depends(verify_api_key)])
+
+@app.put(
+    f"/api/{API_VERSION}/retailers/{{retailer_id}}",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_update_retailer(retailer_id: str, config_data: Dict[str, Any]):
     """Update an existing retailer configuration."""
     return update_retailer(retailer_id, config_data)
 
-@app.delete(f"/api/{API_VERSION}/retailers/{{retailer_id}}", dependencies=[Depends(verify_api_key)])
+
+@app.delete(
+    f"/api/{API_VERSION}/retailers/{{retailer_id}}",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_delete_retailer(retailer_id: str):
     """Delete a retailer configuration."""
     return delete_retailer(retailer_id)
 
-@app.get(f"/api/{API_VERSION}/retailers/{{retailer_id}}/test", dependencies=[Depends(verify_api_key)])
+
+@app.get(
+    f"/api/{API_VERSION}/retailers/{{retailer_id}}/test",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_test_retailer(retailer_id: str):
     """Test connection to a retailer API."""
     return test_retailer_connection(retailer_id)
 
-@app.delete(f"/api/{API_VERSION}/retailers/{{retailer_id}}/cache", dependencies=[Depends(verify_api_key)])
+
+@app.delete(
+    f"/api/{API_VERSION}/retailers/{{retailer_id}}/cache",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_clear_retailer_cache(retailer_id: str):
     """Clear cache for a retailer."""
     return clear_retailer_cache(retailer_id)
 
+
 # Inventory routes
-@app.get(f"/api/{API_VERSION}/inventory/{{retailer_id}}", dependencies=[Depends(verify_api_key)])
-async def api_get_inventory(retailer_id: str, limit: int = 100, page: int = 1, category: str = None):
+@app.get(
+    f"/api/{API_VERSION}/inventory/{{retailer_id}}",
+    dependencies=[Depends(verify_api_key)],
+)
+async def api_get_inventory(
+    retailer_id: str, limit: int = 100, page: int = 1, category: str = None
+):
     """Get inventory for a retailer."""
     return get_inventory(retailer_id, limit, page, category)
 
-@app.get(f"/api/{API_VERSION}/inventory/{{retailer_id}}/search", dependencies=[Depends(verify_api_key)])
+
+@app.get(
+    f"/api/{API_VERSION}/inventory/{{retailer_id}}/search",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_search_inventory(retailer_id: str, query: str, limit: int = 20):
     """Search inventory for a retailer."""
     return search_inventory(retailer_id, query, limit)
 
-@app.get(f"/api/{API_VERSION}/inventory/{{retailer_id}}/items/{{item_id}}", dependencies=[Depends(verify_api_key)])
+
+@app.get(
+    f"/api/{API_VERSION}/inventory/{{retailer_id}}/items/{{item_id}}",
+    dependencies=[Depends(verify_api_key)],
+)
 async def api_get_item(retailer_id: str, item_id: str):
     """Get a specific item from a retailer."""
     return get_item(retailer_id, item_id)
+
 
 # WebSocket connection for real-time chat
 @app.websocket("/ws")
@@ -367,55 +501,64 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             # Receive message from client
             data = await websocket.receive_text()
-            
+
             # Parse the JSON data
             try:
                 message_data = json.loads(data)
                 user_id = message_data.get("userId", "anonymous")
                 message = message_data.get("message", "")
-                
+
                 # If user doesn't exist in our system, create a new profile
                 if user_id not in mock_users:
                     mock_users[user_id] = UserProfile(
                         user_id=user_id,
                         created_at=datetime.now(),
-                        updated_at=datetime.now()
+                        updated_at=datetime.now(),
                     )
-                
+
                 user = mock_users[user_id]
-                
+
                 # Generate response from style analysis service
                 response = style_analysis_service.answer_style_question(message, user)
-                
+
                 # Send response back to client
-                await websocket.send_text(json.dumps({
-                    "type": "message",
-                    "response": response,
-                    "timestamp": datetime.now().isoformat()
-                }))
-                
+                await websocket.send_text(
+                    json.dumps(
+                        {
+                            "type": "message",
+                            "response": response,
+                            "timestamp": datetime.now().isoformat(),
+                        }
+                    )
+                )
+
             except json.JSONDecodeError:
                 # If not valid JSON, send error
-                await websocket.send_text(json.dumps({
-                    "type": "error",
-                    "message": "Invalid message format, expected JSON"
-                }))
-            
+                await websocket.send_text(
+                    json.dumps(
+                        {
+                            "type": "error",
+                            "message": "Invalid message format, expected JSON",
+                        }
+                    )
+                )
+
     except WebSocketDisconnect:
         logger.info("WebSocket client disconnected")
     except Exception as e:
         logger.error(f"WebSocket error: {str(e)}")
         try:
-            await websocket.send_text(json.dumps({
-                "type": "error",
-                "message": "Server error occurred"
-            }))
+            await websocket.send_text(
+                json.dumps({"type": "error", "message": "Server error occurred"})
+            )
         except:
             # Client might already be disconnected
             pass
 
+
 # Serve static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 # Initialize services on startup
 @app.on_event("startup")
@@ -424,47 +567,85 @@ async def startup_event():
     # Include recommendation router for direct API endpoint access
     app.include_router(recommendation_router)
     logger.info("Registered recommendation API router")
-    
+
     # Initialize mock retailer if USE_MOCK_RETAILER is true
     initialize_mock_retailer()
-    
+
     # Initialize recommendation services
     try:
         # Try to initialize integrated recommendation service
-        from services.integrated_recommendation_service import IntegratedRecommendationService
+        from services.integrated_recommendation_service import (
+            IntegratedRecommendationService,
+        )
+
         logger.info("Successfully imported integrated recommendation service")
-        
+
         # Initialize retailer clients if needed (from retailer_routes)
         try:
             from api.retailer_routes import initialize_retailer_clients
-            if 'initialize_retailer_clients' in locals():
+
+            if "initialize_retailer_clients" in locals():
                 await initialize_retailer_clients()
                 logger.info("Successfully initialized retailer clients")
         except Exception as e:
             logger.warning(f"Failed to initialize retailer clients: {str(e)}")
-            
+
         # Test the integrated recommendation service
         try:
             from models.user import UserProfile
+
             test_user = UserProfile(user_id="test_user")
-            
+
             # Run a test recommendation
             result = await IntegratedRecommendationService.get_recommendations_with_availability(
-                user=test_user,
-                limit_per_retailer=5,
-                check_availability=False
+                user=test_user, limit_per_retailer=5, check_availability=False
             )
-            
-            logger.info(f"Integrated recommendation service test successful: {len(result.recommended_items)} items")
+
+            logger.info(
+                f"Integrated recommendation service test successful: {len(result.recommended_items)} items"
+            )
         except Exception as e:
-            logger.warning(f"Failed to test integrated recommendation service: {str(e)}")
-            
+            logger.warning(
+                f"Failed to test integrated recommendation service: {str(e)}"
+            )
+
     except ImportError:
-        logger.warning("Integrated recommendation service not available, using fallback")
+        logger.warning(
+            "Integrated recommendation service not available, using fallback"
+        )
     except Exception as e:
         logger.error(f"Error initializing integrated recommendation service: {str(e)}")
-        
+
+    # Include social proof router for direct API endpoint access
+    app.include_router(social_proof_router, prefix="/api")
+    logger.info("Registered social proof API router")
+
     logger.info("Application startup complete")
+
+    # Schedule the scraper to run daily
+    def run_scraper():
+        print("Running scheduled celebrity scraper...")
+        try:
+            subprocess.run(
+                [
+                    "npx",
+                    "ts-node",
+                    "services/social-proof/whoWhatWearScraper.ts",
+                    "--save",
+                ],
+                check=True,
+            )
+            print("Scraper run complete.")
+        except Exception as e:
+            print(f"Error running scraper: {e}")
+
+    @app.on_event("startup")
+    def schedule_scraper():
+        scheduler = BackgroundScheduler()
+        scheduler.add_job(run_scraper, "interval", days=1)
+        scheduler.start()
+        atexit.register(lambda: scheduler.shutdown())
+
 
 # Run the app
 if __name__ == "__main__":

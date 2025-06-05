@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useUserStore } from '@/store/userStore';
-import { ClosetItem, WishlistItem } from '@/types';
+import { ClosetItem } from '@/types';
 import ImageUploader from '../ImageUploader/ImageUploader';
 import ItemCard from '../ItemCard/ItemCard';
 import useSyncedStore from '@/hooks/useSyncedStore';
 import AdaptiveImage from '../common/AdaptiveImage';
-import { getDeviceCapabilities, DeviceCapabilities } from '@/utils/deviceCapabilities';
 import './MyCloset.scss';
 
 interface ClothingCategory {
@@ -47,7 +46,6 @@ const MyCloset: React.FC<MyClosetProps> = ({
 
   // State for managing UI view
   const [activeView, setActiveView] = useState<'closet' | 'wishlist'>('closet');
-  const [isUploading, setIsUploading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [categories, setCategories] = useState<ClothingCategory[]>([]);
   const [showUploader, setShowUploader] = useState(false);
@@ -176,8 +174,6 @@ const MyCloset: React.FC<MyClosetProps> = ({
 
   // Handle file upload for new closet item
   const handleFileUpload = useCallback(async (file: File) => {
-    setIsUploading(true);
-
     try {
       // Create URL for the image file
       const imageUrl = URL.createObjectURL(file);
@@ -190,16 +186,14 @@ const MyCloset: React.FC<MyClosetProps> = ({
 
       // Automatically detect category, color, etc. here
       // For now, we'll use a mock detection service
-      await detectClothingAttributes(file);
+      await detectClothingAttributes();
     } catch (error) {
       console.error('Error uploading file:', error);
-    } finally {
-      setIsUploading(false);
     }
   }, []);
 
   // Mock function to detect clothing attributes
-  const detectClothingAttributes = async (file: File) => {
+  const detectClothingAttributes = async () => {
     // In a real implementation, this would call a machine learning model
     // For now, we'll simulate a response after a short delay
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -416,6 +410,7 @@ const MyCloset: React.FC<MyClosetProps> = ({
                 <button
                   key={type}
                   className="stylist-my-closet__type-btn"
+                  data-testid={`type-btn-${type}`}
                   onClick={() => handleSelectType(type)}
                 >
                   <div className="stylist-my-closet__type-icon">{type.charAt(0).toUpperCase()}</div>
@@ -710,7 +705,7 @@ const MyCloset: React.FC<MyClosetProps> = ({
   };
 
   return (
-    <div className="stylist-my-closet">
+    <div className="stylist-my-closet" data-cy="my-closet-section">
       <div className="stylist-my-closet__header">
         <h2>My Wardrobe</h2>
         <div className="stylist-my-closet__actions">
@@ -740,6 +735,7 @@ const MyCloset: React.FC<MyClosetProps> = ({
               setCurrentStep(AddItemStep.SELECT_TYPE);
               setEditingItem(null);
             }}
+            data-cy="add-item-button"
           >
             Add Item
           </button>
@@ -810,7 +806,7 @@ const MyCloset: React.FC<MyClosetProps> = ({
       ) : (
         <>
           {activeView === 'wishlist' ? (
-            <div className="stylist-my-closet__wishlist-grid">
+            <div className="stylist-my-closet__wishlist-grid" data-cy="wishlist-section">
               {wishlistItems().length > 0 ? (
                 wishlistItems().map((item, index) => (
                   <div
@@ -836,14 +832,14 @@ const MyCloset: React.FC<MyClosetProps> = ({
                   </div>
                 ))
               ) : (
-                <div className="stylist-my-closet__empty">
+                <div className="stylist-my-closet__empty" data-cy="empty-state-message">
                   <p>No items in your wishlist yet.</p>
                   <p>Items you like will appear here.</p>
                 </div>
               )}
             </div>
           ) : (
-            <div className="stylist-my-closet__grid">
+            <div className="stylist-my-closet__grid" data-cy="closet-grid">
               {filteredItems().length > 0 ? (
                 filteredItems().map((item, index) => (
                   <div

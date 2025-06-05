@@ -6,8 +6,8 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": false, /* Temporarily disable strict type checking for build */
-    "noImplicitAny": false, /* Allow implicit any types */
+    "strict": false /* Temporarily disable strict type checking for build */,
+    "noImplicitAny": false /* Allow implicit any types */,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
@@ -16,7 +16,6 @@
     "isolatedModules": true,
     "noEmit": false,
     "jsx": "react-jsx",
-    "suppressImplicitAnyIndexErrors": true,
     "noImplicitThis": false,
     "strictPropertyInitialization": false,
     "noUnusedLocals": false,

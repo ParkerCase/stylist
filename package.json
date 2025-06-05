@@ -17,7 +17,8 @@
     "cypress:run": "cypress run",
     "test-scraper": "cd services/social-proof && ts-node __tests__/runWhoWhatWearScraper.ts",
     "diagnose": "node diagnose.js",
-    "postbuild": "node scripts/optimize-assets.js"
+    "postbuild": "node scripts/optimize-assets.js",
+    "mock-api": "node src/mock-data/mock-api-server.js"
   },
   "dependencies": {
     "@tensorflow-models/body-pix": "^2.2.0",
@@ -32,6 +33,8 @@
     "express": "^5.1.0",
     "process": "^0.11.10",
     "puppeteer": "^24.8.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "socket.io-client": "^4.8.1",

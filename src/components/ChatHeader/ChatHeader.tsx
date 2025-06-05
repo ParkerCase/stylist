@@ -17,7 +17,7 @@ interface ChatHeaderProps {
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({
-  title = 'The Stylist',
+  title = 'Personalized Stylist',
   logo,
   primaryColor,
   currentView = 'chat',
@@ -54,7 +54,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
             <path d="M12 6c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm8 12v-9.5C20 4.58 16.42 1 12 1S4 4.58 4 8.5V18c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-6-10.5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5S11.17 6 12 6s1.5.67 1.5 1.5zM6 18v-6h.5c.28 0 .5.22.5.5v5c0 .28-.22.5-.5.5H6zm3.5 0v-6.5c0-.28.22-.5.5-.5s.5.22.5.5V18h-1zm3.5 0v-6h.5c.28 0 .5.22.5.5v5c0 .28-.22.5-.5.5H13zm4 0v-5.5c0-.28.22-.5.5-.5s.5.22.5.5V18h-1z"/>
           </svg>
         );
-      case 'social':
+      case 'socialProof':
         return (
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
             <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z"/>
@@ -82,15 +82,9 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   const handleClose = () => {
     toggleOpen();
   };
-  
-  const handleSwitchView = () => {
-    if (onSwitchView) {
-      onSwitchView(currentView === 'chat' ? 'lookbook' : 'chat');
-    }
-  };
 
   return (
-    <div className="stylist-chat-header" style={{ backgroundColor: primaryColor }}>
+    <header className="stylist-chat-header modal-animate" style={{ backgroundColor: primaryColor }}>
       <div className="stylist-chat-header__logo">
         {logo ? (
           <img src={logo} alt={title} className="stylist-chat-header__logo-img" />
@@ -100,7 +94,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           </div>
         )}
       </div>
-      <div className="stylist-chat-header__title">{title}</div>
+      <div className="stylist-chat-header__title">Personalized Stylist</div>
       <div className="stylist-chat-header__controls">
         {showDemoToggle && (
           <div className="stylist-chat-header__demo-toggle">
@@ -111,23 +105,14 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           <WishlistNotification
             onClickNotification={() => {
               if (onSwitchView) {
-                // Switch to lookbook first, then to wishlist tab
                 if (currentView !== 'lookbook') {
                   onSwitchView('lookbook');
                 }
-                
-                // Set wishlist tab as active
-                // This would require connecting to the Lookbook component,
-                // which is beyond the scope of this inline edit
-                // We could use a global event or store for this
-                
-                // For demonstration, we'll just log this action
                 console.log('Switch to wishlist tab');
               }
             }}
           />
         )}
-        
         {onSwitchView && !isMinimized && activeTab !== 'chat' && (
           <button
             className="stylist-chat-header__button stylist-chat-header__button--switch"
@@ -164,7 +149,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           </svg>
         </button>
       </div>
-    </div>
+    </header>
   );
 };
 

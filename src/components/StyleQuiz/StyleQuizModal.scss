@@ -140,4 +140,32 @@
       z-index: 1;
     }
   }
+  box-shadow: none;
+  border: none;
+  max-height: none;
+  padding: 0;
+}
+
+.stylist-style-quiz-tab__container {
+  background: #fff;
+  min-height: 100%;
+  box-shadow: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.stylist-style-quiz__progress {
+  margin-bottom: 24px;
+}
+
+.stylist-style-quiz__section-content {
+  margin-bottom: 32px;
+}
+
+.stylist-style-quiz__nav-buttons {
+  margin-top: 32px;
 }

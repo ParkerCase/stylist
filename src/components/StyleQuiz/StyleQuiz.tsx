@@ -443,10 +443,8 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
   onSubmit,
   primaryColor
 }) => {
-  // Using DEMO_QUESTIONS directly, no need to update these
+  // All hooks must be called before any return
   const [questions] = useState<StyleQuizQuestion[]>(DEMO_QUESTIONS);
-  
-  // Try to load saved progress from localStorage
   const loadSavedProgress = () => {
     try {
       const savedProgress = localStorage.getItem(`${STORAGE_KEY}_${quizId}`);
@@ -469,9 +467,7 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
       activeSection: 'basics'
     };
   };
-  
   const { currentQuestionIndex, savedAnswers, activeSection: savedSection } = loadSavedProgress();
-  
   const [currentQuestion, setCurrentQuestion] = useState(currentQuestionIndex);
   const [answers, setAnswers] = useState<StyleQuizAnswer[]>(savedAnswers);
   const [activeSection, setActiveSection] = useState(savedSection);
@@ -492,20 +488,6 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
       console.error('Error saving quiz progress:', e);
     }
   }, [currentQuestion, answers, activeSection, quizId]);
-  
-  // Track the quiz progress for analytics but don't trigger the actual submission
-  // We're passing progress to the parent for tracking purposes only
-  useEffect(() => {
-    // Skip empty answers array (initial render)
-    if (answers.length === 0) return;
-    
-    // Skip if we're submitting the final result
-    if (submitting) return;
-    
-    // Inform the parent component about answer updates (useful for tracking abandonment)
-    // The parent will decide whether to treat this as a real submission or just tracking
-    onSubmit(answers);
-  }, [answers, submitting, onSubmit]);
   
   // Group questions by section
   const questionsBySection = useMemo(() => {
@@ -730,7 +712,7 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
   const completionPercentage = Math.round((answers.length / questions.length) * 100);
   
   // Render the question based on its type
-  const renderQuestion = () => {
+  const renderQuestion = (props: { dataCyOptions: string }) => {
     if (!question) return null;
     
     // Get current answer for this question
@@ -861,14 +843,14 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
           </div>
         </div>
         
-        <div className="stylist-style-quiz__question">
+        <div className="stylist-style-quiz__question" data-cy="quiz-question">
           <div className="stylist-style-quiz__question-number">
             Question {currentQuestion + 1} of {questions.length}
           </div>
           <h4 className="stylist-style-quiz__question-text">{question.questionText}</h4>
         </div>
         
-        {renderQuestion()}
+        {renderQuestion({ dataCyOptions: 'quiz-options' })}
         
         <div className="stylist-style-quiz__actions">
           {currentQuestion > 0 && (
@@ -896,6 +878,7 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
               onClick={handleSubmit}
               style={{ backgroundColor: primaryColor }}
               disabled={!isCurrentQuestionAnswered() || submitting}
+              data-cy="complete-quiz"
             >
               {submitting ? 'Submitting...' : 'Complete Quiz'}
             </button>
@@ -905,6 +888,7 @@ const StyleQuiz: React.FC<StyleQuizProps> = ({
               onClick={handleNextQuestion}
               style={{ backgroundColor: primaryColor }}
               disabled={!isCurrentQuestionAnswered()}
+              data-cy="next-question"
             >
               Next
             </button>

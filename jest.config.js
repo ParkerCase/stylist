@@ -12,6 +12,7 @@ module.exports = {
     "^@components/(.*)$": "<rootDir>/src/components/$1",
     "^@utils/(.*)$": "<rootDir>/src/utils/$1",
     "^@store/(.*)$": "<rootDir>/src/store/$1",
+    "^@api/(.*)$": "<rootDir>/src/api/$1",
     "^@/(.*)$": "<rootDir>/src/$1",
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
     "\\.(jpg|jpeg|png|gif|webp|svg)$": "<rootDir>/__mocks__/fileMock.js",

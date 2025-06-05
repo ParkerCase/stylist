@@ -98,7 +98,7 @@ const WishlistTab: React.FC<WishlistTabProps> = ({
   };
   
   return (
-    <div className="stylist-wishlist-tab">
+    <div className="stylist-wishlist-tab" data-cy="wishlist-tab">
       <div className="stylist-wishlist-tab__header">
         <h2 className="stylist-wishlist-tab__title">My Wishlist</h2>
       </div>
@@ -131,6 +131,7 @@ const WishlistTab: React.FC<WishlistTabProps> = ({
                 onRemove={() => handleRemoveFromWishlist(item.id)}
                 onClick={() => handleItemClick(item)}
                 primaryColor={primaryColor}
+                data-cy="wishlist-item-card"
               />
               <div className="stylist-wishlist-tab__item-actions">
                 <button

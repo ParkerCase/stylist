@@ -25,7 +25,7 @@ const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
   };
 
   return (
-    <div className="stylist-style-quiz__options">
+    <div className="stylist-style-quiz__options" data-cy="quiz-options">
       {question.options?.map(option => {
         const isSelected = currentAnswer?.answerIds?.includes(option.id);
         
@@ -39,6 +39,7 @@ const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
               backgroundColor: `${primaryColor}20` 
             } : undefined}
             aria-selected={isSelected}
+            data-cy="option"
           >
             <span className="stylist-style-quiz__option-text">{option.text}</span>
             {isSelected && (

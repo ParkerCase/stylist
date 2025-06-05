@@ -48,8 +48,6 @@ const CompleteLookModal: React.FC<CompleteLookModalProps> = ({
     }
   }, [isOpen, selectedItem]);
 
-  if (!isOpen) return null;
-
   // Enhanced complementary items with style coordination scores
   const enhancedComplementaryItems = useMemo(() => {
     return complementaryItems.map(item => {
@@ -388,8 +386,10 @@ const CompleteLookModal: React.FC<CompleteLookModalProps> = ({
     return 0.4;
   }
   
+  if (!isOpen) return null;
+
   return (
-    <div className="stylist-complete-look-modal">
+    <div className="complete-look-modal" data-cy="complete-look-modal">
       <div className="stylist-complete-look-modal__backdrop" onClick={onClose}></div>
       <div className="stylist-complete-look-modal__content">
         <button className="stylist-complete-look-modal__close" onClick={onClose}>
@@ -440,9 +440,20 @@ const CompleteLookModal: React.FC<CompleteLookModalProps> = ({
                 )}
                 <ItemCard
                   item={item}
-                  onAddToCart={onAddToCart}
+                  onAddToCart={() => onAddToCart(item.id)}
                   primaryColor={primaryColor}
+                  data-cy="complete-look-item-card"
                 />
+                <button
+                  className="stylist-item-card__cart-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddToCart(item.id);
+                  }}
+                  style={{ marginTop: 8, background: primaryColor || '#000', color: '#fff', border: 'none', borderRadius: 4, padding: '0.5rem 1rem', cursor: 'pointer' }}
+                >
+                  Add to Cart
+                </button>
                 {/* Style coordination details */}
                 {coordination && (
                   <div className="stylist-complete-look-modal__style-details">

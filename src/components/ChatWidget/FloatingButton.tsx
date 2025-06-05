@@ -14,6 +14,7 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({
   primaryColor,
   isOpen = false
 }) => {
+  // All hooks must be called before any return
   const [animateState, setAnimateState] = useState('animate-in');
   
   // Position classes for the button
@@ -36,8 +37,9 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({
     }
   }, [isOpen]);
   
-  // Don't render the button if the chat widget is open
-  if (isOpen) return null;
+  // Only render if not open
+  const shouldRender = !isOpen;
+  if (!shouldRender) return null;
   
   return (
     <div 

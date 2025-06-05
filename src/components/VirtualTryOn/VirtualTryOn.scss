@@ -121,6 +121,8 @@
     flex: 1;
     min-height: 0; // Required for Firefox
     overflow: hidden;
+    overflow-y: auto;
+    max-height: 60vh;
 
     @include mixins.responsive('xs') {
       flex-direction: column;

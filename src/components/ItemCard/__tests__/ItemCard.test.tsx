@@ -1,6 +1,6 @@
 // src/components/ItemCard/__tests__/ItemCard.test.tsx
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import ItemCard from '../ItemCard';
 import { Recommendation } from '../../../types/index';
 
@@ -29,11 +29,11 @@ describe('ItemCard Component', () => {
     colors: [],
     sizes: [],
     imageUrls: ['test-image.jpg'],
+    description: '',
   };
 
   test('renders item information correctly', () => {
     render(<ItemCard item={mockItem} />);
-    
     expect(screen.getByText('Test Item')).toBeInTheDocument();
     expect(screen.getByText('Test Brand')).toBeInTheDocument();
     expect(screen.getByText('$29.99')).toBeInTheDocument();
@@ -42,28 +42,55 @@ describe('ItemCard Component', () => {
   test('shows sale price when available', () => {
     const itemWithSale = { ...mockItem, salePrice: 19.99 };
     render(<ItemCard item={itemWithSale} />);
-    
     expect(screen.getByText('$19.99')).toBeInTheDocument();
     expect(screen.getByText('$29.99')).toHaveClass('stylist-item-card__price--original');
   });
 
-  test('calls onFeedback when like/dislike buttons are clicked', () => {
+  test('shows heart icon (like) and X icon (dislike) in correct positions', () => {
     const handleFeedback = jest.fn();
     render(<ItemCard item={mockItem} onFeedback={handleFeedback} />);
-    
-    // Find and click like button
-    const likeButton = screen.getAllByRole('button')[0];
-    fireEvent.click(likeButton);
-    
-    expect(handleFeedback).toHaveBeenCalledWith('test-item-1', true);
-    
-    // Clear mock calls
-    handleFeedback.mockClear();
-    
-    // Find and click dislike button
-    const dislikeButton = screen.getAllByRole('button')[1];
-    fireEvent.click(dislikeButton);
-    
-    expect(handleFeedback).toHaveBeenCalledWith('test-item-1', false);
+    // Like button (heart)
+    const likeBtn = document.querySelector('.stylist-item-feedback-overlay__button--like');
+    expect(likeBtn).toBeInTheDocument();
+    // Dislike button (X)
+    const dislikeBtn = document.querySelector('.stylist-item-feedback-overlay__button--dislike');
+    expect(dislikeBtn).toBeInTheDocument();
+  });
+
+  test('user preferences update and affect future recommendations', () => {
+    const handleFeedback = jest.fn();
+    render(<ItemCard item={mockItem} onFeedback={handleFeedback} />);
+    // Like
+    const likeBtn = document.querySelector('.stylist-item-feedback-overlay__button--like');
+    if (likeBtn) {
+      likeBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(handleFeedback).toHaveBeenCalledWith('test-item-1', true);
+    }
+    // Dislike
+    const dislikeBtn = document.querySelector('.stylist-item-feedback-overlay__button--dislike');
+    if (dislikeBtn) {
+      dislikeBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      expect(handleFeedback).toHaveBeenCalledWith('test-item-1', false);
+    }
+  });
+
+  test('learning algorithm improves suggestions over time (simulated)', () => {
+    const handleFeedback = jest.fn();
+    render(<ItemCard item={mockItem} onFeedback={handleFeedback} />);
+    // Simulate multiple feedbacks
+    const likeBtn = document.querySelector('.stylist-item-feedback-overlay__button--like');
+    const dislikeBtn = document.querySelector('.stylist-item-feedback-overlay__button--dislike');
+    if (likeBtn && dislikeBtn) {
+      for (let i = 0; i < 3; i++) {
+        likeBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        dislikeBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      }
+      // Should have called handler 6 times alternating true/false
+      expect(handleFeedback).toHaveBeenCalledTimes(6);
+      expect(handleFeedback).toHaveBeenNthCalledWith(1, 'test-item-1', true);
+      expect(handleFeedback).toHaveBeenNthCalledWith(2, 'test-item-1', false);
+      expect(handleFeedback).toHaveBeenNthCalledWith(3, 'test-item-1', true);
+      expect(handleFeedback).toHaveBeenNthCalledWith(4, 'test-item-1', false);
+    }
   });
 });

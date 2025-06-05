@@ -1,9 +1,12 @@
 // whoWhatWearScraper.ts
 // Production-ready Puppeteer scraper for WhoWhatWear celebrity fashion
 
-import puppeteer, { Browser, Page } from 'puppeteer';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { Browser, Page } from 'puppeteer';
 import { celebrityNames } from './data/celebrityNames';
 import { extractOutfitElements, calculateCelebrityConfidence } from './parseWhoWhatWear';
+import fs from 'fs';
 
 interface SocialProofItem {
   celebrity: string;
@@ -16,6 +19,7 @@ interface SocialProofItem {
   patterns?: string[];
   styles?: string[];
   confidenceScore?: number;
+  products?: { text: string | null; href: string | null }[];
 }
 
 interface ScraperOptions {
@@ -34,6 +38,9 @@ const DEFAULT_OPTIONS: ScraperOptions = {
 
 // Add a delay function
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Add stealth plugin
+puppeteer.use(StealthPlugin());
 
 /**
  * Scrapes celebrity fashion data from WhoWhatWear
@@ -84,17 +91,16 @@ export async function scrapeWhoWhatWear(options: ScraperOptions = {}): Promise<S
       
       // Launch browser with optimized settings for web scraping
       browser = await puppeteer.launch({
-        headless: config.headless,
-        defaultViewport: { width: 1366, height: 768 },
+        headless: false,
+        slowMo: 100,
+        executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', // or your Chrome path
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
           '--disable-dev-shm-usage',
           '--window-size=1366,768',
           '--disable-notifications',
-          '--disable-geolocation',
-          // Improved user agent that's less likely to be flagged as a bot
-          '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+          '--disable-geolocation'
         ]
       });
 
@@ -126,14 +132,28 @@ export async function scrapeWhoWhatWear(options: ScraperOptions = {}): Promise<S
       page.setDefaultNavigationTimeout(config.timeout!);
       
       // Storage for collected items
-      let items: SocialProofItem[] = [];
-      let success = false;
+      const items: SocialProofItem[] = [];
+      
+      // NEW: Scrape latest article links and visit each
+      console.log('🔍 Collecting latest article links...');
+      const articleLinks = await getArticleLinks(page, 10); // 10 articles for now
+      console.log(`Found ${articleLinks.length} article links.`);
+      for (const articleUrl of articleLinks) {
+        try {
+          console.log(`📄 Visiting article: ${articleUrl}`);
+          await page.goto(articleUrl, { waitUntil: 'networkidle2', timeout: config.timeout });
+          await delay(1000); // Let content load
+          await extractCelebrityItems(page, items); // Use your existing extraction logic
+          if (items.length >= config.itemLimit!) break;
+        } catch {
+          console.log(`❌ Failed to scrape article: ${articleUrl}`);
+        }
+      }
       
       // Attempt primary URL targets
       console.log('🔍 Trying primary celebrity content URLs...');
       for (const url of targetUrls) {
         if (items.length >= config.itemLimit!) {
-          success = true;
           break;
         }
         
@@ -164,7 +184,7 @@ export async function scrapeWhoWhatWear(options: ScraperOptions = {}): Promise<S
                   .catch(() => null) // Ignore individual failures
               )
             );
-          } catch (e) {
+          } catch {
             console.log(`⚠️ Selector timeout, proceeding with current page state...`);
           }
           
@@ -179,7 +199,6 @@ export async function scrapeWhoWhatWear(options: ScraperOptions = {}): Promise<S
           if (items.length > initialCount) {
             console.log(`✅ Found ${items.length - initialCount} new items on ${url}`);
             if (items.length >= 3) {
-              success = true;
               break; // We've found enough items
             }
           } else {
@@ -195,7 +214,7 @@ export async function scrapeWhoWhatWear(options: ScraperOptions = {}): Promise<S
       }
       
       // If we haven't found enough items, try fallback URLs
-      if (!success || items.length < 5) {
+      if (items.length < 5) {
         console.log('🔄 Trying fallback URLs for more celebrity content...');
         
         for (const url of fallbackUrls) {
@@ -304,415 +323,98 @@ export async function scrapeWhoWhatWear(options: ScraperOptions = {}): Promise<S
  * Optimized specifically for WhoWhatWear's content structure
  */
 async function extractCelebrityItems(page: Page, items: SocialProofItem[]): Promise<void> {
-  // First try the main article extraction
+  // More robust extraction logic for WhoWhatWear articles with debug logging and improved image extraction
   const newItems = await page.evaluate(() => {
+    function getLargeImg(imgs: NodeListOf<HTMLImageElement>) {
+      const arr = Array.from(imgs);
+      for (const img of arr) {
+        if ((img.naturalWidth && img.naturalWidth >= 200) || (img.width && img.width >= 200)) {
+          return img.src;
+        }
+      }
+      return arr[0]?.src;
+    }
     const results: any[] = [];
-    
-    // WhoWhatWear specific selectors based on their site structure
-    const primarySelectors = [
-      '.article-card',
-      '.articleCard',
-      '.story-card',
-      '.post-card',
-      'article[class*="card"]',
-      'article[class*="celeb"]',
-      '[data-test="ArticleCardComponent"]',
-      '.celebrity-outfit'
-    ];
-    
-    // Backup flexible selectors for different page structures
-    const fallbackSelectors = [
-      'article',
-      '.post',
-      '[class*="article"]',
-      '[class*="post"]',
-      '[data-element-id="Article"]',
-      '.story-item',
-      '.slideshow-slide',
-      '[class*="card"]',
-      '.article-body p',
-      '.content-container'
-    ];
-    
-    const allElements: Element[] = [];
-    
-    // Try primary selectors first
-    primarySelectors.forEach(selector => {
-      const elements = Array.from(document.querySelectorAll(selector));
-      if (elements.length > 0) {
-        console.log(`Found ${elements.length} elements with selector: ${selector}`);
-      }
-      allElements.push(...elements);
-    });
-    
-    // If no primary selectors found elements, try fallbacks
-    if (allElements.length === 0) {
-      fallbackSelectors.forEach(selector => {
-        const elements = Array.from(document.querySelectorAll(selector));
-        allElements.push(...elements);
-      });
-    }
-    
-    // Special case for the slide format they often use
-    const slideElements = document.querySelectorAll('.slide, .slideshow-slide, .article-slide');
-    if (slideElements.length > 0) {
-      console.log(`Found ${slideElements.length} slide elements`);
-      allElements.push(...Array.from(slideElements));
-    }
-    
-    // Remove duplicates
-    const uniqueElements = Array.from(new Set(allElements));
-    console.log(`Processing ${uniqueElements.length} unique elements`);
-    
-    // Use imported comprehensive celebrity list
-    const knownCelebrities = (window as any).celebrityNames || [
-      // Fallback list if import fails
-      'Taylor Swift', 'Jennifer Lopez', 'Rihanna', 'Beyoncé', 'Zendaya',
-      'Kendall Jenner', 'Hailey Bieber', 'Dua Lipa', 'Kylie Jenner', 'Ariana Grande',
-      'Margot Robbie', 'Florence Pugh', 'Timothée Chalamet', 'Brad Pitt', 'Leonardo DiCaprio',
-      'Blake Lively', 'Sydney Sweeney', 'Selena Gomez', 'Emma Stone', 'Jennifer Lawrence',
-      'Harry Styles', 'Gigi Hadid', 'Bella Hadid'
-    ];
-    
-    uniqueElements.forEach(element => {
-      try {
-        const elementText = element.textContent?.toLowerCase() || '';
-        
-        // Look for celebrity indicators
-        const hasCelebrityContent = 
-          element.querySelector('h1, h2, h3')?.textContent?.toLowerCase()?.includes('celebrity') ||
-          elementText.includes('celebrity') ||
-          elementText.includes('wore') ||
-          elementText.match(/\b(spotted|styles?|fashion|outfit|look|dress|dresses|wearing|donned)\b/) ||
-          knownCelebrities.some((celeb: string) => elementText.toLowerCase().includes(celeb.toLowerCase()));
-        
-        if (!hasCelebrityContent) return;
-        
-        // Extract celebrity name using our helper function
-        const celebrity = extractCelebrityName(element, elementText, knownCelebrities);
-        
-        // Skip if we couldn't determine a celebrity
-        if (!celebrity) return;
-        
-        // Extract event context
-        const eventKeywords = ['premiere', 'award', 'gala', 'festival', 'show', 'event', 'party', 'wedding', 'red carpet', 'fashion week', 'met gala'];
-        let event = '';
-        
-        for (const keyword of eventKeywords) {
-          // Try several patterns for event extraction
-          const eventMatches = [
-            elementText.match(new RegExp(`(at|for|during)\\s+the\\s+([^.]+${keyword}[^.]+)`, 'i')),
-            elementText.match(new RegExp(`(at|for|during)\\s+([^.]+${keyword}[^.]+)`, 'i')),
-            elementText.match(new RegExp(`${keyword}\\s+([^.]+)`, 'i')),
-            elementText.match(new RegExp(`(${keyword})`, 'i'))
-          ];
-          
-          for (const match of eventMatches) {
-            if (match && (match[2] || match[1])) {
-              event = match[2] || match[1];
-              break;
+    const strongs = document.querySelectorAll('strong, b');
+    console.log('Found <strong>/<b> elements:', strongs.length);
+    strongs.forEach(strong => {
+      const strongText = strong.textContent?.trim() || '';
+      console.log('Strong text:', strongText);
+      const match = strongText.match(/^On (.+):?$/i);
+      if (match) {
+        const celebrity = match[1];
+        // Try to find the parent <p> first
+        let parentP: HTMLElement | null = strong.closest('p');
+        // If not found, try the closest .article-body or just parentElement
+        if (!parentP) {
+          parentP = strong.closest('.article-body') as HTMLElement | null || strong.parentElement;
+        }
+        if (!parentP) {
+          console.log('No reasonable parent found for:', strongText);
+          return;
+        }
+        // Get the full text minus the celebrity part
+        let desc = parentP.textContent || '';
+        desc = desc.replace(strongText, '').trim();
+        // Collect product links (type guard for Element)
+        let links: { text: string | null; href: string | null }[] = [];
+        if (parentP instanceof Element) {
+          links = Array.from(parentP.querySelectorAll('a')).map(a => ({
+            text: a.textContent,
+            href: a.getAttribute('href')
+          }));
+        }
+        // Improved image extraction logic
+        let imageUrl: string | undefined = undefined;
+        if (parentP instanceof Element) {
+          // 1. Look for an <img> in the closest parent .article-body, .content, or <article>
+          const container = parentP.closest('.article-body, .content, article') as HTMLElement | null;
+          if (container) {
+            const imgs = container.querySelectorAll('img');
+            const found = getLargeImg(imgs);
+            if (found) imageUrl = found;
+          }
+          // 2. If not found, look for the closest previous <img> in the DOM before the <strong> tag
+          if (!imageUrl) {
+            let prev: HTMLElement | null = strong.previousElementSibling as HTMLElement | null;
+            while (prev && !imageUrl) {
+              const imgs = prev.querySelectorAll ? prev.querySelectorAll('img') : [];
+              const found = getLargeImg(imgs as NodeListOf<HTMLImageElement>);
+              if (found) imageUrl = found;
+              prev = prev.previousElementSibling as HTMLElement | null;
             }
           }
-          
-          if (event) break;
-        }
-        
-        // Extract outfit description with multiple strategies
-        let outfitDescription = '';
-        
-        // Strategy 1: Look for paragraph with outfit details
-        const paragraphs = Array.from(element.querySelectorAll('p'));
-        for (const paragraph of paragraphs) {
-          const paragraphText = paragraph.textContent || '';
-          
-          // Check if paragraph is about outfit
-          const isOutfitDescription = /\b(wore|wearing|dressed in|outfit|look|style|fashion|ensemble|dressed|dress|dressed|dressed up|clothes|donned|sporting|rocked)\b/i.test(paragraphText);
-          
-          if (isOutfitDescription && paragraphText.length > outfitDescription.length) {
-            outfitDescription = paragraphText;
-          }
-        }
-        
-        // Strategy 2: If no clear outfit paragraph, use the heading + first paragraph
-        if (!outfitDescription) {
-          const headingElement = element.querySelector('h1, h2, h3, .title, [class*="title"]');
-          const headingText = headingElement?.textContent || '';
-          
-          const firstParagraph = element.querySelector('p')?.textContent || '';
-          outfitDescription = `${headingText} ${firstParagraph}`.trim();
-        }
-        
-        // Strategy 3: If still nothing good, use the element text if it's not too long
-        if (!outfitDescription || outfitDescription.length < 20) {
-          // Limit to reasonable length
-          outfitDescription = elementText.substring(0, 500).trim();
-        }
-        
-        // Extract high-quality image with multiple strategies
-        let imageUrl = '';
-        
-        // Strategy 1: Look for figure or main image
-        const figureElement = element.querySelector('figure, [class*="image-container"], [class*="media"], [class*="photo"]');
-        if (figureElement) {
-          const img = figureElement.querySelector('img');
-          if (img) {
-            // Try high-res version first
-            imageUrl = img.getAttribute('data-src-lg') || 
-                      img.getAttribute('data-high-res-src') || 
-                      img.getAttribute('data-orig-file') ||
-                      img.src;
-          }
-        }
-        
-        // Strategy 2: Try different image sources
+          // 3. As a last resort, use the first large image in the article
         if (!imageUrl) {
-          const imageElements = Array.from(element.querySelectorAll('img'));
-          
-          // Sort by size (prefer larger)
-          const largestImage = imageElements.sort((a, b) => {
-            const aWidth = a.naturalWidth || parseInt(a.getAttribute('width') || '0', 10);
-            const bWidth = b.naturalWidth || parseInt(b.getAttribute('width') || '0', 10);
-            return bWidth - aWidth;
-          })[0];
-          
-          if (largestImage) {
-            imageUrl = largestImage.getAttribute('data-src') || 
-                       largestImage.getAttribute('data-lazy-src') || 
-                       largestImage.getAttribute('srcset')?.split(',')[0]?.split(' ')[0] || 
-                       largestImage.src;
+            const article = parentP.closest('article') as HTMLElement | null;
+            if (article) {
+              const imgs = article.querySelectorAll('img');
+              const found = getLargeImg(imgs);
+              if (found) imageUrl = found;
+            }
           }
         }
-        
-        // Extract timestamp for freshness
-        const timeElement = element.querySelector('time');
-        let timestamp = timeElement?.getAttribute('datetime') || timeElement?.textContent || '';
-        
-        // Also look for a date class
-        if (!timestamp) {
-          const dateElement = element.querySelector('[class*="date"], [class*="time"], .publish-date, .posted-on');
-          if (dateElement) {
-            timestamp = dateElement.textContent || '';
-          }
-        }
-        
-        // Only add if we have meaningful data
-        if (celebrity && outfitDescription && outfitDescription.length > 30) {
-          // Clean up the data
-          const cleanCelebrity = celebrity.trim();
-          outfitDescription = outfitDescription.trim()
-            .replace(/\s+/g, ' ')
-            .replace(/\n+/g, ' ');
-          
-          // Create a high-quality title if description is too long
-          const shortDescription = outfitDescription.length > 100 
-            ? outfitDescription.substring(0, 100) + '...' 
-            : outfitDescription;
-          
-          // Calculate celebrity confidence score
-          const confidenceScore = calculateCelebrityConfidence(
-            cleanCelebrity, 
-            (window as any).celebrityNames || celebrityNames,
-            outfitDescription
-          );
-          
-          // Only proceed with high-confidence celebrity matches (>0.6)
-          if (confidenceScore > 0.6) {
-            // Extract outfit elements using enhanced parsing
-            const { garments, colors, patterns, styles } = extractOutfitElements(outfitDescription);
-            
+        console.log('Extracted:', { celebrity, desc, links, imageUrl });
             results.push({
-              celebrity: cleanCelebrity,
-              event: event.trim(),
-              outfitDescription,
-              shortDescription, // Add a shorter version for UI
-              imageUrl,
-              timestamp: timestamp || new Date().toISOString(),
-              outfitTags: garments,
-              colors: colors,
-              patterns: patterns,
-              styles: styles,
-              confidenceScore: confidenceScore
-            });
-          }
-        }
-      } catch (e) {
-        console.warn('Error extracting item:', e);
+          celebrity,
+          outfitDescription: desc,
+          products: links,
+          imageUrl
+        });
       }
     });
-    
-    // Helper function to extract celebrity names with multiple strategies
-    function extractCelebrityName(element: Element, elementText: string, celebrityList: string[]): string {
-      let celebrity = '';
-      const lowerText = elementText.toLowerCase();
-      
-      // Strategy 1: Exact matches with celebrity list (case-insensitive)
-      // This is the most reliable method and prioritized
-      for (const celeb of celebrityList) {
-        // Check for exact match of full name (with word boundaries)
-        const exactRegex = new RegExp(`\\b${celeb.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-        if (exactRegex.test(elementText)) {
-          return celeb; // Return the properly capitalized name from our list
-        }
-      }
-      
-      // Strategy 2: Partial matches for celebrities with very distinctive names
-      // For example, if we find "Zendaya's outfit" we can be confident it's about Zendaya
-      for (const celeb of celebrityList) {
-        // Only apply partial matching for distinctive single-name celebrities or very unique names
-        if ((celeb.split(' ').length === 1 || celeb.length > 12) && lowerText.includes(celeb.toLowerCase())) {
-          return celeb;
-        }
-      }
-      
-      // Strategy 3: Extract from heading if still not found
-      const headingElement = element.querySelector('h1, h2, h3, .title, [class*="title"], [class*="heading"]');
-      const headingText = headingElement?.textContent || '';
-      
-      // Check heading against celebrity list first (more likely to contain just the celebrity name)
-      if (headingText) {
-        const headingLower = headingText.toLowerCase();
-        
-        for (const celeb of celebrityList) {
-          if (headingLower.includes(celeb.toLowerCase())) {
-            return celeb;
-          }
-        }
-        
-        // Extract potential celebrity name (capital case names)
-        const nameMatch = headingText.match(/\b([A-Z][a-z]+ [A-Z][a-z]+)\b/);
-        if (nameMatch) {
-          // Verify against our celebrity list first
-          const potentialName = nameMatch[1];
-          const matchedCeleb = findClosestCelebrityMatch(potentialName, celebrityList);
-          if (matchedCeleb) {
-            return matchedCeleb;
-          }
-          celebrity = potentialName;
-        } else {
-          // Try another pattern: "Celebrity Name Wore/Was Spotted/etc"
-          const altNameMatch = headingText.match(/\b([A-Z][a-z]+ [A-Z][a-z]+)\s+(wore|was spotted|stepped out|donned|opted for|styled|rocked|showcased)/i);
-          if (altNameMatch) {
-            const potentialName = altNameMatch[1];
-            const matchedCeleb = findClosestCelebrityMatch(potentialName, celebrityList);
-            if (matchedCeleb) {
-              return matchedCeleb;
-            }
-            celebrity = potentialName;
-          }
-        }
-      }
-      
-      // Strategy 4: Try byline extraction (if it looks like it's about a celebrity, not author)
-      if (!celebrity) {
-        const bylineMatch = elementText.match(/by\s+([A-Z][a-z]+ [A-Z][a-z]+)/i);
-        if (bylineMatch) {
-          // Skip if it's just article author
-          const authorIndicators = ['editor', 'writer', 'contributor', 'staff', 'journalist'];
-          const isJustAuthor = authorIndicators.some(indicator => 
-            lowerText.includes(indicator));
-          
-          if (!isJustAuthor) {
-            const potentialName = bylineMatch[1];
-            const matchedCeleb = findClosestCelebrityMatch(potentialName, celebrityList);
-            if (matchedCeleb) {
-              return matchedCeleb;
-            }
-            celebrity = potentialName;
-          }
-        }
-      }
-      
-      // Strategy 5: Check for possessive patterns and other common formats
-      if (!celebrity && (lowerText.includes('style') || lowerText.includes('outfit') || lowerText.includes('wearing'))) {
-        const nameRegexps = [
-          /([A-Z][a-z]+ [A-Z][a-z]+)'s outfit/i,
-          /([A-Z][a-z]+ [A-Z][a-z]+)'s look/i,
-          /([A-Z][a-z]+ [A-Z][a-z]+)'s style/i,
-          /([A-Z][a-z]+ [A-Z][a-z]+) is wearing/i,
-          /([A-Z][a-z]+ [A-Z][a-z]+) just wore/i,
-          /([A-Z][a-z]+ [A-Z][a-z]+) in a /i
-        ];
-        
-        for (const regex of nameRegexps) {
-          const match = elementText.match(regex);
-          if (match && match[1]) {
-            const potentialName = match[1];
-            const matchedCeleb = findClosestCelebrityMatch(potentialName, celebrityList);
-            if (matchedCeleb) {
-              return matchedCeleb;
-            }
-            celebrity = potentialName;
-            break;
-          }
-        }
-      }
-      
-      return celebrity;
-    }
-    
-    // Helper function to find closest match from celebrity list
-    function findClosestCelebrityMatch(name: string, celebrityList: string[]): string | null {
-      if (!name) return null;
-      
-      const nameLower = name.toLowerCase();
-      
-      // First try direct match (case insensitive)
-      for (const celeb of celebrityList) {
-        if (celeb.toLowerCase() === nameLower) {
-          return celeb; // Return properly capitalized name
-        }
-      }
-      
-      // Try partial match (for cases like "Beyoncé" vs "Beyonce")
-      for (const celeb of celebrityList) {
-        // Split into first/last name
-        const celebParts = celeb.toLowerCase().split(' ');
-        const nameParts = nameLower.split(' ');
-        
-        // If first and last name start with the same letters, likely a match
-        if (celebParts.length === nameParts.length) {
-          let matchCount = 0;
-          for (let i = 0; i < celebParts.length; i++) {
-            if (celebParts[i].startsWith(nameParts[i]) || nameParts[i].startsWith(celebParts[i])) {
-              matchCount++;
-            }
-          }
-          
-          // All parts match at least by prefix
-          if (matchCount === celebParts.length) {
-            return celeb;
-          }
-        }
-      }
-      
-      return null;
-    }
-    
     return results;
   });
-  
-  // Inject the celebrityNames array into the page
-  await page.evaluate((names) => {
-    // @ts-ignore
-    window.celebrityNames = names;
-  }, celebrityNames);
-  
-  // Filter and add new items
+  // Add new items to the items array
   for (const item of newItems) {
     // Skip if already exists
     const exists = items.some(existing => 
       existing.celebrity === item.celebrity && 
       existing.outfitDescription.substring(0, 50) === item.outfitDescription.substring(0, 50)
     );
-    
     if (!exists && item.celebrity && item.outfitDescription) {
       items.push(item);
     }
-  }
-  
-  // If we still don't have items, try to extract from slideshow format
-  if (items.length === 0) {
-    await extractFromSlideshow(page, items);
   }
 }
 
@@ -724,7 +426,7 @@ async function extractFromSlideshow(page: Page, items: SocialProofItem[]): Promi
   
   // Inject the celebrityNames array into the page
   await page.evaluate((names) => {
-    // @ts-ignore
+    // @ts-expect-error Injecting celebrityNames into page context
     window.celebrityNames = names;
   }, celebrityNames);
   
@@ -1096,6 +798,62 @@ function generateMockData(limit: number): SocialProofItem[] {
   return mockItems;
 }
 
+// Improved getArticleLinks: try multiple selectors in order, log results, stop at first that works
+async function getArticleLinks(page: Page, maxArticles = 10): Promise<string[]> {
+  await page.goto('https://www.whowhatwear.com/fashion/celebrity/celebrity-style', { waitUntil: 'networkidle2' });
+
+  // Wait for main content to load
+  try {
+    await page.waitForSelector('main, .content, .site-content', { timeout: 15000 });
+    console.log('Main content container loaded.');
+  } catch {
+    console.log('Main content container did not load.');
+  }
+
+  // Wait a bit longer for JS to render articles
+  await delay(3000);
+
+  // Take a screenshot for debugging
+  await page.screenshot({ path: 'whowhatwear_debug.png', fullPage: true });
+  console.log('Screenshot taken: whowhatwear_debug.png');
+
+  // Try multiple selectors in order of likelihood
+  const selectors = [
+    'a.listing__link',
+    'a[data-analytics-link="article"]',
+    'a.card-item',
+    'a.comp.card-item',
+    'a.comp.link'
+  ];
+
+  let links: string[] = [];
+  for (const selector of selectors) {
+    try {
+      const found = await page.$$(selector);
+      console.log(`Selector "${selector}" found ${found.length} elements.`);
+      if (found.length) {
+        links = await page.$$eval(selector, as =>
+          as.map(a => {
+            const href = (a as HTMLAnchorElement).getAttribute('href');
+            if (!href) return undefined;
+            return href.startsWith('http') ? href : 'https://www.whowhatwear.com' + href;
+          }).filter((href): href is string => typeof href === 'string')
+        );
+        if (links.length) break; // Stop at the first selector that finds links
+      }
+    } catch {
+      console.log(`Selector "${selector}" failed.`);
+    }
+  }
+
+  if (!links.length) {
+    // Debug: log the outer HTML of the main page if no links found
+    const html = await page.evaluate(() => document.documentElement.outerHTML);
+    console.log('No article links found. Main page HTML:', html.substring(0, 2000));
+  }
+  return links.slice(0, maxArticles);
+}
+
 export default {
   scrapeWhoWhatWear,
   extractCelebrityItems,
@@ -1104,3 +862,29 @@ export default {
   generateMockData,
   delay
 };
+
+// Add this at the very end of the file
+if (require.main === module) {
+  const saveToFile = process.argv.includes('--save');
+  scrapeWhoWhatWear({ itemLimit: 12 })
+    .then(results => {
+      if (saveToFile) {
+        fs.writeFileSync('celebrity_styles.json', JSON.stringify(results, null, 2));
+        console.log(`Saved ${results.length} items to celebrity_styles.json`);
+      } else {
+        // Always output JSON, even if empty
+        console.log(JSON.stringify(results || []));
+      }
+      process.exit(0);
+    })
+    .catch(err => {
+      // Output an empty array as JSON on error, so the API never breaks JSON parsing
+      console.error(err);
+      if (saveToFile) {
+        fs.writeFileSync('celebrity_styles.json', '[]');
+      } else {
+        console.log('[]');
+      }
+      process.exit(1);
+    });
+}

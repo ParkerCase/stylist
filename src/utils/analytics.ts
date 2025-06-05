@@ -36,7 +36,8 @@ export enum AnalyticsEventType {
     VIEW_MY_CLOSET = 'view_my_closet',
     VIEW_VIRTUAL_TRY_ON = 'view_virtual_try_on',
     VIEW_SOCIAL_PROOF = 'view_social_proof',
-    VIEW_TRENDING_ITEMS = 'view_trending_items'
+    VIEW_TRENDING_ITEMS = 'view_trending_items',
+    VIEW_STYLE_QUIZ = 'view_style_quiz'
   }
   
   // Analytics event structure
